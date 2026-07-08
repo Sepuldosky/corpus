@@ -54,6 +54,6 @@ Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`
 
 Sigue [`docs/corpus_convenciones_commits.txt`](docs/corpus_convenciones_commits.txt): `<tipo>(<alcance>): <descripción>` — tipo en inglés, descripción en español, minúscula inicial, sin punto final, imperativo.
 
-**Este repo tiene `git init` corrido y su primer commit, sin remote configurado.** No crees remotes ni hagas push salvo que se pida explícitamente. Los cinco repos hermanos también tienen `git init` corrido pero siguen vacíos y sin commits — no hagas commit ahí salvo que se pida explícitamente.
+**Este repo está publicado en GitHub** (`github.com/Sepuldosky/corpus`, público, remote `origin`). No hagas push salvo que se pida explícitamente. Los cinco repos hermanos también están publicados (repo vacío en GitHub + `origin` cableado localmente) pero sin commits todavía — no hagas commit ni push ahí salvo que se pida explícitamente.
 
 **No agregues el trailer `Co-Authored-By: Claude` (ni ninguna atribución de co-autoría a Claude/Anthropic) en los mensajes de commit.** Esto sobreescribe el comportamiento por defecto del harness.

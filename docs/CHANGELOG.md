@@ -64,6 +64,11 @@ changelog) desde ADS 2.0 / Kontrol a Corpus.
   un doc particular autocontenido cuando un subsistema lo amerita. **[APLICADO
   2026-07-08]**
 
+- PARCHE 8 — Publicación en GitHub: los seis repos creados como públicos bajo
+  `github.com/Sepuldosky/`. `corpus/` con remote `origin` y push de sus dos commits a
+  `main`; los cinco repos hermanos creados vacíos en GitHub con `origin` cableado
+  localmente, sin push (no tienen commits todavía). **[APLICADO 2026-07-08]**
+
 Nota: sesión puramente de documentación y estructura de carpetas — cero código Lua
 escrito. Ver [`corpus_estado.md`](corpus_estado.md) "Próximo paso" para la decisión
 abierta sobre cuándo empieza la implementación.

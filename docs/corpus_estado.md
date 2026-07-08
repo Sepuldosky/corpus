@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-08 (git init)
+**Última actualización:** 2026-07-08 (publicado en GitHub)
 
 ---
 
@@ -31,10 +31,10 @@
   propio `dev/` de ADS (VJ Base, ARC9 EFT, zbase, drgbase, halo energy shield,
   visceral dynamic blood, etc.) se subieron un nivel a `dev/other/`, junto al resto
   del workspace, para investigación de compatibilidad.
-- **`git init` corrido en los seis repos** (corpus + los cinco hermanos). `corpus/`
-  tiene su primer commit (docs de bootstrap + `.gitignore`); los cinco repos hermanos
-  quedan inicializados pero vacíos, sin commits, esperando su Block de diseño. Ningún
-  repo tiene remote configurado todavía.
+- **Los seis repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos).
+  `corpus/` tiene remote `origin` y sus dos commits pusheados a `main`. Los cinco
+  repos hermanos existen en GitHub y tienen `origin` cableado localmente, pero siguen
+  vacíos, sin commits ni push, esperando su Block de diseño.
 
 **Cero código Lua todavía.** Ninguna de las 6 primitivas de la API de Corpus
 (registro, persistencia, net, UI shell, ready barrier, log) está implementada. Los
