@@ -1,0 +1,73 @@
+CORPUS — ROADMAP (BRÚJULA)
+Hacia dónde vamos y en qué orden. Qué construir next.
+=====================================================
+Documento vivo. Fija el RUMBO (secuencia estable de lo que sigue).
+"Dónde estamos dentro de esto" lo dice docs/corpus_estado.md (foto de HOY).
+Leer JUNTO con corpus_estado.md al decidir el próximo bloque.
+=====================================================
+
+
+0. CÓMO SE USA
+----------------
+
+Este doc ORDENA lo que sigue; corpus_estado.md dice en qué punto estamos. Ambos se
+leen juntos al planear el próximo bloque. Regla anti-deriva: el detalle de diseño de
+cada bloque vive en CORPUS_Architecture.md (una sección nueva por bloque, ver §9);
+acá NO se duplica ese detalle — solo el orden y el criterio de entrada de cada tramo.
+
+Metodología para ejecutar cada tramo: docs/corpus_flujo_trabajo.txt (planificación
+densa + vertical slice + orden de parches) — doc canónico compartido por los seis
+repos del ecosistema.
+
+
+1. INMEDIATO
+--------------
+
+  [1] Decisión abierta: ¿implementar las 6 primitivas de Corpus ahora (bajar Block 1
+      a código), o cerrar primero el diseño de Block 2 y bajar Corpus + Caliber +
+      Cortex juntos? Ver corpus_estado.md "Próximo paso". La resuelve el autor en la
+      próxima sesión de planificación — no asumir ninguna de las dos.
+
+  [2] Block 2 — diseño de Caliber (migración desde ADS 2.0 + alcance nuevo: pipeline
+      de armadura de jugador) + Cortex (táctica de combate NPC + afecto: dolor,
+      miedo). Ref: §7 y tabla §9 de CORPUS_Architecture.md. Caliber consume el
+      legacy en dev/legacy/AdvancedDamageSystem 2.0/ como fuente de la migración
+      (rename mecánico + namespace, NO reescritura — criterio ya cerrado en §7).
+
+
+2. SIGUIENTE — orden sugerido
+--------------------------------
+
+El orden sigue la tabla de §9 de CORPUS_Architecture.md. No es rígido: si un bloque
+destapa una dependencia (p.ej. Coagulant necesitando algo de Caliber.Limbs antes de
+que ese Block cierre del todo), reordenar y anotarlo — el patrón mock-first de
+corpus_flujo_trabajo.txt §3 cubre ese caso.
+
+  [3] Block 3 — diseño de Coagulant (médico de jugador estilo ACE3: heridas por
+      zona, sangrado, vitales, tratamiento). Soft-dep de Caliber (hit-location
+      enriquecido) y Cargo (ítems médicos) — construir mock-first si esos módulos
+      no cerraron todavía.
+
+  [4] Block 4 — diseño de Craving (hambre/hidratación + fallback HL2 comestible) +
+      Cargo (grid de inventario + framework de ítems, contrato de ítems
+      generalizado de §5 de la arquitectura).
+
+
+3. AL CERRAR CADA BLOQUE (2, 3, 4)
+--------------------------------------
+
+Checklist repetible, ver corpus_flujo_trabajo.txt §2:
+  - Nueva sección autocontenida en CORPUS_Architecture.md.
+  - Registro en el CHANGELOG del repo afectado.
+  - Si es la primera vez que ese módulo recibe contenido real: CLAUDE.md +
+    docs/{<modulo>_estado.md, <modulo>_roadmap.txt, CHANGELOG.md,
+    <modulo>_convenciones_commits.txt} propios en su repo, mismo template que
+    corpus/, apuntando a corpus/docs/corpus_flujo_trabajo.txt en vez de duplicarlo.
+
+
+=====================================================
+Documentos complementarios:
+  docs/corpus_estado.md              → foto de HOY (dónde estamos)
+  docs/CORPUS_Architecture.md        → §9 (fuente del orden de bloques), diseño detallado
+  docs/corpus_flujo_trabajo.txt      → cómo ejecutar cada tramo
+=====================================================

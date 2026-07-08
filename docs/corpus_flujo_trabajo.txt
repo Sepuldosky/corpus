@@ -1,0 +1,182 @@
+CORPUS — FLUJO DE TRABAJO
+Cómo se planifican y aplican los cambios en el ecosistema Corpus.
+=====================================================
+Documento vivo. Metodología portada de KONTROL vía ADS 2.0, adaptada al stack
+GLua / Garry's Mod Y al workspace multi-repo de Corpus (seis raíces: corpus +
+cortex/caliber/coagulant/craving/cargo).
+Es el doc CANÓNICO de metodología: vive en corpus/docs/ pero aplica a los seis
+repos por igual. Cuando un repo hermano empieza a recibir código, su propio
+CLAUDE.md apunta acá en vez de duplicar el contenido.
+Se carga como contexto al inicio de una sesión de diseño o de aplicación de parches.
+Mantenerlo corto y accionable es parte de su utilidad.
+=====================================================
+
+
+0. PROPÓSITO, AUDIENCIA Y ROLES
+---------------------------------
+
+Este doc cubre el flujo planificación -> ejecución para CUALQUIER repo del ecosistema
+Corpus. No es arquitectura (eso está en CORPUS_Architecture.md, que gana una sección
+nueva por cada Block que cierra) ni estado (eso está en el <modulo>_estado.md de
+CADA repo — no hay uno solo global).
+
+División de roles:
+- Planificador (típicamente un modelo Opus, o el autor): lee estado + arquitectura,
+  decide QUÉ cambia, en qué orden, con qué validaciones. Diseña por bloques.
+- Ejecutor (Claude Code / Sonnet en VSCode): aplica los cambios al Lua / JSON / docs,
+  valida contra el código real, y actualiza el CHANGELOG al cerrar.
+- El autor (Matías) orquesta: aprueba el plan antes de ejecutar, y VERIFICA EN JUEGO.
+
+Regla base: no hay test runner. La "verificación" de código con superficie de runtime
+es CARGAR EL MAPA Y CONFIRMAR EN JUEGO, no asumir. Preferir confirmar el flujo real
+antes que darlo por hecho.
+
+Nota multi-repo: un bloque puede tocar SOLO un repo (típico: diseño de dominio de un
+módulo) o CRUZAR repos (típico: un módulo consume una primitiva nueva de Corpus, o
+dos módulos hermanos se cablean entre sí vía soft-dep). Cuando cruza, el orden es
+SIEMPRE Corpus primero — un módulo no puede consumir una primitiva que su hard-dep
+todavía no expone.
+
+
+1. ORDEN DE EJECUCIÓN DE PARCHES
+----------------------------------
+
+Todo trabajo de aplicación de cambios sigue este orden estricto. Sin él, es fácil, por
+ejemplo, marcar el CHANGELOG antes de verificar el estado real.
+
+  PASO 1 — VERIFICACIÓN DE CONTEXTO
+    Leer docs/CHANGELOG.md y docs/<modulo>_estado.md DEL REPO QUE SE VA A TOCAR.
+    Identificar qué está [PENDIENTE]. Si un parche que se pretende aplicar ya figura
+    [APLICADO]: DETENERSE y consultar al autor — el plan está desactualizado o el
+    CHANGELOG quedó mal.
+
+  PASO 2 — VERIFICACIÓN DE ESTADO REAL
+    No confiar en que el doc refleja el archivo. Leer el Lua / JSON destino y confirmar
+    que el cambio no está ya aplicado. Si el código ya lo tiene: DETENERSE y consultar.
+    En multi-repo esto incluye: si el parche asume una primitiva de Corpus, abrir
+    corpus/ y confirmar que existe con esa firma — no asumir que el diseño y el árbol
+    real coinciden. (Precedente en ADS: §13 de su doc de arquitectura decía "Block 7
+    pendiente de aplicar" cuando el código YA estaba en el árbol — el doc mentía, el
+    archivo mandaba.)
+
+  PASO 3 — APLICACIÓN DE CAMBIOS
+    Aplicar en el orden documentado en el plan. Si el parche toca código Y docs:
+    CÓDIGO PRIMERO, docs después. Si el parche cruza repos: Corpus (o el módulo del
+    que se depende) primero, el módulo consumidor después. Respetar los "Contratos
+    que no debes romper" del CLAUDE.md del repo que se está tocando.
+
+  PASO 4 — VERIFICACIÓN EN JUEGO
+    Cargar mapa con los addons relevantes montados, disparar/probar el flujo real,
+    leer la consola del servidor. Para matemática pura (resolvers, curvas), preferir
+    un bloque de auto-test determinista sobre el código, igual que hacía
+    ads_armor.lua en ADS.
+
+  PASO 5 — ACTUALIZAR CHANGELOG Y ESTADO
+    En el CHANGELOG.md del repo tocado: [PENDIENTE] -> [APLICADO YYYY-MM-DD]. Nunca
+    borrar ni renumerar. En su <modulo>_estado.md: refrescar EN SITIO la foto de HOY.
+    Si el parche cruzó repos, actualizar el estado de AMBOS.
+
+
+2. PLANIFICACIÓN DENSA POR BLOQUES
+------------------------------------
+
+Aplica a diseños con decisiones interdependientes y cobertura amplia (un subsistema
+nuevo, un módulo entero, un refactor mayor). NO aplica a parches puntuales, typos,
+ni exploración sin compromiso.
+
+Estructura:
+- El diseño se parte en BLOQUES acotados temáticamente. A nivel ecosistema, el
+  proyecto ya los rotula "Block 1" (Corpus + workspace), "Block 2" (Caliber + Cortex),
+  "Block 3" (Coagulant), "Block 4" (Craving + Cargo) — ver §9 de
+  CORPUS_Architecture.md. Dentro de un módulo grande, ese Block puede a su vez
+  partirse en sub-bloques (así lo hizo ADS 1.x -> 2.0 con sus Blocks 1-8).
+- Sección 0 del contexto de la sesión: reminders no-negociables (los "Contratos" del
+  CLAUDE.md del repo en cuestión, convenciones de commit, no escribir código sin
+  pedirlo). Sección de no-scope explícita.
+- Iteración por bloque: se propone el bloque N -> se valida contra el REPO real
+  (ver §4) -> se integran correcciones e invariantes nuevas -> se repite 1-3 ciclos
+  hasta converger.
+- Al cerrar un bloque: (a) se documenta como sección nueva y autocontenida en
+  CORPUS_Architecture.md (un implementador debe poder ejecutarla sin el historial del
+  chat), (b) se registra en el CHANGELOG del repo afectado, y (c) si el bloque es la
+  PRIMERA vez que un módulo recibe contenido real, ese repo hermano recibe su propio
+  CLAUDE.md + docs/{<modulo>_estado.md, <modulo>_roadmap.txt, CHANGELOG.md,
+  <modulo>_convenciones_commits.txt} — mismo template que corpus/, apuntando a este
+  mismo flujo_trabajo.txt en vez de duplicarlo.
+
+Punto de corte / compactación: NO se decide por turnos ni por % de contexto, sino por
+CAMBIO DE MODO TEMÁTICO. Pregunta antes de seguir: "¿el próximo bloque tiene afinidad
+con lo hecho, o cambia de modo?" (diseño de datos -> UI, decisiones -> spec de
+implementación, un módulo -> otro módulo). Si cambia de modo, ese es el corte. Razones
+secundarias para cortar: saturación auto-reportada, o 3+ ciclos de validación sin
+converger (señal de bloque mal alcance-ado).
+
+
+3. SECUENCIACIÓN POR VERTICAL SLICE
+-------------------------------------
+
+Construir por SLICE vertical, no por capa horizontal. Una feature de un módulo cruza
+varias capas; se construye la feature entera de punta a punta, no "todos los
+resolvers" y luego "todas las UIs".
+
+El slice típico de una feature de módulo cruza:
+  registro (Corpus.RegisterModule al cargar el módulo)
+    -> lógica de dominio pura (resolver/extractor propio del módulo, sin hooks)
+    -> call site (hook nativo del engine, o consumo de una soft-dep vía
+       Corpus.GetModule)
+    -> persistencia (Corpus.Data.Save/Load namespaced al módulo)
+    -> contrato de red (Corpus.Net.Register, net.Receive gated por admin)
+    -> UI (Corpus.UI.RegisterTab, o tab propia del módulo)
+
+Mock-first cuando el peer no existe: si un slice depende de una soft-dep que aún no
+tiene Block cerrado (p.ej. Coagulant construyendo contra Caliber.Limbs antes de que
+Caliber exista), congelar primero el contrato esperado (la firma de la API que se
+consumiría vía Corpus.GetModule) y construir el slice contra `if caliber then ...
+else <degradación honesta> end` — el call site real aterriza cuando el peer cierra su
+propio Block. Este patrón es el mismo "mock-first" de ADS, pero en Corpus además ES
+el patrón de producción (soft-dep), no solo un andamiaje temporal.
+
+
+4. QUÉ VALIDAR CONTRA EL REPO
+-------------------------------
+
+El ejecutor con acceso al código valida lo que el planificador no ve. Preguntas útiles:
+- ¿La primitiva de Corpus que el diseño asume EXISTE, con la firma correcta?
+  (Corpus.RegisterModule, Corpus.Data.Save/Load, Corpus.Net.Register,
+  Corpus.UI.RegisterTab, Corpus.OnReady, Corpus.Log...)
+- ¿El módulo soft-dep que se está consumiendo está registrado bajo el nombre que el
+  diseño asume (`Corpus.GetModule("caliber")` vs. el nombre real de registro)?
+- ¿El cambio respeta los Contratos del CLAUDE.md del repo? (nada de lógica de dominio
+  en Corpus; namespace único; persistencia/net namespaced; detección nunca asunción;
+  prefijo de archivo por módulo)
+- ¿Hay un edge case que el código YA maneja y el diseño está reinventando?
+- ¿El diseño está subiendo a Corpus algo que debería quedarse en el módulo dueño?
+  (la regla cardinal de §1/§3 de la arquitectura — ni siquiera algo compartido por
+  dos módulos sube, ver el ejemplo de HP de extremidades)
+
+Regla de deslinde: si la pregunta se responde leyendo solo el chat/diseño, es para el
+planificador. Si requiere ABRIR archivos del repo, es para el ejecutor.
+
+
+5. CUÁNDO NO USAR ESTE FLUJO / EVOLUCIÓN
+------------------------------------------
+
+No aplica a: typos, ajustes menores hechos directo en VSCode, exploración de hipótesis
+sin compromiso de implementación. El criterio: si el cambio toca código con superficie
+de runtime, o actualiza un doc publicado que afecta futuras sesiones, entra en el flujo.
+
+Si durante una planificación se detecta un hueco que este doc no cubre (un patrón que se
+repite y merece ser regla), anotarlo al cierre para incorporarlo aquí — este doc se
+actualiza UNA vez, en corpus/docs/, nunca se bifurca por repo.
+
+
+=====================================================
+Documentos complementarios:
+  corpus/CLAUDE.md                         → contratos no-negociables del framework
+  corpus/docs/corpus_estado.md             → foto de HOY del framework
+  corpus/docs/corpus_roadmap.txt           → rumbo / qué sigue (Blocks 1-4)
+  corpus/docs/CHANGELOG.md                 → historial de parches del framework
+  corpus/docs/CORPUS_Architecture.md       → arquitectura de referencia, crece por bloque
+  corpus/docs/corpus_convenciones_commits.txt → convenciones de git commits (framework)
+  <modulo>/CLAUDE.md + docs/               → mismo set, por repo, una vez su Block cierra
+=====================================================

@@ -1,0 +1,138 @@
+CORPUS — CONVENCIONES DE GIT COMMITS (repo: corpus/, el framework)
+Guía de estandarización para el historial de cambios de este repositorio
+=====================================================
+Documento vivo — actualizaciones según evolución del flujo.
+Basado en las convenciones de KONTROL, portadas vía ADS 2.0, adaptado al stack
+GLua / Garry's Mod y al alcance de Corpus como framework.
+
+Este doc cubre SOLO el repo corpus/. Cada repo hermano (corpus-cortex,
+corpus-caliber, corpus-coagulant, corpus-craving, corpus-cargo) define su PROPIA
+tabla de alcances en su propio docs/<modulo>_convenciones_commits.txt cuando su
+Block de diseño cierra y empieza a recibir código — la estructura (secciones 0, 1,
+2, 4, 5 de este doc) se copia igual; solo la sección 3 (alcances) cambia porque
+depende del mapa de archivos de cada repo.
+=====================================================
+
+
+0. PROPÓSITO Y AUDIENCIA
+--------------------------
+
+Este documento establece las reglas y la estructura obligatoria para la redacción de
+mensajes de commit en el repositorio de CORPUS (framework). Su objetivo es mantener
+un historial limpio, legible y automatizable.
+
+Aplica de forma estricta a todo commit confirmado en este repositorio,
+independientemente de quién o qué lo origine.
+
+
+1. ESTRUCTURA OBLIGATORIA DEL MENSAJE
+---------------------------------------
+
+Todo commit DEBE seguir el estándar de Conventional Commits adaptado al proyecto:
+
+  <tipo>(<alcance>): <descripción corta>
+
+Los tipos van en inglés (ver sección 2). La descripción y el cuerpo opcional del
+commit van en español.
+
+Reglas críticas de formato:
+- NUNCA empezar la descripción con mayúscula.
+- NUNCA incluir un punto (.) al final de la descripción.
+- Usar el tiempo presente imperativo (ej: "añade" en lugar de "añadido",
+  "aplica" en lugar de "aplicando").
+
+
+2. TIPOS DE COMMIT PERMITIDOS (<tipo>)
+----------------------------------------
+
+Se prohíben términos genéricos como "cambios", "fix" a secas o "tarea". Los tipos
+válidos son:
+
+  feat:
+    Una nueva funcionalidad para el framework (nueva primitiva de la API, un
+    mecanismo de registro/detección nuevo).
+
+  fix:
+    Corrección de un error o bug activo en el código Lua o en el esquema de datos
+    persistidos.
+
+  refactor:
+    Modificaciones en el código Lua que no añaden funcionalidades ni corrigen
+    errores.
+
+  docs:
+    Cambios exclusivos en archivos de documentación (.txt, .md, CLAUDE.md). No debe
+    tocar código.
+
+  chore:
+    Tareas de mantenimiento rutinario que no afectan la lógica del framework ni la
+    documentación (ej: .gitignore, estructura de carpetas, workspace).
+
+  test:
+    Añadir, modificar o corregir bloques de auto-test o comandos de validación en
+    consola.
+
+
+3. ALCANCES ESPECÍFICOS DE CORPUS (<alcance>)
+-------------------------------------------------
+
+El alcance identifica la primitiva o área afectada. Debe ir siempre entre paréntesis.
+Para corpus/ (el framework), los alcances definidos son:
+
+  registry:
+    Registro de módulos: Corpus.RegisterModule, Corpus.HasModule, Corpus.GetModule.
+
+  data:
+    Persistencia: Corpus.Data.Save/Load, esquema de rutas data/corpus/<module>/<key>.json.
+
+  net:
+    Namespacing de mensajes de red: Corpus.Net.Register.
+
+  ui:
+    UI shell del menú Q compartido: Corpus.UI.RegisterTab.
+
+  ready:
+    Ready barrier: Corpus.OnReady y su disparo tras InitPostEntity.
+
+  log:
+    Logging: Corpus.Log y su formato de prefijo.
+
+  workspace:
+    Estructura del workspace multi-root (.code-workspace, carpetas raíz, dev/) —
+    alcance propio de este repo, sin equivalente en ADS.
+
+  docs:
+    Cambios a la arquitectura, metodología o convenciones cuando el commit es
+    puramente documental y no encaja en ninguno de los alcances de arriba.
+
+
+4. EJEMPLOS PRÁCTICOS DE APLICACIÓN
+-------------------------------------
+
+  4.1 Framework:
+    - feat(registry): añade Corpus.RegisterModule y Corpus.GetModule
+    - feat(data): implementa Corpus.Data.Save/Load con namespacing por módulo
+    - fix(net): corrige colisión de nombre en Corpus.Net.Register
+
+  4.2 Estructura y docs:
+    - chore(workspace): crea las seis raíces del multi-root workspace
+    - docs(docs): cierra Block 1 en CORPUS_Architecture.md
+    - docs(docs): porta metodología de ADS/Kontrol a corpus_flujo_trabajo.txt
+
+
+5. AUTOMATIZACIÓN EN VSCODE
+-----------------------------
+
+Para garantizar que el flujo sea ágil y no requiera construcción manual en cada
+commit, se recomienda el uso de herramientas integradas en VSCode:
+
+  Extensión Conventional Commits:
+    Instalar la extensión "Conventional Commits" de Vivian De Smedt. Ofrece un menú
+    desplegable interactivo en la barra de Git para estructurar el tipo, alcance y
+    descripción de forma automática.
+
+=====================================================
+Documentos complementarios:
+  docs/CORPUS_Architecture.md   → arquitectura autocontenida, crece por bloque
+  CLAUDE.md                     → guía operativa para asistencia con Claude Code
+=====================================================

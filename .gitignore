@@ -1,0 +1,10 @@
+# Config generado en runtime (se recrea desde cero, no se versiona)
+data/
+
+# Editor / OS
+.vscode/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store
