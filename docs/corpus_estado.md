@@ -21,7 +21,10 @@
 - **Metodología portada:** este set de docs (CLAUDE.md + `corpus_flujo_trabajo.txt` +
   `corpus_convenciones_commits.txt` + `corpus_estado.md` + `corpus_roadmap.txt` +
   `CHANGELOG.md`) adaptado desde el equivalente de ADS 2.0, que a su vez lo portó de
-  Kontrol.
+  Kontrol. `corpus_flujo_trabajo.txt` ya formaliza el patrón de doc de arquitectura
+  GENERAL (`<modulo>_Architecture.md`, crece por Block) vs. PARTICULAR
+  (`<Subsistema>_Arquitectura.md`, autocontenido, se desprende cuando un subsistema lo
+  amerita) — patrón que ADS usó en la práctica pero nunca escribió como regla.
 - **Legacy ADS 2.0 + VMT Editor** movidos a `dev/legacy/` como material de referencia:
   mod antiguo que se va a revisar y mejorar dentro de Corpus (principalmente su
   migración a Caliber, ver §7 de la arquitectura). Los mods de terceros que traía el

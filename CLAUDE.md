@@ -18,7 +18,7 @@ Antes de tocar código o diseño, lee en este orden (los tres primeros son **doc
 2. **Rumbo** → [`docs/corpus_roadmap.txt`](docs/corpus_roadmap.txt). Qué sigue y en qué orden (Blocks 1-4, ver §9 de la arquitectura). `estado` dice dónde estamos dentro de él.
 3. **Historial de parches** → [`docs/CHANGELOG.md`](docs/CHANGELOG.md). `[PENDIENTE]`/`[APLICADO YYYY-MM-DD]`, nunca se borra ni renumera.
 4. **Metodología de trabajo** → [`docs/corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt). Planificación densa por bloques, vertical slice, orden de ejecución de parches — **doc canónico para todo el ecosistema**, no solo este repo.
-5. **Arquitectura de referencia** (autocontenida, crece por bloque) → [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md). Diseño estable; se consulta por sección cuando se necesita.
+5. **Arquitectura de referencia** (general, crece por bloque) → [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md). Diseño estable; se consulta por sección cuando se necesita. Un Block puede desprender un doc **particular** autocontenido (`docs/<Subsistema>_Arquitectura.md`) cuando el subsistema lo amerita — la sección del general queda como resumen + link; ver §2 de [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt).
 6. **Convenciones de commit** → [`docs/corpus_convenciones_commits.txt`](docs/corpus_convenciones_commits.txt). Alcances específicos de **este** repo (framework); cada módulo hermano define los suyos cuando su Block cierra.
 
 ## Idioma
@@ -54,6 +54,6 @@ Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`
 
 Sigue [`docs/corpus_convenciones_commits.txt`](docs/corpus_convenciones_commits.txt): `<tipo>(<alcance>): <descripción>` — tipo en inglés, descripción en español, minúscula inicial, sin punto final, imperativo.
 
-**Este repo todavía no tiene `git init` ni remote.** No corras `git init`, no crees repos, no hagas commit ni push salvo que se pida explícitamente — igual para los cinco repos hermanos.
+**Este repo tiene `git init` corrido y su primer commit, sin remote configurado.** No crees remotes ni hagas push salvo que se pida explícitamente. Los cinco repos hermanos también tienen `git init` corrido pero siguen vacíos y sin commits — no hagas commit ahí salvo que se pida explícitamente.
 
 **No agregues el trailer `Co-Authored-By: Claude` (ni ninguna atribución de co-autoría a Claude/Anthropic) en los mensajes de commit.** Esto sobreescribe el comportamiento por defecto del harness.

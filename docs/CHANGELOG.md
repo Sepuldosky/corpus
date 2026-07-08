@@ -55,6 +55,15 @@ changelog) desde ADS 2.0 / Kontrol a Corpus.
   bootstrap; los cinco repos hermanos quedan inicializados sin commits, a la espera
   de su Block de diseño. Ningún repo tiene remote todavía. **[APLICADO 2026-07-08]**
 
+- PARCHE 7 — Metodología: `corpus_flujo_trabajo.txt` y `CLAUDE.md` reconocen ahora
+  el patrón doc de arquitectura GENERAL vs. PARTICULAR (precedente: en ADS,
+  `ADS_2_0_Architecture_updated.md` + `ADS_EnergyShields_Arquitectura.md`, patrón que
+  nunca quedó escrito en su propio `ads_flujo_trabajo.txt`). Se agrega
+  `<modulo>_Architecture.md` a la plantilla de docs que recibe un repo hermano al
+  cerrar su primer Block (antes faltaba), y se documenta el criterio para desprender
+  un doc particular autocontenido cuando un subsistema lo amerita. **[APLICADO
+  2026-07-08]**
+
 Nota: sesión puramente de documentación y estructura de carpetas — cero código Lua
 escrito. Ver [`corpus_estado.md`](corpus_estado.md) "Próximo paso" para la decisión
 abierta sobre cuándo empieza la implementación.

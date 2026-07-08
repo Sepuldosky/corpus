@@ -16,9 +16,10 @@ Mantenerlo corto y accionable es parte de su utilidad.
 ---------------------------------
 
 Este doc cubre el flujo planificación -> ejecución para CUALQUIER repo del ecosistema
-Corpus. No es arquitectura (eso está en CORPUS_Architecture.md, que gana una sección
-nueva por cada Block que cierra) ni estado (eso está en el <modulo>_estado.md de
-CADA repo — no hay uno solo global).
+Corpus. No es arquitectura (eso está en el <modulo>_Architecture.md general de cada
+repo, que gana una sección nueva por cada Block que cierra, y que puede desprender
+documentos PARTICULARES para subsistemas complejos — ver §2) ni estado (eso está en
+el <modulo>_estado.md de CADA repo — no hay uno solo global).
 
 División de roles:
 - Planificador (típicamente un modelo Opus, o el autor): lee estado + arquitectura,
@@ -96,13 +97,27 @@ Estructura:
 - Iteración por bloque: se propone el bloque N -> se valida contra el REPO real
   (ver §4) -> se integran correcciones e invariantes nuevas -> se repite 1-3 ciclos
   hasta converger.
-- Al cerrar un bloque: (a) se documenta como sección nueva y autocontenida en
-  CORPUS_Architecture.md (un implementador debe poder ejecutarla sin el historial del
-  chat), (b) se registra en el CHANGELOG del repo afectado, y (c) si el bloque es la
-  PRIMERA vez que un módulo recibe contenido real, ese repo hermano recibe su propio
-  CLAUDE.md + docs/{<modulo>_estado.md, <modulo>_roadmap.txt, CHANGELOG.md,
-  <modulo>_convenciones_commits.txt} — mismo template que corpus/, apuntando a este
-  mismo flujo_trabajo.txt en vez de duplicarlo.
+- Al cerrar un bloque: (a) se documenta como sección nueva en el
+  <modulo>_Architecture.md general del repo afectado (un implementador debe poder
+  ubicarse sin el historial del chat), (b) se registra en el CHANGELOG del repo
+  afectado, y (c) si el bloque es la PRIMERA vez que un módulo recibe contenido real,
+  ese repo hermano recibe su propio CLAUDE.md + docs/{<modulo>_estado.md,
+  <modulo>_roadmap.txt, CHANGELOG.md, <modulo>_convenciones_commits.txt,
+  <modulo>_Architecture.md} — mismo template que corpus/, apuntando a este mismo
+  flujo_trabajo.txt en vez de duplicarlo.
+
+  Doc general vs. doc particular (precedente: ADS_2_0_Architecture_updated.md +
+  ADS_EnergyShields_Arquitectura.md en dev/legacy/AdvancedDamageSystem 2.0/docs/): un
+  Block normal se documenta ENTERO como sección del <modulo>_Architecture.md general.
+  Cuando un Block (o un subsistema dentro de un Block) es lo bastante complejo como
+  para merecer un documento autocontenido propio — con su propio "Destinatario" si lo
+  va a implementar un ejecutor distinto al del resto del repo, o porque inflaría
+  demasiado el doc general — se desprende a un doc PARTICULAR
+  (`docs/<Subsistema>_Arquitectura.md`, mismo repo). En ese caso la sección del doc
+  general queda como resumen corto + link al particular; el contenido nunca se
+  duplica entre ambos. No hay umbral numérico: el criterio es "¿un implementador
+  necesita este doc solo, sin el general ni el chat, para ejecutar?" — si sí, va en
+  un doc particular.
 
 Punto de corte / compactación: NO se decide por turnos ni por % de contexto, sino por
 CAMBIO DE MODO TEMÁTICO. Pregunta antes de seguir: "¿el próximo bloque tiene afinidad
@@ -176,7 +191,11 @@ Documentos complementarios:
   corpus/docs/corpus_estado.md             → foto de HOY del framework
   corpus/docs/corpus_roadmap.txt           → rumbo / qué sigue (Blocks 1-4)
   corpus/docs/CHANGELOG.md                 → historial de parches del framework
-  corpus/docs/CORPUS_Architecture.md       → arquitectura de referencia, crece por bloque
+  corpus/docs/CORPUS_Architecture.md       → arquitectura general, crece por bloque;
+                                              puede desprender docs particulares
+                                              (docs/<Subsistema>_Arquitectura.md)
+                                              para subsistemas complejos — ver §2
   corpus/docs/corpus_convenciones_commits.txt → convenciones de git commits (framework)
-  <modulo>/CLAUDE.md + docs/               → mismo set, por repo, una vez su Block cierra
+  <modulo>/CLAUDE.md + docs/               → mismo set (incl. <modulo>_Architecture.md),
+                                              por repo, una vez su Block cierra
 =====================================================
