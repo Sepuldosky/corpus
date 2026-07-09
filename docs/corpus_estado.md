@@ -5,20 +5,21 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-09 (6 primitivas implementadas, falta verificación en juego)
+**Última actualización:** 2026-07-09 (primitivas verificadas en juego; solo falta el check visual de UI)
 
 ---
 
 ## Qué existe hoy
 
-- **Block 1 cerrado (diseño) y bajado a código:** las 6 primitivas de la API
-  ([`CORPUS_Architecture.md`](CORPUS_Architecture.md) §3) implementadas en
-  `lua/autorun/` — registro (con invariante by-ref, anotado en §3), persistencia,
-  net, UI shell, ready barrier, log + comando `corpus_selftest`. Mapa archivo → rol
-  en [`CLAUDE.md`](../CLAUDE.md). Todo shared salvo la UI (client). Pasaron un
-  harness offline con stubs de GMod (46 checks, ambos realms); la verificación en
-  juego sigue pendiente (abajo). Una vez verificadas, quedan listas para que Caliber
-  las consuma (CC Prompt #2 depende de ese cierre).
+- **Block 1 cerrado (diseño) y bajado a código, verificado en juego:** las 6
+  primitivas de la API ([`CORPUS_Architecture.md`](CORPUS_Architecture.md) §3)
+  implementadas en `lua/autorun/` — registro (con invariante by-ref, anotado en §3),
+  persistencia, net, UI shell, ready barrier, log + comando `corpus_selftest`. Mapa
+  archivo → rol en [`CLAUDE.md`](../CLAUDE.md). Todo shared salvo la UI (client).
+  Verificación: harness offline con stubs de GMod (46 checks, ambos realms) +
+  `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK). Salvo el check
+  visual de UI (abajo), **las primitivas están listas para que Caliber las consuma**
+  — CC Prompt #2 destrabado.
 - **Workspace multi-root + metodología:** seis raíces (`corpus/` + cinco módulos) +
   `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
   general vs. particular ya formalizado en
@@ -30,13 +31,12 @@
 
 ## Pendiente de verificar
 
-- **PASO 4 en juego** (parches 1-7 del CHANGELOG, hoy `[PENDIENTE]`): mapa con
-  `corpus/` como único addon → `corpus_selftest` en consola (en listen server, realm
-  server: `lua_run Corpus._SelfTest()`) debe dar "todo OK" — cubre by-ref del
-  registro, ruta de Data, namespacing de Net, disparo único de OnReady y prefijo de
-  Log. La UI se confirma visual: menú Q → Utilities → categoría "Corpus" (requiere un
-  tab dummy vía `Corpus.UI.RegisterTab`, o esperar al primer módulo real). Al
-  confirmar: flipear los parches a `[APLICADO]`.
+- **UI shell, check visual** (parche 4 del CHANGELOG, único aún `[PENDIENTE]`): en
+  juego, registrar un tab dummy y refrescar el spawnmenu —
+  `lua_run_cl Corpus.UI.RegisterTab("dummy", "Dummy", function(p) p:Help("hola") end)`
+  y luego `spawnmenu_reload` — debe aparecer menú Q → Utilities → categoría "Corpus"
+  → "Dummy". Alternativa: esperar al primer tab real (Caliber, CC Prompt #2). Al
+  confirmar: flipear el parche 4 a `[APLICADO]`.
 
 ## Remanentes / deuda conocida
 
@@ -49,9 +49,11 @@
 
 ## Próximo paso
 
-1. El autor verifica en juego (checklist de arriba) y flipea el CHANGELOG.
-2. **CC Prompt #2:** migración ADS→Caliber consumiendo las primitivas
-   (`Caliber_Architecture.md` §3-§7 + checklist §12).
+1. **CC Prompt #2:** migración ADS→Caliber consumiendo las primitivas
+   (`Caliber_Architecture.md` §3-§7 + checklist §12). Antes, decidir dónde vive ese
+   doc (ver deuda arriba).
+2. Check visual de UI (arriba) — puede cerrarse junto con el primer tab real de
+   Caliber en vez de con un dummy.
 
 ---
 
