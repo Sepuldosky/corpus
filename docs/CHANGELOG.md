@@ -72,3 +72,60 @@ changelog) desde ADS 2.0 / Kontrol a Corpus.
 Nota: sesión puramente de documentación y estructura de carpetas — cero código Lua
 escrito. Ver [`corpus_estado.md`](corpus_estado.md) "Próximo paso" para la decisión
 abierta sobre cuándo empieza la implementación.
+
+---
+
+## PARCHES DE sesión Implementación de las 6 primitivas — 2026-07-09
+
+Block 1 baja a código (CC Prompt #1): las 6 primitivas de la API
+(`CORPUS_Architecture.md` §3) implementadas en `lua/autorun/` — primera sesión de
+código Lua del ecosistema. Realm: todo shared salvo la UI (client); nada resultó
+exclusivamente server (el cliente necesita registro/net/ready/log para sus propios
+archivos). Cada archivo es autosuficiente (`Corpus = Corpus or {}`), sin asumir orden
+de carga. La migración ADS→Caliber (CC Prompt #2) consume estas primitivas.
+
+Los parches de código quedan `[PENDIENTE]` hasta la verificación en juego del autor
+(PASO 4 del flujo — checklist en [`corpus_estado.md`](corpus_estado.md) "Pendiente de
+verificar"). El código ya está en el árbol (2026-07-09) y pasó un harness offline con
+stubs de GMod (fengari, 46 checks en ambos realms: invariante by-ref, round-trip de
+Data, namespacing de Net, disparo único de OnReady, prefijo de Log, UI shell) — eso
+valida la lógica, no el juego.
+
+- PARCHE 1 — feat(registry): `corpus_registry.lua` (shared) —
+  `Corpus.RegisterModule/HasModule/GetModule` con el **invariante by-ref** (misma
+  tabla por referencia, sin deep-copy ni normalización — requerido por
+  `Caliber_Architecture.md` §11). **[PENDIENTE]**
+
+- PARCHE 2 — feat(data): `corpus_data.lua` (shared) — `Corpus.Data.Save/Load` →
+  `data/corpus/<module>/<key>.json`; saneo de module/key ([a-z0-9_-], sin traversal);
+  Load devuelve tabla nueva (contrato distinto al registro: el round-trip JSON
+  normaliza). **[PENDIENTE]**
+
+- PARCHE 3 — feat(net): `corpus_net.lua` (shared) — `Corpus.Net.Register(module,
+  msgName)` → `"corpus_<module>_<msgName>"`; `util.AddNetworkString` solo en server
+  (idempotente); el cliente usa la misma función para construir el nombre simétrico.
+  **[PENDIENTE]**
+
+- PARCHE 4 — feat(ui): `client/corpus_ui.lua` (client) — `Corpus.UI.RegisterTab`;
+  categoría única "Corpus" en menú Q → Utilities, una entrada por módulo (orden
+  alfabético estable); buildFn en pcall para que un tab roto no tumbe el spawnmenu.
+  **[PENDIENTE]**
+
+- PARCHE 5 — feat(ready): `corpus_ready.lua` (shared) — `Corpus.OnReady(fn)`,
+  dispara una vez tras `InitPostEntity` (autorun corre antes, así que todos los
+  módulos presentes ya están registrados); suscripción tardía corre inmediata;
+  callbacks en pcall. **[PENDIENTE]**
+
+- PARCHE 6 — feat(log): `corpus_log.lua` (shared) — `Corpus.Log(module, ...)` con
+  prefijo `[Corpus:<module>]`. **[PENDIENTE]**
+
+- PARCHE 7 — test(registry): `corpus_selftest.lua` (shared) — comando
+  `corpus_selftest` (y `Corpus._SelfTest()` para el realm server de un listen
+  server): auto-test en consola de las primitivas 1-3, 5 y 6, estilo el auto-test de
+  `ads_armor.lua`; cubre el PASO 4 sin armar el escenario a mano. La UI queda como
+  check visual. **[PENDIENTE]**
+
+- PARCHE 8 — Docs: nota del invariante by-ref agregada a `CORPUS_Architecture.md` §3
+  (adición requerida por `Caliber_Architecture.md` §11); `CLAUDE.md` con el mapa de
+  archivos real y la verificación por `corpus_selftest`; `corpus_estado.md`
+  refrescado en sitio. **[APLICADO 2026-07-09]**

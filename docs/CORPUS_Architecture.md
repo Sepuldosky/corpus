@@ -110,6 +110,8 @@ function Corpus.OnReady(fn)                   -- fn corre una vez, tras InitPost
 function Corpus.Log(module, ...)              -- print("[Corpus:"..module.."] ", ...)
 ```
 
+> **Invariante del registro (contrato duro):** `Corpus.RegisterModule(name, iface)` y `Corpus.GetModule(name)` guardan y devuelven la **misma tabla por referencia** — sin deep-copy, sin normalización de ningún tipo. El patrón "tabla única poblada por side-effect" con el que los módulos construyen su namespace (ver `Caliber_Architecture.md` §3 y §11) depende de que sea así; un copy defensivo acá lo rompe en silencio. Es un contrato **distinto** al de `Corpus.Data.Save/Load`, que sí normaliza en el round-trip JSON (`util.JSONToTable` puede devolver claves numéricas donde se guardaron strings) — no confundir ambos invariantes.
+
 **Lo que Corpus NO contiene:** armor math, hitgroups, curvas de sangrado, curvas de hambre, grid de inventario. Si dos módulos comparten una pieza de dominio (limbs, por ejemplo), esa pieza no sube — se queda en su dueño y el otro la consulta por el registro (§4).
 
 ---

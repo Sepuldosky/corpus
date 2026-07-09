@@ -33,7 +33,17 @@ Hay además una carpeta `dev/` en la raíz del workspace (fuera de todos los rep
 
 ## Mapa de archivos
 
-**Aún no hay código Lua en este repo.** El Block 1 (cerrado) fue solo diseño — ver [`docs/corpus_estado.md`](docs/corpus_estado.md). Cuando se implementen las 6 primitivas de la API (§3 de la arquitectura: Registro, Persistencia, Net, UI shell, Ready barrier, Log), esta sección se actualiza con la tabla archivo → rol, siguiendo la convención de nombres `lua/autorun/<realm>/corpus_*.lua` (§6 de la arquitectura).
+Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada archivo es autosuficiente (`Corpus = Corpus or {}` al tope): ninguno asume orden de carga dentro de `lua/autorun/` — no repitas acá la fragilidad de orden alfabético que Caliber elimina con su manifest.
+
+| Archivo | Realm | Rol |
+|---|---|---|
+| [`lua/autorun/corpus_registry.lua`](lua/autorun/corpus_registry.lua) | shared | Registro: `RegisterModule`/`HasModule`/`GetModule` — **invariante by-ref** (misma tabla por referencia, ver nota en §3 de la arquitectura) |
+| [`lua/autorun/corpus_data.lua`](lua/autorun/corpus_data.lua) | shared | Persistencia: `Corpus.Data.Save/Load` → `data/corpus/<module>/<key>.json` |
+| [`lua/autorun/corpus_net.lua`](lua/autorun/corpus_net.lua) | shared | Net: `Corpus.Net.Register` → `"corpus_<module>_<msgName>"` (`AddNetworkString` solo en server) |
+| [`lua/autorun/corpus_ready.lua`](lua/autorun/corpus_ready.lua) | shared | Ready barrier: `Corpus.OnReady`, dispara una vez tras `InitPostEntity` |
+| [`lua/autorun/corpus_log.lua`](lua/autorun/corpus_log.lua) | shared | Log: `Corpus.Log` con prefijo `[Corpus:<module>]` |
+| [`lua/autorun/client/corpus_ui.lua`](lua/autorun/client/corpus_ui.lua) | client | UI shell: `Corpus.UI.RegisterTab` — categoría única "Corpus" en el menú Q (Utilities) |
+| [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo) |
 
 ## Contratos que no debes romper
 
@@ -46,7 +56,7 @@ Hay además una carpeta `dev/` en la raíz del workspace (fuera de todos los rep
 
 ## Verificación
 
-No hay código todavía, así que no hay nada que verificar en juego por ahora. Cuando se implementen las primitivas: no hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4).
+No hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4). El comando de consola `corpus_selftest` valida las primitivas del framework en el realm donde corre (en listen server, realm server: `lua_run Corpus._SelfTest()`); el tab de UI se confirma visual en el menú Q.
 
 Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`](docs/corpus_estado.md) en sitio y actualiza [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[PENDIENTE]` → `[APLICADO YYYY-MM-DD]`, sin borrar ni renumerar).
 
