@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-09 (primitivas verificadas en juego; solo falta el check visual de UI)
+**Última actualización:** 2026-07-09 (las 6 primitivas verificadas en juego, UI incluida — Caliber Block 2 verificado como primer consumidor real; CHANGELOG todo en `[APLICADO]`)
 
 ---
 
@@ -17,9 +17,9 @@
   persistencia, net, UI shell, ready barrier, log + comando `corpus_selftest`. Mapa
   archivo → rol en [`CLAUDE.md`](../CLAUDE.md). Todo shared salvo la UI (client).
   Verificación: harness offline con stubs de GMod (46 checks, ambos realms) +
-  `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK). Salvo el check
-  visual de UI (abajo), **las primitivas están listas para que Caliber las consuma**
-  — CC Prompt #2 destrabado.
+  `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK) + check visual de
+  UI cerrado el mismo día con el primer tab real (Caliber en menú Q → Utilities →
+  Corpus). **Las 6 primitivas verificadas de punta a punta por un consumidor real.**
 - **Workspace multi-root + metodología:** seis raíces (`corpus/` + cinco módulos) +
   `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
   general vs. particular ya formalizado en
@@ -31,29 +31,27 @@
 
 ## Pendiente de verificar
 
-- **UI shell, check visual** (parche 4 del CHANGELOG, único aún `[PENDIENTE]`): en
-  juego, registrar un tab dummy y refrescar el spawnmenu —
-  `lua_run_cl Corpus.UI.RegisterTab("dummy", "Dummy", function(p) p:Help("hola") end)`
-  y luego `spawnmenu_reload` — debe aparecer menú Q → Utilities → categoría "Corpus"
-  → "Dummy". Alternativa: esperar al primer tab real (Caliber, CC Prompt #2). Al
-  confirmar: flipear el parche 4 a `[APLICADO]`.
+- Nada — el CHANGELOG está todo en `[APLICADO]`.
 
 ## Remanentes / deuda conocida
 
 - **Sin `addon.json` todavía** — el repo aún no se puede empaquetar para Workshop
   (§8 de la arquitectura pide uno por raíz). No bloquea el testeo local en
   `garrysmod/addons/`.
-- **`docs/Caliber_Architecture.md` está en este repo, sin commitear** — es el diseño
-  del Block 2 de Caliber; decidir si vive acá o en `corpus-caliber/docs/` cuando
-  arranque CC Prompt #2.
+- **`docs/Caliber_Architecture.md` movido a `corpus-caliber/docs/`** — el diseño del
+  Block 2 vive ahora en el repo del módulo (junto a su doc particular de escudos),
+  por el principio de que los docs de módulo viven en su repo. Ya no está acá.
 
 ## Próximo paso
 
-1. **CC Prompt #2:** migración ADS→Caliber consumiendo las primitivas
-   (`Caliber_Architecture.md` §3-§7 + checklist §12). Antes, decidir dónde vive ese
-   doc (ver deuda arriba).
-2. Check visual de UI (arriba) — puede cerrarse junto con el primer tab real de
-   Caliber en vez de con un dummy.
+1. **Caliber Block 2: CERRADO y verificado en juego (2026-07-09)** — incluyó un fix de
+   arranque (boot diferido a `Initialize`; autorun alfabético fusionado corre el init
+   del módulo antes que el framework) que es el **patrón template** para los otros
+   cuatro módulos. Falta el primer commit del repo (cuando el autor lo pida). Foto del
+   módulo → `../../corpus-caliber/docs/caliber_estado.md`.
+2. **Próximo grande de Caliber:** pipeline de armadura de jugador (alcance nuevo, no
+   cubierto por ADS). Después, Bloques 3/4 del ecosistema (Coagulant/Craving/Cargo, §9);
+   Cortex espera la superficie de eventos daño/limb que Caliber expondrá.
 
 ---
 

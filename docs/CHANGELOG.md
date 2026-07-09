@@ -90,7 +90,8 @@ Los parches de código nacieron `[PENDIENTE]` hasta la verificación en juego de
 namespacing de Net, disparo único de OnReady, prefijo de Log, UI shell) — validación
 de lógica, no de juego. El 2026-07-09 el autor corrió `corpus_selftest` en juego
 (realm SERVER, todo OK): parches 1-3 y 5-7 verificados. El parche 4 (UI, client-only)
-espera su check visual en el menú Q — ver [`corpus_estado.md`](corpus_estado.md).
+cerró su check visual el 2026-07-09 con el primer tab real: el autor confirmó en juego
+menú Q → Utilities → Corpus → Caliber (verificación de paridad del Block 2 de Caliber).
 
 - PARCHE 1 — feat(registry): `corpus_registry.lua` (shared) —
   `Corpus.RegisterModule/HasModule/GetModule` con el **invariante by-ref** (misma
@@ -110,7 +111,7 @@ espera su check visual en el menú Q — ver [`corpus_estado.md`](corpus_estado.
 - PARCHE 4 — feat(ui): `client/corpus_ui.lua` (client) — `Corpus.UI.RegisterTab`;
   categoría única "Corpus" en menú Q → Utilities, una entrada por módulo (orden
   alfabético estable); buildFn en pcall para que un tab roto no tumbe el spawnmenu.
-  **[PENDIENTE]**
+  **[APLICADO 2026-07-09]**
 
 - PARCHE 5 — feat(ready): `corpus_ready.lua` (shared) — `Corpus.OnReady(fn)`,
   dispara una vez tras `InitPostEntity` (autorun corre antes, así que todos los
