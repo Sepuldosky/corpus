@@ -31,6 +31,8 @@ Este repo (`corpus/`) es una de seis raíces del workspace `corpus.code-workspac
 
 Hay además una carpeta `dev/` en la raíz del workspace (fuera de todos los repos git, nunca se publica) con mods de terceros para investigar compatibilidad o reciclar ideas/assets — mismo propósito que tenía `dev/` en el ADS legacy (ver `dev/legacy/`).
 
+**Al diseñar o discutir integración con mods ajenos** (ARC9, VJ Base, escudos Halo, NVG, etc.): consulta [`../dev/mods_workshop_mapa.md`](../dev/mods_workshop_mapa.md) — mapea cada mod instalado en `dev/other/` contra su página de Workshop y lo etiqueta **RECICLAR** (copiar código/assets → importa la licencia) vs. **COMPAT-RUNTIME** (detectar y consumir por API → la licencia no importa). Distinción clave para no confundir "integrar" con "copiar".
+
 ## Mapa de archivos
 
 Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada archivo es autosuficiente (`Corpus = Corpus or {}` al tope): ninguno asume orden de carga dentro de `lua/autorun/` — no repitas acá la fragilidad de orden alfabético que Caliber elimina con su manifest.
