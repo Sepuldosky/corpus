@@ -1,158 +1,191 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Regenera el bundle Code->Desktop (.claude/desktop-sync/): copia los docs vivos del
-    framework al bundle y regenera _SYNC_INDEX.md anclado al HEAD actual del repo.
+    Regenera el espejo Code->Desktop (.claude/desktop-sync/): agrega TODOS los docs de
+    todos los repos del ecosistema en una carpeta plana, con prefijo <Modulo>_ por archivo,
+    y regenera _SYNC_INDEX.md.
 
 .DESCRIPTION
-    Destino fisico del seam Code<->Desktop (ver docs/corpus_flujo_trabajo.txt sec. 6).
-    El bundle es un snapshot REGENERABLE, no fuente de verdad: refleja el working tree
-    (no HEAD), se sobrescribe en cada corrida, y esta gitignoreado salvo README + este
-    script. Tras correrlo, arrastra el contenido de la carpeta al Project "Corpus
-    Framework" en Claude Desktop para refrescar el RAG.
+    Destino fisico del seam Code<->Desktop (ver docs/corpus_flujo_trabajo.txt sec. 6). NO es
+    un bundle-delta: es el ESPEJO COMPLETO del contexto que el Project "Corpus Framework" de
+    Claude Desktop debe contener. El flujo del autor es "borrar y reemplazar": vaciar el
+    Project y soltar el contenido de esta carpeta.
 
-    NOTA: este archivo se mantiene en ASCII puro a proposito. Windows PowerShell 5.1 lee
-    los .ps1 sin BOM como ANSI (no UTF-8): cualquier caracter no-ASCII en un string literal
-    rompe el parser. Los glifos Unicode del indice (p.ej. el signo de seccion) se emiten
-    via codigo de caracter, no como literales en la fuente.
+    Escanea las seis raices del workspace (corpus + corpus-<modulo>); incluye las que ya
+    tienen docs y salta las vacias. Cada archivo se copia con prefijo <Modulo>_ para declarar
+    su origen y evitar colisiones (p.ej. Corpus_CHANGELOG.md vs Cargo_CHANGELOG.md). Los
+    modulos que aun no tienen docs se sumaran solos cuando los reciban, sin editar el helper.
+
+    NOTA: este archivo se mantiene en ASCII puro a proposito. Windows PowerShell 5.1 lee los
+    .ps1 sin BOM como ANSI (no UTF-8): cualquier caracter no-ASCII en un string literal rompe
+    el parser. Los docs se copian byte-por-byte (conservan sus acentos); solo el texto que el
+    script GENERA (el indice) va sin acentos, y el signo de seccion se emite por codigo.
 
 .PARAMETER Purpose
-    Frase que describe para que es este bundle (se escribe en el indice). Ej:
-    "sembrar la sesion de diseno de Cargo (Block 4)". Si se omite, usa un texto generico
-    de re-sincronizacion.
-
-.EXAMPLE
-    .\.claude\desktop-sync\sync.ps1 -Purpose "sembrar la sesion de diseno de Cargo (Block 4)"
+    Nota opcional de la tanda, se escribe en el indice. Si se omite usa un texto generico.
 
 .EXAMPLE
     .\.claude\desktop-sync\sync.ps1
+
+.EXAMPLE
+    .\.claude\desktop-sync\sync.ps1 -Purpose "refrescar el contexto para la sesion de Cargo"
 #>
 [CmdletBinding()]
 param(
-    [string]$Purpose = "re-sincronizar el RAG de Desktop con la foto actual del framework"
+    [string]$Purpose = "espejo completo del contexto del ecosistema para el Project de Desktop"
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-# Nombre del Project en Claude Desktop donde vive el RAG del ecosistema.
 $DesktopProject = "Corpus Framework"
-
-# Glifos para el OUTPUT (el indice se escribe en UTF-8): backtick para code-spans y el
-# signo de seccion. Se construyen por codigo para no meter no-ASCII en esta fuente.
 $bt  = '`'
 $sec = [char]0x00A7
 
-# --- Rutas: el script vive en <repo>/.claude/desktop-sync/ ---
-$BundleDir = $PSScriptRoot
-$RepoRoot  = (Resolve-Path (Join-Path $BundleDir '..\..')).Path
+# --- Rutas: el script vive en <workspace>/corpus/.claude/desktop-sync/ ---
+$BundleDir     = $PSScriptRoot
+$RepoRoot      = (Resolve-Path (Join-Path $BundleDir '..\..')).Path
+$WorkspaceRoot = (Resolve-Path (Join-Path $RepoRoot '..')).Path
 
-Push-Location $RepoRoot
-try {
-    $null = git rev-parse --is-inside-work-tree 2>$null
-    if ($LASTEXITCODE -ne 0) { throw "No es un repositorio git: $RepoRoot" }
+# --- Repos del ecosistema: etiqueta de modulo -> carpeta relativa al workspace ---
+$Repos = @(
+    [pscustomobject]@{ Module = 'Corpus';    Path = 'corpus' }
+    [pscustomobject]@{ Module = 'Cortex';    Path = 'corpus-cortex' }
+    [pscustomobject]@{ Module = 'Caliber';   Path = 'corpus-caliber' }
+    [pscustomobject]@{ Module = 'Coagulant'; Path = 'corpus-coagulant' }
+    [pscustomobject]@{ Module = 'Craving';   Path = 'corpus-craving' }
+    [pscustomobject]@{ Module = 'Cargo';     Path = 'corpus-cargo' }
+)
 
-    # --- Fuentes: ruta repo-relativa -> nombre en el bundle + descripcion para el indice ---
-    $Sources = @(
-        [pscustomobject]@{ Src = 'docs/corpus_estado.md';                Dst = 'corpus_estado.md';                Desc = "foto de HOY del framework" }
-        [pscustomobject]@{ Src = 'docs/corpus_roadmap.txt';              Dst = 'corpus_roadmap.txt';              Desc = "rumbo / orden de bloques (Cargo = Block 4)" }
-        [pscustomobject]@{ Src = 'docs/CHANGELOG.md';                    Dst = 'CHANGELOG.md';                    Desc = "historial de parches del framework" }
-        [pscustomobject]@{ Src = 'docs/corpus_flujo_trabajo.txt';        Dst = 'corpus_flujo_trabajo.txt';        Desc = "metodologia canonica del ecosistema (incl. ${sec}6 seam Code<->Desktop)" }
-        [pscustomobject]@{ Src = 'docs/CORPUS_Architecture.md';          Dst = 'CORPUS_Architecture.md';          Desc = "diseno general; ${sec}5 = contrato de items (frontera Cargo)" }
-        [pscustomobject]@{ Src = 'docs/corpus_convenciones_commits.txt'; Dst = 'corpus_convenciones_commits.txt'; Desc = "convenciones de commit del framework" }
-        [pscustomobject]@{ Src = 'CLAUDE.md';                            Dst = 'CLAUDE.md';                       Desc = "contratos no-negociables del framework" }
-    )
+# Normaliza el nombre destino a "<Module>_<resto>" sin duplicar el prefijo si ya lo trae.
+function Get-BundleName {
+    param([string]$FileName, [string]$Module)
+    $prefix = "${Module}_"
+    if ($FileName.Length -ge $prefix.Length -and
+        $FileName.Substring(0, $prefix.Length).ToLower() -eq $prefix.ToLower()) {
+        return $prefix + $FileName.Substring($prefix.Length)
+    }
+    return $prefix + $FileName
+}
 
-    # --- Metadata de git ---
-    $Sha     = (git rev-parse --short HEAD).Trim()
-    $Subject = (git log -1 --format=%s).Trim()
-    $CDate   = (git log -1 --format=%cd --date=short).Trim()
-    $Branch  = (git rev-parse --abbrev-ref HEAD).Trim()
-    $Today   = Get-Date -Format 'yyyy-MM-dd'
+# --- Limpieza: el espejo se regenera entero. Borra todo menos README.md y sync.ps1. ---
+Get-ChildItem -LiteralPath $BundleDir -File |
+    Where-Object { $_.Name -ne 'README.md' -and $_.Name -ne 'sync.ps1' } |
+    Remove-Item -Force
 
-    # --- Copiar cada fuente + detectar deltas sin commitear respecto de HEAD ---
-    $Deltas = @()
-    foreach ($s in $Sources) {
-        $srcPath = Join-Path $RepoRoot $s.Src
-        if (-not (Test-Path -LiteralPath $srcPath)) { throw "Falta el archivo fuente: $($s.Src)" }
-        Copy-Item -LiteralPath $srcPath -Destination (Join-Path $BundleDir $s.Dst) -Force
+# --- Recorrer repos, copiar docs con prefijo, juntar metadata ---
+$Included = @()
+foreach ($repo in $Repos) {
+    $repoPath   = Join-Path $WorkspaceRoot $repo.Path
+    if (-not (Test-Path -LiteralPath $repoPath)) { continue }
+    $docsPath   = Join-Path $repoPath 'docs'
+    $claudePath = Join-Path $repoPath 'CLAUDE.md'
+    $hasDocs    = Test-Path -LiteralPath $docsPath
+    $hasClaude  = Test-Path -LiteralPath $claudePath
+    if (-not $hasDocs -and -not $hasClaude) { continue }
 
-        $numstat = (git diff --numstat HEAD -- $s.Src)
-        if ($numstat) {
-            $parts = ([string]$numstat) -split "`t"
-            $Deltas += [pscustomobject]@{ Name = $s.Dst; Add = $parts[0]; Del = $parts[1] }
+    # Metadata git del repo (cada uno es un git independiente).
+    Push-Location $repoPath
+    try {
+        $sha = (git rev-parse --short HEAD 2>$null)
+        if ($LASTEXITCODE -ne 0 -or -not $sha) {
+            $sha = $null; $subj = 'sin commits (solo working tree)'; $dirty = $true
+        } else {
+            $sha  = ([string]$sha).Trim()
+            $subj = ([string](git log -1 --format=%s 2>$null)).Trim()
+            $dirty = [bool](git status --porcelain 2>$null)
+        }
+    } finally { Pop-Location }
+
+    $files = @()
+    if ($hasClaude) {
+        $dst = Get-BundleName -FileName 'CLAUDE.md' -Module $repo.Module
+        Copy-Item -LiteralPath $claudePath -Destination (Join-Path $BundleDir $dst) -Force
+        $files += $dst
+    }
+    $skipped = @()
+    if ($hasDocs) {
+        Get-ChildItem -LiteralPath $docsPath | Sort-Object Name | ForEach-Object {
+            if ($_.PSIsContainer) { $skipped += $_.Name; return }
+            $dst = Get-BundleName -FileName $_.Name -Module $repo.Module
+            Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $BundleDir $dst) -Force
+            $files += $dst
         }
     }
 
-    # --- Construir _SYNC_INDEX.md ---
-    $L = New-Object System.Collections.Generic.List[string]
-    $L.Add("# _SYNC_INDEX - bundle Code->Desktop")
-    $L.Add("")
-    $L.Add("> Generado por ${bt}sync.ps1${bt} el $Today. Snapshot regenerable, no fuente de verdad")
-    $L.Add("> (ver ${bt}docs/corpus_flujo_trabajo.txt ${sec}6${bt}). Se sobrescribe en cada corrida;")
-    $L.Add("> refleja el working tree, no HEAD.")
-    $L.Add("")
-    $L.Add("- **Project Desktop destino:** ${bt}$DesktopProject${bt}")
-    $L.Add("- **SHA de HEAD:** ${bt}$Sha${bt} ($Subject, $CDate)")
-    if ($Branch -ne 'main') {
-        $L.Add("- **Rama:** $Branch  (ATENCION: no es main, el bundle refleja esta rama)")
-    } else {
-        $L.Add("- **Rama:** main")
+    $Included += [pscustomobject]@{
+        Module = $repo.Module; Repo = $repo.Path; Sha = $sha
+        Subject = $subj; Dirty = $dirty; Files = $files; Skipped = $skipped
     }
-    $L.Add("- **Fecha del bundle:** $Today")
-    $L.Add("- **Proposito:** $Purpose")
-    $L.Add("")
-    $L.Add("## Archivos del bundle")
-    $L.Add("")
-    foreach ($s in $Sources) { $L.Add("- ${bt}$($s.Dst)${bt} - $($s.Desc)") }
-    $L.Add("")
-    $L.Add("## Deltas sin commitear respecto de HEAD")
-    $L.Add("")
-    $L.Add("El snapshot refleja el working tree, no HEAD. Diferencias:")
-    $L.Add("")
-    if ($Deltas.Count -eq 0) {
-        $L.Add("- Ninguno - los docs del bundle coinciden con HEAD.")
-    } else {
-        foreach ($d in $Deltas) { $L.Add("- ${bt}$($d.Name)${bt} - +$($d.Add)/-$($d.Del) lineas sin commitear (revisar con git diff)") }
-    }
-    $L.Add("")
-    $L.Add("## Contexto adicional NO incluido en el bundle")
-    $L.Add("")
-    $L.Add("- ${bt}dev/mods_workshop_mapa.md${bt} - mapa de mods de terceros (ARC9, VJ Base, etc.)")
-    $L.Add("  para decidir compat de items/armas. Vive fuera de git (${bt}dev/${bt}, nunca se")
-    $L.Add("  publica); cargarlo aparte en Desktop si la sesion entra en compat de armas.")
-    $L.Add("- Los repos hermanos aun no tienen docs de diseno propios salvo Caliber; Cargo no")
-    $L.Add("  depende de ninguno (hoja en el grafo, ${sec}2), asi que el contexto de framework")
-    $L.Add("  alcanza para abrir su diseno.")
-    $L.Add("")
-    $L.Add("## Como usarlo")
-    $L.Add("")
-    $L.Add("Arrastra el contenido de esta carpeta al Project ${bt}$DesktopProject${bt} en Claude")
-    $L.Add("Desktop, reemplazando las versiones previas. Incluir este ${bt}_SYNC_INDEX.md${bt} le")
-    $L.Add("dice a Desktop a que SHA esta anclado. Regenerar con")
-    $L.Add("${bt}.\.claude\desktop-sync\sync.ps1${bt}.")
-
-    $IndexPath = Join-Path $BundleDir '_SYNC_INDEX.md'
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($IndexPath, (($L -join "`r`n") + "`r`n"), $utf8NoBom)
-
-    # --- Resumen en consola ---
-    Write-Host ""
-    Write-Host "Bundle Code->Desktop regenerado" -ForegroundColor Green
-    Write-Host "  Carpeta : $BundleDir"
-    Write-Host "  Project : $DesktopProject (Claude Desktop)"
-    Write-Host "  HEAD    : $Sha ($Branch) - $Subject"
-    Write-Host "  Docs    : $($Sources.Count) copiados + _SYNC_INDEX.md"
-    if ($Deltas.Count -eq 0) {
-        Write-Host "  Deltas  : ninguno (working tree = HEAD)"
-    } else {
-        Write-Host "  Deltas  : $($Deltas.Count) archivo(s) con cambios sin commitear:" -ForegroundColor Yellow
-        foreach ($d in $Deltas) { Write-Host "            - $($d.Name)  (+$($d.Add)/-$($d.Del))" -ForegroundColor Yellow }
-    }
-    Write-Host "  Proposito: $Purpose"
-    Write-Host ""
-    Write-Host "Siguiente: arrastra el contenido de la carpeta al Project '$DesktopProject'." -ForegroundColor Cyan
 }
-finally {
-    Pop-Location
+
+$includedModules = @($Included | ForEach-Object { $_.Module })
+$pending = @($Repos | Where-Object { $includedModules -notcontains $_.Module })
+$Today   = Get-Date -Format 'yyyy-MM-dd'
+$totalFiles = ($Included | ForEach-Object { $_.Files.Count } | Measure-Object -Sum).Sum
+
+# --- Construir _SYNC_INDEX.md ---
+$L = New-Object System.Collections.Generic.List[string]
+$L.Add("# _SYNC_INDEX - espejo Code->Desktop (Project ${bt}$DesktopProject${bt})")
+$L.Add("")
+$L.Add("> Generado por ${bt}sync.ps1${bt} el $Today. ESPEJO COMPLETO del contexto del")
+$L.Add("> ecosistema: esta carpeta reemplaza integramente los archivos del Project en Claude")
+$L.Add("> Desktop. Regenerable, no fuente de verdad; se sobrescribe entero en cada corrida.")
+$L.Add("")
+$L.Add("- **Project Desktop destino:** ${bt}$DesktopProject${bt}")
+$L.Add("- **Fecha del espejo:** $Today")
+$L.Add("- **Proposito:** $Purpose")
+$L.Add("- **Archivos:** $totalFiles docs de $($Included.Count) repo(s)")
+$L.Add("- **Convencion de nombres:** cada archivo lleva prefijo ${bt}<Modulo>_${bt} para")
+$L.Add("  declarar su repo de origen y evitar colisiones (${bt}Corpus_CHANGELOG.md${bt} vs")
+$L.Add("  ${bt}Cargo_CHANGELOG.md${bt}, etc.).")
+$L.Add("")
+$L.Add("## Repos incluidos")
+foreach ($inc in $Included) {
+    $L.Add("")
+    $shaTxt = if ($inc.Sha) { "${bt}$($inc.Sha)${bt} ($($inc.Subject))" } else { $inc.Subject }
+    $dirtyTxt = if ($inc.Dirty) { " - working tree con cambios sin commitear" } else { "" }
+    $L.Add("### $($inc.Module)  (repo ${bt}$($inc.Repo)${bt})")
+    $L.Add("- SHA: $shaTxt$dirtyTxt")
+    $L.Add("- Archivos: " + ($inc.Files -join ', '))
+    if ($inc.Skipped.Count -gt 0) {
+        $L.Add("- Subcarpetas de docs/ NO incluidas (arrastrar aparte si se necesitan): " + ($inc.Skipped -join ', '))
+    }
 }
+$L.Add("")
+$L.Add("## Repos sin docs todavia")
+$L.Add("")
+if ($pending.Count -eq 0) {
+    $L.Add("- Ninguno: los seis repos tienen docs.")
+} else {
+    $L.Add("- " + (($pending | ForEach-Object { $_.Module }) -join ', ') + " - se sumaran solos cuando reciban su Block de diseno.")
+}
+$L.Add("")
+$L.Add("## Como usarlo")
+$L.Add("")
+$L.Add("En el Project ${bt}$DesktopProject${bt} de Claude Desktop: borra TODO el contenido")
+$L.Add("actual y sustituyelo por los archivos ${bt}<Modulo>_*${bt} de esta carpeta (podes")
+$L.Add("omitir ${bt}README.md${bt} y ${bt}sync.ps1${bt}, que son tooling). Regenerar con")
+$L.Add("${bt}.\.claude\desktop-sync\sync.ps1${bt}.")
+
+$IndexPath = Join-Path $BundleDir '_SYNC_INDEX.md'
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($IndexPath, (($L -join "`r`n") + "`r`n"), $utf8NoBom)
+
+# --- Resumen en consola ---
+Write-Host ""
+Write-Host "Espejo Code->Desktop regenerado" -ForegroundColor Green
+Write-Host "  Carpeta : $BundleDir"
+Write-Host "  Project : $DesktopProject (Claude Desktop)"
+Write-Host "  Repos   : $($Included.Count) con docs, $totalFiles archivos + _SYNC_INDEX.md"
+foreach ($inc in $Included) {
+    $tag = if ($inc.Sha) { $inc.Sha } else { 'sin-commits' }
+    $flag = if ($inc.Dirty) { ' [dirty]' } else { '' }
+    Write-Host ("            - {0,-9} {1}  {2} archivo(s){3}" -f $inc.Module, $tag, $inc.Files.Count, $flag)
+}
+if ($pending.Count -gt 0) {
+    Write-Host "  Pend.   : $((($pending | ForEach-Object { $_.Module }) -join ', ')) (sin docs todavia)"
+}
+Write-Host "  Proposito: $Purpose"
+Write-Host ""
+Write-Host "Siguiente: en Desktop, vacia el Project '$DesktopProject' y suelta el contenido de la carpeta." -ForegroundColor Cyan
