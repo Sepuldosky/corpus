@@ -23,37 +23,48 @@ repos del ecosistema.
 1. INMEDIATO
 --------------
 
-  [1] Decisión abierta: ¿implementar las 6 primitivas de Corpus ahora (bajar Block 1
-      a código), o cerrar primero el diseño de Block 2 y bajar Corpus + Caliber +
-      Cortex juntos? Ver corpus_estado.md "Próximo paso". La resuelve el autor en la
-      próxima sesión de planificación — no asumir ninguna de las dos.
+Block 1 (framework Corpus) cerrado y verificado (ver corpus_estado.md); el framework no
+tiene trabajo propio pendiente. Lo inmediato vive en los módulos ya estrenados, cada uno
+en su propio repo/roadmap:
 
-  [2] Block 2 — diseño de Caliber (migración desde ADS 2.0 + alcance nuevo: pipeline
-      de armadura de jugador) + Cortex (táctica de combate NPC + afecto: dolor,
-      miedo). Ref: §7 y tabla §9 de CORPUS_Architecture.md. Caliber consume el
-      legacy en dev/legacy/AdvancedDamageSystem 2.0/ como fuente de la migración
-      (rename mecánico + namespace, NO reescritura — criterio ya cerrado en §7).
+  [1] Caliber — próximo grande: Block 3, pipeline de armadura de JUGADOR (alcance nuevo,
+      no cubierto por ADS; vuelve la Limbs API agnóstica de NPC). Expondrá la superficie
+      de eventos daño/limb que Cortex necesita. Ref: caliber_roadmap.txt + §7/§9 de
+      CORPUS_Architecture.md. Su Block 2 (migración desde ADS 2.0) ya está cerrado y
+      verificado.
 
+  [2] Cargo — en diseño ahora: UI fullscreen estilo STALKER + Workbench (craft/
+      reparación/desarme). Su Block 1 (inventario + framework de ítems, contrato de §5)
+      ya está en código, verificado y commiteado. Autoría en Claude Desktop. Ref:
+      cargo_roadmap.txt + Workbench_Arquitectura.md.
 
-2. SIGUIENTE — orden sugerido
---------------------------------
-
-El orden sigue la tabla de §9 de CORPUS_Architecture.md. No es rígido: si un bloque
-destapa una dependencia (p.ej. Coagulant necesitando algo de Caliber.Limbs antes de
-que ese Block cierre del todo), reordenar y anotarlo — el patrón mock-first de
-corpus_flujo_trabajo.txt §3 cubre ese caso.
-
-  [3] Block 3 — diseño de Coagulant (médico de jugador estilo ACE3: heridas por
-      zona, sangrado, vitales, tratamiento). Soft-dep de Caliber (hit-location
-      enriquecido) y Cargo (ítems médicos) — construir mock-first si esos módulos
-      no cerraron todavía.
-
-  [4] Block 4 — diseño de Craving (hambre/hidratación + fallback HL2 comestible) +
-      Cargo (grid de inventario + framework de ítems, contrato de ítems
-      generalizado de §5 de la arquitectura).
+Nota de secuencia: el orden real divergió de la tabla §9. Cargo (planeado para Block 4)
+se construyó temprano; por ser el HUB de consumo del que dependen Coagulant y Craving,
+tenerlo antes los desbloquea. Divergencia legítima — ver "no es rígido" en §2.
 
 
-3. AL CERRAR CADA BLOQUE (2, 3, 4)
+2. SIGUIENTE — módulos sin empezar (orden sugerido por dependencia)
+--------------------------------------------------------------------
+
+La tabla §9 de CORPUS_Architecture.md es el plan de referencia, pero manda la dependencia
+real: el orden NO es rígido, y el patrón mock-first de corpus_flujo_trabajo.txt §3 cubre
+construir contra un peer que aún no cerró. De los cinco módulos, faltan tres:
+
+  [3] Cortex — táctica de combate NPC + afecto (dolor, miedo). Era el otro medio del
+      Block 2 (junto a Caliber) y sigue sin empezar. Gated por la superficie de eventos
+      daño/limb de Caliber: arranca cuando el Block 3 de Caliber la exponga.
+
+  [4] Coagulant — médico de jugador estilo ACE3 (heridas por zona, sangrado, vitales,
+      tratamiento). Soft-dep de Caliber (hit-location enriquecido) y Cargo (ítems
+      médicos). Cargo ya expone su framework de ítems, así que sus ítems registran ya;
+      la parte de Caliber va mock-first hasta el pipeline de jugador.
+
+  [5] Craving — hambre/hidratación + fallback HL2 comestible. Soft-dep de Cargo
+      (consumibles, ya disponible) y Coagulant (efectos de salud, opcional). Hoja del
+      rollout; puede ir en paralelo a Coagulant contra el framework de ítems de Cargo.
+
+
+3. AL CERRAR CADA BLOQUE DE MÓDULO
 --------------------------------------
 
 Checklist repetible, ver corpus_flujo_trabajo.txt §2:
