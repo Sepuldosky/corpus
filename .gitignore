@@ -1,6 +1,13 @@
 # Config generado en runtime (se recrea desde cero, no se versiona)
 data/
 
+# Bundle Code->Desktop: snapshots regenerables anclados a un SHA (ver
+# corpus_flujo_trabajo.txt §6). Se versionan solo el README y el helper; los
+# snapshots (docs + _SYNC_INDEX.md) no se commitean.
+.claude/desktop-sync/*
+!.claude/desktop-sync/README.md
+!.claude/desktop-sync/sync.ps1
+
 # Editor / OS
 .vscode/
 *.swp
