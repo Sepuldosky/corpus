@@ -185,39 +185,41 @@ repite y merece ser regla), anotarlo al cierre para incorporarlo aquí — este 
 actualiza UNA vez, en corpus/docs/, nunca se bifurca por repo.
 
 
-6. SEAM CODE<->DESKTOP Y BUNDLE DE RE-SINCRONIZACIÓN
-------------------------------------------------------
+6. SEAM CODE<->DESKTOP Y ESPEJO DE CONTEXTO
+---------------------------------------------
 
-El diseño de un módulo se autora en Claude Desktop (RAG, recall amplio sobre los docs del
-ecosistema); Claude Code en VSCode verifica contra el árbol real (bytes, git, juego) y
-aplica. Es UN mismo diseño en dos ejes: Desktop propone -> Code verifica/reconcilia ->
-Desktop integra. Desktop trabaja sobre una copia read-only del proyecto: NO ve el árbol en
-vivo, razona sobre lo que tenga cargado en su Project (el RAG). Si esos docs quedan stale,
-Desktop razona sobre una foto vieja — ese es el impuesto que este seam elimina.
+El diseño de un módulo se autora en Claude Desktop (RAG, recall amplio); Claude Code en
+VSCode verifica contra el árbol real (bytes, git, juego) y aplica. Desktop trabaja sobre lo
+que tenga cargado en su Project ("Corpus Framework"): si esos docs quedan stale, razona
+sobre una foto vieja. El seam elimina ese impuesto manteniendo un ESPEJO regenerable del
+contexto del ecosistema.
 
-  6.1 El bundle. Para que Desktop parta de la foto correcta, Code deposita un snapshot de
-      los docs del ecosistema en corpus/.claude/desktop-sync/. El autor arrastra esos
-      archivos al Project de Desktop (reemplazando las versiones previas) y refresca el
-      RAG. Dos usos del mismo seam:
-        - SEMBRAR una sesión de diseño nueva (p.ej. abrir el Block de Cargo): el bundle
-          lleva todo el contexto de framework que Desktop necesita para autorar.
-        - RE-SINCRONIZAR tras una tanda que tocó docs publicados (§5, o el checklist de
-          cierre de bloque de §2): el bundle lleva la foto ya reconciliada para que
-          Desktop deje de razonar sobre docs viejos.
+  6.1 El espejo. corpus/.claude/desktop-sync/ NO es un bundle-delta (lo que cambió en una
+      tanda): es la foto COMPLETA y actual de todos los docs del ecosistema que el Project
+      debe contener. El flujo del autor es "borrar y reemplazar": vaciar el Project en
+      Desktop y soltar el contenido de la carpeta. Por eso el espejo debe ser autosuficiente
+      — todo lo que Desktop necesita, sin depender de lo que ya tuviera cargado.
 
-  6.2 Contenido. Los docs vivos del repo que se siembra/reconcilia —para Corpus:
-      corpus_estado.md, corpus_roadmap.txt, CHANGELOG.md, corpus_flujo_trabajo.txt,
-      CORPUS_Architecture.md, corpus_convenciones_commits.txt + CLAUDE.md— más un
-      _SYNC_INDEX.md generado con el SHA de main que refleja, la fecha, la lista de
-      archivos y qué se bumpeó desde el último sync. En un bundle cross-repo, incluir
-      también los docs del módulo hermano tocado.
+  6.2 Nombres con prefijo de origen. Cada archivo del espejo lleva prefijo <Modulo>_
+      (Corpus_, Caliber_, Cargo_, ...) para declarar de qué repo viene y evitar colisiones
+      al aplanar seis repos en una carpeta (cada repo tiene su CHANGELOG.md y su CLAUDE.md:
+      Corpus_CHANGELOG.md vs Cargo_CHANGELOG.md, Corpus_CLAUDE.md vs Cargo_CLAUDE.md). Los
+      docs que ya nacen con el nombre del módulo (Cargo_Architecture.md, caliber_estado.md)
+      se normalizan a esa forma sin duplicar el prefijo. La canónica corpus_flujo_trabajo.txt
+      viaja como Corpus_flujo_trabajo.txt.
 
-  6.3 Reglas. desktop-sync/ es snapshot REGENERABLE, no fuente de verdad: la verdad vive
-      en el repo; esto es una copia anclada a un SHA que se SOBRESCRIBE en cada tanda. Está
-      gitignoreada salvo su README y su helper (los snapshots no se commitean). Ancla el RAG
-      de Desktop a un SHA conocido -> mitiga directo el "RAG stale". La regeneración es un
-      tiro: el helper corpus/.claude/desktop-sync/sync.ps1 copia los docs y regenera el
-      _SYNC_INDEX.md con el HEAD real y los deltas sin commitear detectados. Ver el README
+  6.3 Cobertura y futuro. El espejo agrega TODOS los repos que ya tienen docs; los que aún
+      no (hoy Cortex, Coagulant, Craving) se suman solos cuando reciban su Block de diseño —
+      el helper escanea las seis raíces del workspace, sin editar nada. Cada repo es un git
+      independiente y se estampa con su propio SHA (+ estado dirty) en el índice. Las
+      subcarpetas de docs/ (p.ej. mockups/) no se aplanan: el índice las lista para
+      arrastrarlas aparte.
+
+  6.4 Reglas y regeneración. Snapshot REGENERABLE, no fuente de verdad: la verdad vive en
+      cada repo; el espejo se SOBRESCRIBE entero en cada corrida (limpia lo viejo primero).
+      Gitignoreado salvo README + helper (los snapshots no se commitean). La regeneración es
+      un tiro: corpus/.claude/desktop-sync/sync.ps1 limpia, copia todos los docs con su
+      prefijo y regenera _SYNC_INDEX.md con el SHA y el estado de cada repo. Ver el README
       del bundle.
 
 
