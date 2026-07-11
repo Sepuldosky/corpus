@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-09 (las 6 primitivas verificadas en juego, UI incluida — Caliber Block 2 verificado como primer consumidor real; CHANGELOG todo en `[APLICADO]`)
+**Última actualización:** 2026-07-11 (framework estable desde el 2026-07-09; refresco de la foto del ecosistema — Caliber y Cargo ya tienen módulo real sobre las primitivas, Cortex/Coagulant/Craving aún no)
 
 ---
 
@@ -24,10 +24,13 @@
   `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
   general vs. particular ya formalizado en
   [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt).
-- **Los seis repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos).
-  `corpus/` con commits pusheados a `main`; los cinco hermanos vacíos, esperando su
-  Block de diseño. Legacy ADS 2.0 en `dev/legacy/` como referencia para la migración
-  a Caliber (§7 de la arquitectura).
+- **Los seis repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos). Dos
+  módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
+  verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
+  y **Cargo** (Block 1, inventario estilo STALKER — verificado y con primer commit en `main`,
+  en diseño de UI fullscreen + Workbench). **Cortex, Coagulant y Craving siguen vacíos.** Cada
+  módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
+  `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
 
 ## Pendiente de verificar
 
@@ -44,14 +47,15 @@
 
 ## Próximo paso
 
-1. **Caliber Block 2: CERRADO y verificado en juego (2026-07-09)** — incluyó un fix de
-   arranque (boot diferido a `Initialize`; autorun alfabético fusionado corre el init
-   del módulo antes que el framework) que es el **patrón template** para los otros
-   cuatro módulos. Falta el primer commit del repo (cuando el autor lo pida). Foto del
-   módulo → `../../corpus-caliber/docs/caliber_estado.md`.
-2. **Próximo grande de Caliber:** pipeline de armadura de jugador (alcance nuevo, no
-   cubierto por ADS). Después, Bloques 3/4 del ecosistema (Coagulant/Craving/Cargo, §9);
-   Cortex espera la superficie de eventos daño/limb que Caliber expondrá.
+1. **Módulos en curso (su propio frente):** Caliber va a su Block 3 (armadura de jugador,
+   NPC→agnóstico); Cargo está en diseño de UI fullscreen + Workbench (sesión de Claude
+   Desktop). El detalle vive en sus roadmaps/estados, no acá.
+2. **Módulos sin empezar:** Cortex, Coagulant y Craving esperan su Block (§9 de la
+   arquitectura). Cortex depende de los eventos daño/limb que Caliber expondrá con el
+   pipeline de jugador — mock-first si hace falta antes.
+3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
+   desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
+   suben solo cuando el consumo lo justifique — framework delgado (§1).
 
 ---
 
