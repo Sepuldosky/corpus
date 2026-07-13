@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-11 (framework estable desde el 2026-07-09; refresco de la foto del ecosistema — Caliber y Cargo ya tienen módulo real sobre las primitivas, Cortex/Coagulant/Craving aún no)
+**Última actualización:** 2026-07-13 (framework estable desde el 2026-07-09; Coagulant estrena scaffold pre-diseño — Cortex y Craving siguen vacíos)
 
 ---
 
@@ -28,7 +28,9 @@
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
   y **Cargo** (Block 1, inventario estilo STALKER — verificado y con primer commit en `main`,
-  en diseño de UI fullscreen + Workbench). **Cortex, Coagulant y Craving siguen vacíos.** Cada
+  en diseño de UI fullscreen + Workbench). **Coagulant tiene scaffold pre-Block 3** (estructura
+  + contratos congelados, sin diseño de dominio ni gameplay — pendiente de verificar en juego);
+  **Cortex y Craving siguen vacíos.** Cada
   módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
   `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
 
@@ -50,9 +52,11 @@
 1. **Módulos en curso (su propio frente):** Caliber va a su Block 3 (armadura de jugador,
    NPC→agnóstico); Cargo está en diseño de UI fullscreen + Workbench (sesión de Claude
    Desktop). El detalle vive en sus roadmaps/estados, no acá.
-2. **Módulos sin empezar:** Cortex, Coagulant y Craving esperan su Block (§9 de la
-   arquitectura). Cortex depende de los eventos daño/limb que Caliber expondrá con el
-   pipeline de jugador — mock-first si hace falta antes.
+2. **Coagulant:** scaffold pre-Block 3 escrito (2026-07-13) — falta verificarlo en juego y
+   luego su Block 3 de diseño (en su repo, iterando con el autor — para mods el diseño ya
+   no pasa por Desktop). **Cortex y Craving** esperan su Block (§9). Cortex depende de los
+   eventos daño/limb que Caliber expondrá con el pipeline de jugador — mock-first si hace
+   falta antes.
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
    desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
    suben solo cuando el consumo lo justifique — framework delgado (§1).
