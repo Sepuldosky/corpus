@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-13 (framework estable desde el 2026-07-09; Coagulant estrena scaffold pre-diseño — Cortex y Craving siguen vacíos)
+**Última actualización:** 2026-07-13 (framework estable desde el 2026-07-09; Coagulant estrena scaffold pre-diseño; Craving estrena repo completo — diseño ratificado + v1 en código, pendiente de juego. Solo Cortex sigue vacío)
 
 ---
 
@@ -28,9 +28,12 @@
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
   y **Cargo** (Block 1, inventario estilo STALKER — verificado y con primer commit en `main`,
-  en diseño de UI fullscreen + Workbench). **Coagulant tiene scaffold pre-Block 3** (estructura
-  + contratos congelados, sin diseño de dominio ni gameplay — pendiente de verificar en juego);
-  **Cortex y Craving siguen vacíos.** Cada
+  en diseño de UI fullscreen + Workbench). **Coagulant tiene su Block 3 diseñado y el slice 1 (sangre/heridas/sangrado)
+  verificado en juego** (2026-07-13; solo re-test del ítem vía Cargo pendiente tras un fix de realm).
+  **Craving estrenó repo el 2026-07-13** (Block 4: diseño ratificado en el día +
+  v1 completo en código — decay/umbrales, puente mock-first a Coagulant, 6 consumibles
+  contra Cargo, entity de mundo, barras; CHANGELOG entero `[PENDIENTE]` de juego).
+  **Solo Cortex sigue vacío.** Cada
   módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
   `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
 
@@ -52,9 +55,10 @@
 1. **Módulos en curso (su propio frente):** Caliber va a su Block 3 (armadura de jugador,
    NPC→agnóstico); Cargo está en diseño de UI fullscreen + Workbench (sesión de Claude
    Desktop). El detalle vive en sus roadmaps/estados, no acá.
-2. **Coagulant:** scaffold pre-Block 3 escrito (2026-07-13) — falta verificarlo en juego y
-   luego su Block 3 de diseño (en su repo, iterando con el autor — para mods el diseño ya
-   no pasa por Desktop). **Cortex y Craving** esperan su Block (§9). Cortex depende de los
+2. **Coagulant:** Block 3 diseñado y ratificado (2026-07-13, en su repo — para mods el
+   diseño ya no pasa por Desktop); slice 1 de 4 verificado en juego, sigue el slice 2
+   (tratamiento con tiempo). **Craving:** v1 en código, espera la pasada en juego del autor
+   (su estado/roadmap viven en su repo). **Cortex** espera su Block (§9): depende de los
    eventos daño/limb que Caliber expondrá con el pipeline de jugador — mock-first si hace
    falta antes.
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
