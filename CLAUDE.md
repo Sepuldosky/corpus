@@ -27,7 +27,9 @@ Comentarios y mensajes de commit en **español**; los `<tipo>` de commit van en 
 
 ## El workspace multi-repo
 
-Este repo (`corpus/`) es una de seis raíces del workspace `corpus.code-workspace`. Las otras cinco (`corpus-cortex/`, `corpus-caliber/`, `corpus-coagulant/`, `corpus-craving/`, `corpus-cargo/`) son addons Gmod independientes con su propio git, que hard-dependen de este. Cuando el Block de diseño de un módulo cierra y empieza a recibir código, ese repo hermano recibe su **propio** `CLAUDE.md` + set de docs, siguiendo el mismo template que este archivo — ver §2 de [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt).
+Este repo (`corpus/`) es una de siete raíces del workspace `corpus.code-workspace`. Cinco son los **módulos** (`corpus-cortex/`, `corpus-caliber/`, `corpus-coagulant/`, `corpus-craving/`, `corpus-cargo/`): addons Gmod independientes con su propio git, que hard-dependen de este. Cuando el Block de diseño de un módulo cierra y empieza a recibir código, ese repo hermano recibe su **propio** `CLAUDE.md` + set de docs, siguiendo el mismo template que este archivo — ver §2 de [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt).
+
+La séptima raíz, [`corpus-stalker/`](../corpus-stalker/), es de otra naturaleza: no es un módulo sino el **addon de contenido** de S.T.A.L.K.E.R. (anomalías, artefactos, PDA, detectores, defs de NPC para CortexBase, defs de ítem). El framework y los módulos son **genéricos** — no saben nada de la Zona; `corpus-stalker` es la capa que los convierte en un juego concreto. Es consumidor puro: hard-depende de Corpus, detecta los módulos en runtime, y **nada de su contenido sube al framework ni a un módulo**. Sus assets (ports de GSC Game World) no se versionan — el repo lleva solo código y docs.
 
 Hay además una carpeta `dev/` en la raíz del workspace (fuera de todos los repos git, nunca se publica) con mods de terceros para investigar compatibilidad o reciclar ideas/assets — mismo propósito que tenía `dev/` en el ADS legacy (ver `dev/legacy/`).
 
@@ -66,6 +68,6 @@ Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`
 
 Sigue [`docs/corpus_convenciones_commits.txt`](docs/corpus_convenciones_commits.txt): `<tipo>(<alcance>): <descripción>` — tipo en inglés, descripción en español, minúscula inicial, sin punto final, imperativo.
 
-**Este repo está publicado en GitHub** (`github.com/Sepuldosky/corpus`, público, remote `origin`). No hagas push salvo que se pida explícitamente. Los cinco repos hermanos también están publicados (repo vacío en GitHub + `origin` cableado localmente) pero sin commits todavía — no hagas commit ni push ahí salvo que se pida explícitamente.
+**Este repo está publicado en GitHub** (`github.com/Sepuldosky/corpus`, público, remote `origin`). No hagas push salvo que se pida explícitamente. `corpus-stalker` también está publicado y con commits (`github.com/Sepuldosky/corpus-stalker`, 2026-07-13). Los cinco repos de módulo están publicados y todos tienen `origin/main` cableado; **Caliber, Cargo, Coagulant y Craving ya llevan commits locales** (Cortex sigue con el repo semilla). Push y commit **solo cuando se pidan explícitamente** — al 2026-07-14 varios repos tienen commits locales sin pushear.
 
 **No agregues el trailer `Co-Authored-By: Claude` (ni ninguna atribución de co-autoría a Claude/Anthropic) en los mensajes de commit.** Esto sobreescribe el comportamiento por defecto del harness.

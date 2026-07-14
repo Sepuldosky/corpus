@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-13 (framework estable desde el 2026-07-09; Coagulant estrena scaffold pre-diseño; Craving estrena repo completo — diseño ratificado + v1 en código, pendiente de juego. Solo Cortex sigue vacío)
+**Última actualización:** 2026-07-14 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; Coagulant cerró sus slices 1-2 y va por el 3. Solo Cortex sigue vacío)
 
 ---
 
@@ -28,11 +28,13 @@
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
   y **Cargo** (Block 1, inventario estilo STALKER — verificado y con primer commit en `main`,
-  en diseño de UI fullscreen + Workbench). **Coagulant tiene su Block 3 diseñado y el slice 1 (sangre/heridas/sangrado)
-  verificado en juego** (2026-07-13; solo re-test del ítem vía Cargo pendiente tras un fix de realm).
-  **Craving estrenó repo el 2026-07-13** (Block 4: diseño ratificado en el día +
-  v1 completo en código — decay/umbrales, puente mock-first a Coagulant, 6 consumibles
-  contra Cargo, entity de mundo, barras; CHANGELOG entero `[PENDIENTE]` de juego).
+  en diseño de UI fullscreen + Workbench). **Coagulant tiene su Block 3 diseñado y los slices 1-2
+  (sangre/heridas/sangrado + tratamiento con tiempo y 4 ítems contra Cargo) verificados en juego**
+  (2026-07-13, cuatro rondas de checklist; el slice 3 —debuffs zonales— está en código, pendiente de juego).
+  **Craving estrenó repo y cerró su Block 4 en dos días** (2026-07-13/14: diseño
+  ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
+  mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,
+  barras; los 12 entries de su CHANGELOG en `[APLICADO]`, ya commiteados).
   **Solo Cortex sigue vacío.** Cada
   módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
   `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
@@ -56,11 +58,11 @@
    NPC→agnóstico); Cargo está en diseño de UI fullscreen + Workbench (sesión de Claude
    Desktop). El detalle vive en sus roadmaps/estados, no acá.
 2. **Coagulant:** Block 3 diseñado y ratificado (2026-07-13, en su repo — para mods el
-   diseño ya no pasa por Desktop); slice 1 de 4 verificado en juego, sigue el slice 2
-   (tratamiento con tiempo). **Craving:** v1 en código, espera la pasada en juego del autor
-   (su estado/roadmap viven en su repo). **Cortex** espera su Block (§9): depende de los
-   eventos daño/limb que Caliber expondrá con el pipeline de jugador — mock-first si hace
-   falta antes.
+   diseño ya no pasa por Desktop); slices 1-2 verificados en juego, slice 3 (debuffs zonales)
+   en código a la espera de su ronda, y queda el slice 4 (UI) para cerrar el bloque.
+   **Craving:** Block 4 cerrado, verificado y commiteado.
+   **Cortex** espera su Block (§9): depende de los eventos daño/limb que Caliber expondrá
+   con el pipeline de jugador — mock-first si hace falta antes.
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
    desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
    suben solo cuando el consumo lo justifique — framework delgado (§1).

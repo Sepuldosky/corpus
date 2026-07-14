@@ -125,7 +125,7 @@ Detalle de diseño interno de cada módulo: fuera de alcance de este Block 1, at
 | **Cortex** | Táctica de combate NPC (peek) + afecto (dolor, miedo) | — | Caliber: eventos de daño/limb |
 | **Caliber** | Armor zonal · shields · limbs · penetración · resolver puro + adapters NPC/player | `Caliber.Limbs` (API agnóstica a si la entidad es NPC o jugador) + eventos de daño/limb | — |
 | **Coagulant** | Heridas por zona (jugador) · sangrado · vitales · tratamiento, estilo ACE3 | eventos de estado clínico | Caliber (`Limbs`, hit-location enriquecido) · Cargo (ítems médicos) |
-| **Craving** | Hambre · hidratación (jugador) | — | Cargo (consumibles) · Coagulant (efectos de salud, opcional) |
+| **Craving** | Hambre · hidratación (jugador) | getters (`GetHunger`/`GetHydration`/`Restore`) + evento `Craving_StatCritical` *(enmienda 2026-07-13, Block 4 — antes "—"; ver `corpus-craving/docs/Craving_Architecture.md` §8)* | Cargo (consumibles) · Coagulant (efectos de salud, opcional) |
 | **Cargo** | Grid de inventario · framework de definición de ítems · contenedores · peso · UI | `Cargo.Items.Register(def)` + query/consume de inventario | — |
 
 Nota sobre **Caliber**: internamente es *resolver puro + dos adapters* (hook NPC vía VJ/ARC9, hook jugador) — el mismo principio "resolver puro, hooking aparte" que ya rige ADS 1.x. La `Limbs API` que expone debe ser agnóstica a la entidad: Coagulant no debe saber ni importarle si la pierna sangrante es de un NPC o del jugador.
@@ -267,6 +267,6 @@ Bloques planificados, cada uno se agrega como sección nueva a este mismo archiv
 | **Block 1** | Corpus (framework) + grafo + workspace | **Cerrado — este documento** |
 | **Block 2** | Caliber (migración desde ADS + alcance nuevo) + Cortex (táctica + afecto NPC) | Pendiente |
 | **Block 3** | Coagulant (médico jugador, estilo ACE3 — sustrato v1: heridas por zona, sangrado, vitales, vendaje/torniquete) | Pendiente |
-| **Block 4** | Craving (hambre/hidratación + fallback HL2) + Cargo (grid de inventario + framework de ítems) | Pendiente |
+| **Block 4** | Craving (hambre/hidratación + fallback HL2) + Cargo (grid de inventario + framework de ítems) | **CERRADO — ambos verificados en juego.** Cargo (construido temprano como hub, ver nota del roadmap; diseño en `corpus-cargo/docs/`) · Craving v1 (2026-07-14, tres rondas de checklist — doc particular: `corpus-craving/docs/Craving_Architecture.md`, foto en su `craving_estado.md`) |
 
 Al cerrar cada bloque: sección nueva acá, y registro en el `CHANGELOG.md` de cada repo correspondiente, siguiendo el mismo flujo de trabajo ya establecido para ADS (`ads_flujo_trabajo.txt`: verificación de contexto → verificación de estado real → aplicación → verificación en juego → actualizar changelog/estado).
