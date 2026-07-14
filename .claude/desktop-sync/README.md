@@ -17,7 +17,7 @@ el Project en Desktop y soltar el contenido de esta carpeta.
 
 ## Convención de nombres — prefijo de origen
 
-Al aplanar seis repos en una sola carpeta, los nombres genéricos chocan (cada repo tiene su
+Al aplanar siete repos en una sola carpeta, los nombres genéricos chocan (cada repo tiene su
 `CHANGELOG.md` y su `CLAUDE.md`). Para evitarlo y declarar procedencia, **cada archivo lleva
 prefijo `<Módulo>_`**:
 
@@ -30,10 +30,14 @@ prefijo. La metodología canónica `corpus_flujo_trabajo.txt` viaja como `Corpus
 
 ## Cobertura
 
-Agrega todos los repos que ya tienen docs. Los que aún no (Cortex, Coagulant, Craving) se
-suman **solos** cuando reciban su Block de diseño — el helper escanea las seis raíces del
-workspace, no hay que editarlo. Cada repo es un git independiente y se estampa con su propio
-SHA (+ estado dirty) en el índice.
+Agrega todos los repos que ya tienen docs. El único que aún no (**Cortex**) se suma **solo**
+cuando reciba su Block de diseño — el helper recorre las **siete** raíces de repo del
+ecosistema (`corpus` + los cinco módulos + `corpus-stalker`, el addon de contenido de la Zona)
+y saltea las vacías, no hay que editarlo. Cada repo es un git independiente y se estampa con
+su propio SHA (+ estado dirty) en el índice.
+
+`corpus-stalker` entra al espejo aunque **no sea un módulo**: Desktop necesita su manifiesto de
+assets y sus contratos para diseñar defs de ítem y sonidos contra la Zona.
 
 Las subcarpetas de `docs/` (p.ej. `mockups/` en Cargo) **no** se aplanan automáticamente; el
 `_SYNC_INDEX.md` las lista para arrastrarlas aparte si hacen falta.

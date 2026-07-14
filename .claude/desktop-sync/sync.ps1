@@ -11,10 +11,11 @@
     Claude Desktop debe contener. El flujo del autor es "borrar y reemplazar": vaciar el
     Project y soltar el contenido de esta carpeta.
 
-    Escanea las seis raices del workspace (corpus + corpus-<modulo>); incluye las que ya
-    tienen docs y salta las vacias. Cada archivo se copia con prefijo <Modulo>_ para declarar
-    su origen y evitar colisiones (p.ej. Corpus_CHANGELOG.md vs Cargo_CHANGELOG.md). Los
-    modulos que aun no tienen docs se sumaran solos cuando los reciban, sin editar el helper.
+    Recorre las siete raices de repo del workspace (corpus + los cinco modulos + corpus-stalker,
+    el addon de CONTENIDO de la Zona); incluye las que ya tienen docs y salta las vacias. Cada
+    archivo se copia con prefijo <Modulo>_ para declarar su origen y evitar colisiones (p.ej.
+    Corpus_CHANGELOG.md vs Cargo_CHANGELOG.md). Las raices que aun no tienen docs (hoy: Cortex)
+    se sumaran solas cuando los reciban, sin editar el helper.
 
     NOTA: este archivo se mantiene en ASCII puro a proposito. Windows PowerShell 5.1 lee los
     .ps1 sin BOM como ANSI (no UTF-8): cualquier caracter no-ASCII en un string literal rompe
@@ -47,7 +48,10 @@ $BundleDir     = $PSScriptRoot
 $RepoRoot      = (Resolve-Path (Join-Path $BundleDir '..\..')).Path
 $WorkspaceRoot = (Resolve-Path (Join-Path $RepoRoot '..')).Path
 
-# --- Repos del ecosistema: etiqueta de modulo -> carpeta relativa al workspace ---
+# --- Repos del ecosistema: etiqueta -> carpeta relativa al workspace ---
+# Las seis primeras son framework + modulos. La septima, Stalker, NO es un modulo: es el
+# addon de CONTENIDO de la Zona (consumidor puro). Entra al espejo igual, porque Desktop
+# necesita su manifiesto de assets y sus contratos para disenar defs de item contra el.
 $Repos = @(
     [pscustomobject]@{ Module = 'Corpus';    Path = 'corpus' }
     [pscustomobject]@{ Module = 'Cortex';    Path = 'corpus-cortex' }
@@ -55,6 +59,7 @@ $Repos = @(
     [pscustomobject]@{ Module = 'Coagulant'; Path = 'corpus-coagulant' }
     [pscustomobject]@{ Module = 'Craving';   Path = 'corpus-craving' }
     [pscustomobject]@{ Module = 'Cargo';     Path = 'corpus-cargo' }
+    [pscustomobject]@{ Module = 'Stalker';   Path = 'corpus-stalker' }
 )
 
 # Normaliza el nombre destino a "<Module>_<resto>" sin duplicar el prefijo si ya lo trae.
@@ -156,7 +161,7 @@ $L.Add("")
 $L.Add("## Repos sin docs todavia")
 $L.Add("")
 if ($pending.Count -eq 0) {
-    $L.Add("- Ninguno: los seis repos tienen docs.")
+    $L.Add("- Ninguno: los $($Repos.Count) repos del ecosistema tienen docs.")
 } else {
     $L.Add("- " + (($pending | ForEach-Object { $_.Module }) -join ', ') + " - se sumaran solos cuando reciban su Block de diseno.")
 }
