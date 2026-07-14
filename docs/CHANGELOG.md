@@ -131,3 +131,23 @@ menú Q → Utilities → Corpus → Caliber (verificación de paridad del Block
   (adición requerida por `Caliber_Architecture.md` §11); `CLAUDE.md` con el mapa de
   archivos real y la verificación por `corpus_selftest`; `corpus_estado.md`
   refrescado en sitio. **[APLICADO 2026-07-09]**
+
+---
+
+## PARCHES DE sesión Planilla de verificación — formato canónico — 2026-07-14
+
+El autor lo pidió varias veces y nunca se formalizó: cada ronda de verificación en
+juego terminaba con él redactando el reporte a mano y pidiendo que se re-corrigiera el
+artefacto. La causa raíz es de proceso, no de una planilla en particular — el formato
+vivía solo en la memoria del asistente, no en un doc del repo, así que se perdía.
+
+- PARCHE 1 — docs(docs): `corpus_flujo_trabajo.txt` §1 PASO 4 gana la sección **"LA
+  PLANILLA DE VERIFICACIÓN — formato canónico"**, obligatoria para todo el ecosistema:
+  un módulo tiene UNA planilla (Artifact, actualizada por su URL, nunca una nueva); IDs
+  de check estables que no se reciclan entre rondas; cada check con acción + esperado +
+  comandos copiables (concommands cortos, nunca lua_run); **tres estados de respuesta**
+  (✓ pasa / ✗ falla / — no corrido) y **campo de notas por check siempre visible** —
+  la mayoría de los hallazgos del proyecto fueron un ✓ CON NOTA, no un ✗, y una planilla
+  de solo-tick los tira a la basura; la planilla **emite el reporte** con un botón, en
+  un formato de pegado fijo que es el contrato de entrada del ejecutor; y el estado se
+  persiste en localStorage (el autor alt-tabea desde el juego). **[APLICADO 2026-07-14]**

@@ -72,6 +72,58 @@ ejemplo, marcar el CHANGELOG antes de verificar el estado real.
     un bloque de auto-test determinista sobre el código, igual que hacía
     ads_armor.lua en ADS.
 
+    LA PLANILLA DE VERIFICACIÓN — formato canónico (fijado 2026-07-14)
+    ..................................................................
+    La verificación en juego la corre EL AUTOR, y se le entrega SIEMPRE como un
+    Artifact: la "planilla". Un módulo tiene UNA planilla, que se actualiza por su
+    URL ronda tras ronda — nunca se crea una nueva (se pierde el historial y el
+    autor pierde el link).
+
+    La planilla NO es una lista de tildes. Es un formulario que se llena y se
+    devuelve. Obligatorio, sin excepción:
+
+      a) Cada check tiene ID estable (letra de sección + número: J1, J2, K1...).
+         La letra NO se recicla entre rondas: si una ronda agrega checks, agrega
+         una sección nueva. Así "J4" significa lo mismo en toda la vida del módulo.
+
+      b) Cada check trae TRES cosas: la ACCIÓN (qué hacer), lo ESPERADO (qué
+         deberías ver — el criterio de aprobación, no una descripción vaga) y los
+         COMANDOS copiables si hacen falta. Los comandos son concommands cortos,
+         NUNCA lua_run largos: la consola de GMod los trunca (pagado en Coagulant,
+         ronda 3).
+
+      c) Cada check se responde con TRES ESTADOS, no dos:
+            PASA (✓)   — funcionó como dice "esperado"
+            FALLA (✗)  — no funcionó, o funcionó distinto
+            N/A (—)    — no se corrió (diferido, opcional, no aplicaba)
+         Y con un CAMPO DE NOTAS por check, siempre visible, no escondido detrás
+         de un botón. La mayoría de los hallazgos del proyecto no fueron "falla":
+         fueron un "pasa" con una nota al lado ("el sway es medio tosco"). Un
+         formulario que solo acepta ✓/✗ tira a la basura justo lo más valioso.
+
+      d) La planilla EMITE EL REPORTE. Un botón "copiar reporte" arma el texto que
+         el autor pega de vuelta, en el formato de abajo. Sin esto, el autor tiene
+         que redactar el reporte a mano cada ronda y el formato sale distinto cada
+         vez — que fue exactamente el problema hasta acá.
+
+      e) El estado se guarda solo (localStorage). El autor alt-tabea entre el juego
+         y el navegador: una planilla que se borra al recargar es inservible.
+
+    FORMATO DEL REPORTE (lo que el autor pega de vuelta; es el contrato de entrada
+    del ejecutor — parsearlo no debe requerir interpretación):
+
+      REPORTE — <Módulo>, ronda <N> (<YYYY-MM-DD>)
+      [✓] J1 · arranque y selftest
+      [✗] J4 · el menú abre y la silueta se clickea
+          nota: al clickear el brazo derecho se selecciona el torso
+      [✓] K1 · más amplitud
+          nota: quedó un poco pasado, bajalo un tercio
+      [—] L1 · sin Cargo (no corrido)
+
+    Con ese reporte, el ejecutor: flipea el CHANGELOG ([PENDIENTE] -> [APLICADO]),
+    diagnostica los ✗, y trata cada NOTA de un ✓ como lo que es — un pedido de
+    diseño o de tuning, que se discute con el autor ANTES de tocar código.
+
   PASO 5 — ACTUALIZAR CHANGELOG Y ESTADO
     En el CHANGELOG.md del repo tocado: [PENDIENTE] -> [APLICADO YYYY-MM-DD]. Nunca
     borrar ni renumerar. En su <modulo>_estado.md: refrescar EN SITIO la foto de HOY.
