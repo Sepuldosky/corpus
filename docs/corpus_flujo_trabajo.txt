@@ -2,9 +2,10 @@ CORPUS — FLUJO DE TRABAJO
 Cómo se planifican y aplican los cambios en el ecosistema Corpus.
 =====================================================
 Documento vivo. Metodología portada de KONTROL vía ADS 2.0, adaptada al stack
-GLua / Garry's Mod Y al workspace multi-repo de Corpus (seis raíces: corpus +
-cortex/caliber/coagulant/craving/cargo).
-Es el doc CANÓNICO de metodología: vive en corpus/docs/ pero aplica a los seis
+GLua / Garry's Mod Y al workspace multi-repo de Corpus (siete raíces: corpus +
+cortex/caliber/coagulant/craving/cargo, más corpus-stalker, el addon de CONTENIDO
+de la Zona).
+Es el doc CANÓNICO de metodología: vive en corpus/docs/ pero aplica a los siete
 repos por igual. Cuando un repo hermano empieza a recibir código, su propio
 CLAUDE.md apunta acá en vez de duplicar el contenido.
 Se carga como contexto al inicio de una sesión de diseño o de aplicación de parches.
@@ -128,6 +129,16 @@ ejemplo, marcar el CHANGELOG antes de verificar el estado real.
     En el CHANGELOG.md del repo tocado: [PENDIENTE] -> [APLICADO YYYY-MM-DD]. Nunca
     borrar ni renumerar. En su <modulo>_estado.md: refrescar EN SITIO la foto de HOY.
     Si el parche cruzó repos, actualizar el estado de AMBOS.
+
+    SI EL CAMBIO CIERRA O MUEVE UN BLOCK, además (fijado 2026-07-14):
+      - corpus/docs/corpus_estado.md          -> la foto del ecosistema, en sitio
+      - CORPUS_Architecture.md §9             -> la fila del Block en la tabla
+      - corpus/docs/corpus_roadmap.txt        -> el tramo correspondiente
+      - .claude/desktop-sync/sync.ps1         -> regenerar el espejo (§6)
+    Sin este inciso, los docs del MÓDULO quedan al día y los del FRAMEWORK se pudren:
+    nadie es su dueño en el paso 5. Es exactamente la deriva que la pasada de veracidad
+    del 2026-07-14 tuvo que limpiar — el framework decía "seis raíces", daba Blocks
+    cerrados por pendientes, y el espejo mandaba a Desktop un ecosistema sin dos módulos.
 
 
 2. PLANIFICACIÓN DENSA POR BLOQUES
@@ -253,17 +264,19 @@ contexto del ecosistema.
       — todo lo que Desktop necesita, sin depender de lo que ya tuviera cargado.
 
   6.2 Nombres con prefijo de origen. Cada archivo del espejo lleva prefijo <Modulo>_
-      (Corpus_, Caliber_, Cargo_, ...) para declarar de qué repo viene y evitar colisiones
-      al aplanar seis repos en una carpeta (cada repo tiene su CHANGELOG.md y su CLAUDE.md:
+      (Corpus_, Caliber_, Cargo_, Stalker_, ...) para declarar de qué repo viene y evitar
+      colisiones al aplanar siete repos en una carpeta (cada repo tiene su CHANGELOG.md y su CLAUDE.md:
       Corpus_CHANGELOG.md vs Cargo_CHANGELOG.md, Corpus_CLAUDE.md vs Cargo_CLAUDE.md). Los
       docs que ya nacen con el nombre del módulo (Cargo_Architecture.md, caliber_estado.md)
       se normalizan a esa forma sin duplicar el prefijo. La canónica corpus_flujo_trabajo.txt
       viaja como Corpus_flujo_trabajo.txt.
 
-  6.3 Cobertura y futuro. El espejo agrega TODOS los repos que ya tienen docs; los que aún
-      no (hoy Cortex, Coagulant, Craving) se suman solos cuando reciban su Block de diseño —
-      el helper escanea las seis raíces del workspace, sin editar nada. Cada repo es un git
-      independiente y se estampa con su propio SHA (+ estado dirty) en el índice. Las
+  6.3 Cobertura y futuro. El espejo agrega TODOS los repos que ya tienen docs; el único que
+      aún no (hoy Cortex) se sumará solo cuando reciba su Block de diseño — el helper recorre
+      las SIETE raíces de repo del workspace (corpus, los cinco módulos y corpus-stalker),
+      sin editar nada. corpus-stalker entra aunque no sea un módulo: Desktop necesita su
+      manifiesto de assets y sus contratos para diseñar defs de ítem contra la Zona. Cada repo
+      es un git independiente y se estampa con su propio SHA (+ estado dirty) en el índice. Las
       subcarpetas de docs/ (p.ej. mockups/) no se aplanan: el índice las lista para
       arrastrarlas aparte.
 

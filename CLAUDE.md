@@ -56,7 +56,7 @@ Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada a
 3. **Persistencia namespaced.** `Corpus.Data.Save/Load(module, key, tbl)` → ruta `data/corpus/<module>/<key>.json`. Un módulo no escribe fuera de su propio namespace.
 4. **Net namespaced.** `Corpus.Net.Register(module, msgName)` devuelve `"corpus_<module>_<msgName>"` — evita colisión global de `net.Receive` entre los cinco módulos.
 5. **Detección, nunca asunción.** Ningún módulo asume que Corpus u otro módulo ya cargó — orden de mount no garantizado en Gmod (ver §6 de la arquitectura). Lazy check (`Corpus.GetModule`) o `Corpus.OnReady` para wiring que corre una vez.
-6. **Prefijo de archivo por módulo:** `corpus_<modulo>_*.lua` en `lua/autorun/...`, para evitar colisión de nombres cuando los seis addons están montados simultáneamente.
+6. **Prefijo de archivo por addon:** `corpus_<addon>_*.lua` en `lua/autorun/...`, para evitar colisión de nombres cuando los siete addons (framework + cinco módulos + `corpus-stalker`) están montados simultáneamente.
 
 ## Verificación
 
@@ -68,6 +68,6 @@ Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`
 
 Sigue [`docs/corpus_convenciones_commits.txt`](docs/corpus_convenciones_commits.txt): `<tipo>(<alcance>): <descripción>` — tipo en inglés, descripción en español, minúscula inicial, sin punto final, imperativo.
 
-**Este repo está publicado en GitHub** (`github.com/Sepuldosky/corpus`, público, remote `origin`). No hagas push salvo que se pida explícitamente. `corpus-stalker` también está publicado y con commits (`github.com/Sepuldosky/corpus-stalker`, 2026-07-13). Los cinco repos de módulo están publicados y todos tienen `origin/main` cableado; **Caliber, Cargo, Coagulant y Craving ya llevan commits locales** (Cortex sigue con el repo semilla). Push y commit **solo cuando se pidan explícitamente** — al 2026-07-14 varios repos tienen commits locales sin pushear.
+**Este repo está publicado en GitHub** (`github.com/Sepuldosky/corpus`, público, remote `origin`). No hagas push salvo que se pida explícitamente. Los **siete** repos del ecosistema están publicados bajo `github.com/Sepuldosky/<repo>` (públicos, MIT) y todos tienen `origin/main` cableado; **Caliber, Cargo, Coagulant, Craving y `corpus-stalker` ya llevan commits** (Cortex sigue con el repo semilla: README + LICENSE, sin código). Push y commit **solo cuando se pidan explícitamente** — al 2026-07-14 los siete están al día con `origin/main`, sin commits locales pendientes de push.
 
 **No agregues el trailer `Co-Authored-By: Claude` (ni ninguna atribución de co-autoría a Claude/Anthropic) en los mensajes de commit.** Esto sobreescribe el comportamiento por defecto del harness.

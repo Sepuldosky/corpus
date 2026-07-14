@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-14 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; Coagulant cerró sus slices 1-2 y va por el 3. Solo Cortex sigue vacío)
+**Última actualización:** 2026-07-14 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Solo Cortex sigue vacío)
 
 ---
 
@@ -20,21 +20,25 @@
   `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK) + check visual de
   UI cerrado el mismo día con el primer tab real (Caliber en menú Q → Utilities →
   Corpus). **Las 6 primitivas verificadas de punta a punta por un consumidor real.**
-- **Workspace multi-root + metodología:** seis raíces (`corpus/` + cinco módulos) +
-  `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
+- **Workspace multi-root + metodología:** **siete raíces** (`corpus/` + cinco módulos +
+  `corpus-stalker/`, el addon de **contenido** de la Zona — consumidor puro, no un módulo)
+  + `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
   general vs. particular ya formalizado en
   [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt).
-- **Los seis repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos). Dos
+- **Los siete repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos, MIT). Dos
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
-  y **Cargo** (Block 1, inventario estilo STALKER — verificado y con primer commit en `main`,
-  en diseño de UI fullscreen + Workbench). **Coagulant tiene su Block 3 diseñado y los slices 1-2
-  (sangre/heridas/sangrado + tratamiento con tiempo y 4 ítems contra Cargo) verificados en juego**
-  (2026-07-13, cuatro rondas de checklist; el slice 3 —debuffs zonales— está en código, pendiente de juego).
+  y **Cargo** (Block 1, inventario estilo STALKER — hoy el módulo más grande del ecosistema:
+  UI fullscreen, munición, wheel, captura de armas y el slice 1 del comercio, todo en juego).
+  **Coagulant tiene su Block 3 diseñado y los slices 1-3 verificados en juego** (2026-07-14,
+  seis rondas de checklist: sangre/heridas/sangrado + tratamiento con tiempo y 4 ítems contra
+  Cargo + debuffs zonales —cojera, sway, visión—); su **slice 4 (UI)** —silueta, menú médico,
+  barra de tratamiento, StatusPanel y tab Q— está en código y verificado offline, pendiente de
+  la ronda 7.
   **Craving estrenó repo y cerró su Block 4 en dos días** (2026-07-13/14: diseño
   ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
   mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,
-  barras; los 12 entries de su CHANGELOG en `[APLICADO]`, ya commiteados).
+  barras; los 12 entries de su CHANGELOG en `[APLICADO]`, ya commiteados y pusheados).
   **Solo Cortex sigue vacío.** Cada
   módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
   `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
@@ -55,12 +59,12 @@
 ## Próximo paso
 
 1. **Módulos en curso (su propio frente):** Caliber va a su Block 3 (armadura de jugador,
-   NPC→agnóstico); Cargo está en diseño de UI fullscreen + Workbench (sesión de Claude
-   Desktop). El detalle vive en sus roadmaps/estados, no acá.
+   NPC→agnóstico); Cargo está en el **slice 2 del comercio** (el dinero como entidad). El
+   detalle vive en sus roadmaps/estados, no acá.
 2. **Coagulant:** Block 3 diseñado y ratificado (2026-07-13, en su repo — para mods el
-   diseño ya no pasa por Desktop); slices 1-2 verificados en juego, slice 3 (debuffs zonales)
-   en código a la espera de su ronda, y queda el slice 4 (UI) para cerrar el bloque.
-   **Craving:** Block 4 cerrado, verificado y commiteado.
+   diseño ya no pasa por Desktop); slices 1-3 verificados en juego (ronda 6). El **slice 4
+   (UI)** y el sway retuneado esperan la **ronda 7**, que cierra el bloque.
+   **Craving:** Block 4 cerrado, verificado, commiteado y pusheado.
    **Cortex** espera su Block (§9): depende de los eventos daño/limb que Caliber expondrá
    con el pipeline de jugador — mock-first si hace falta antes.
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman

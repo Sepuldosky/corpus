@@ -16,8 +16,8 @@ cada bloque vive en CORPUS_Architecture.md (una sección nueva por bloque, ver �
 acá NO se duplica ese detalle — solo el orden y el criterio de entrada de cada tramo.
 
 Metodología para ejecutar cada tramo: docs/corpus_flujo_trabajo.txt (planificación
-densa + vertical slice + orden de parches) — doc canónico compartido por los seis
-repos del ecosistema.
+densa + vertical slice + orden de parches) — doc canónico compartido por los siete
+repos del ecosistema (corpus + los cinco módulos + corpus-stalker).
 
 
 1. INMEDIATO
@@ -33,35 +33,46 @@ en su propio repo/roadmap:
       CORPUS_Architecture.md. Su Block 2 (migración desde ADS 2.0) ya está cerrado y
       verificado.
 
-  [2] Cargo — en diseño ahora: UI fullscreen estilo STALKER + Workbench (craft/
-      reparación/desarme). Su Block 1 (inventario + framework de ítems, contrato de §5)
-      ya está en código, verificado y commiteado. Autoría en Claude Desktop. Ref:
-      cargo_roadmap.txt + Workbench_Arquitectura.md.
+  [2] Cargo — próximo grande: slice 2 del comercio (el dinero como entidad: botarlo,
+      línea de solo-dinero en el basket); después el slice 3 (jugador-trader con doble
+      confirm, incluye el traspaso P2P). Ya están en código, verificados en juego y
+      pusheados: su Block 1 (inventario + framework de ítems, contrato de §5), la UI
+      fullscreen (3 columnas / 3 estados), la munición (el cinturón ES el pool) y el
+      slice 1 del comercio (trader-como-contenedor + precio con spread + basket
+      atómico; su 2.ª pasada queda por confirmar). El Workbench (craft/reparación/
+      desarme) sigue siendo bloque FUTURO, no implementado. Ref: cargo_roadmap.txt +
+      Cargo_Trade_Arquitectura.md + Cargo_ItemImages_Arquitectura.md +
+      Workbench_Arquitectura.md.
+
+  [3] Coagulant — Block 3 en el slice 4 (UI): está en código y espera la RONDA 7 en
+      juego, la que cierra el bloque. Los slices 1-3 (sangre/heridas/sangrado,
+      tratamiento con tiempo y 4 ítems contra Cargo, debuffs zonales) ya se verificaron
+      en juego a lo largo de seis rondas. Al cerrar: negociar ApplyExternalCondition con
+      Craving. Ref: coagulant_roadmap.txt + Coagulant_Architecture.md.
+
+  [4] Craving — Block 4 CERRADO y verificado en juego (decay, umbrales, 6 consumibles
+      contra Cargo, entity de mundo con WALK+USE, barras); los 12 entries de su CHANGELOG
+      en [APLICADO], commiteados y pusheados. Pendiente cross-repo: negociar
+      ApplyExternalCondition con Coagulant — hoy el puente es mock-first. Ref:
+      craving_roadmap.txt + Craving_Architecture.md.
 
 Nota de secuencia: el orden real divergió de la tabla §9. Cargo (planeado para Block 4)
 se construyó temprano; por ser el HUB de consumo del que dependen Coagulant y Craving,
 tenerlo antes los desbloquea. Divergencia legítima — ver "no es rígido" en §2.
 
 
-2. SIGUIENTE — módulos sin empezar (orden sugerido por dependencia)
---------------------------------------------------------------------
+2. SIGUIENTE — el módulo que falta
+-----------------------------------
 
 La tabla §9 de CORPUS_Architecture.md es el plan de referencia, pero manda la dependencia
 real: el orden NO es rígido, y el patrón mock-first de corpus_flujo_trabajo.txt §3 cubre
-construir contra un peer que aún no cerró. De los cinco módulos, faltan tres:
+construir contra un peer que aún no cerró. De los cinco módulos, falta UNO:
 
-  [3] Cortex — táctica de combate NPC + afecto (dolor, miedo). Era el otro medio del
-      Block 2 (junto a Caliber) y sigue sin empezar. Gated por la superficie de eventos
-      daño/limb de Caliber: arranca cuando el Block 3 de Caliber la exponga.
-
-  [4] Coagulant — médico de jugador estilo ACE3 (heridas por zona, sangrado, vitales,
-      tratamiento). Soft-dep de Caliber (hit-location enriquecido) y Cargo (ítems
-      médicos). Cargo ya expone su framework de ítems, así que sus ítems registran ya;
-      la parte de Caliber va mock-first hasta el pipeline de jugador.
-
-  [5] Craving — hambre/hidratación + fallback HL2 comestible. Soft-dep de Cargo
-      (consumibles, ya disponible) y Coagulant (efectos de salud, opcional). Hoja del
-      rollout; puede ir en paralelo a Coagulant contra el framework de ítems de Cargo.
+  [5] Cortex — táctica de combate NPC + afecto (dolor, miedo). Era el otro medio del
+      Block 2 (junto a Caliber) y sigue sin empezar: el repo es semilla (README +
+      LICENSE, sin código ni docs). Gated por la superficie de eventos daño/limb de
+      Caliber: arranca cuando el Block 3 de Caliber la exponga. Cargo ya construyó
+      contra él mock-first (cortex.GetFactionInfo, hoy sin implementar del otro lado).
 
 
 3. AL CERRAR CADA BLOQUE DE MÓDULO
