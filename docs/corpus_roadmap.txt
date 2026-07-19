@@ -11,9 +11,18 @@ Leer JUNTO con corpus_estado.md al decidir el próximo bloque.
 ----------------
 
 Este doc ORDENA lo que sigue; corpus_estado.md dice en qué punto estamos. Ambos se
-leen juntos al planear el próximo bloque. Regla anti-deriva: el detalle de diseño de
-cada bloque vive en CORPUS_Architecture.md (una sección nueva por bloque, ver §9);
-acá NO se duplica ese detalle — solo el orden y el criterio de entrada de cada tramo.
+leen juntos al planear el próximo bloque. Regla anti-deriva (FLU-18): el detalle de
+diseño de cada bloque NO se duplica acá — vive en el doc de arquitectura del REPO
+DUEÑO (<Modulo>_Architecture.md, o el doc particular que el Block desprenda; ver
+corpus_flujo_trabajo.txt §2, que es su sede). CORPUS_Architecture.md §9 solo lleva el
+resumen + link de cada Block de módulo. Acá: solo el orden y el criterio de entrada
+de cada tramo.
+
+Estatus (voto del autor, 2026-07-19): este doc es INTENCIÓN PURA — nivel 6 de la
+jerarquía de autoridad (FLU-22), sin autoridad sobre lo que existe. No acuña IDs ni
+es sede de ninguna norma; CITA IDs cuando corresponde. Un «limpio» del gate de
+coherencia (§7.8) sobre este doc en el cruce de IDs se reporta como NO-AUDITABLE
+POR DISEÑO, no como cobertura. Lo mismo aplica a los <modulo>_roadmap.txt hermanos.
 
 Metodología para ejecutar cada tramo: docs/corpus_flujo_trabajo.txt (planificación
 densa + vertical slice + orden de parches) — doc canónico compartido por los siete
@@ -78,13 +87,18 @@ construir contra un peer que aún no cerró. De los cinco módulos, falta UNO:
 3. AL CERRAR CADA BLOQUE DE MÓDULO
 --------------------------------------
 
-Checklist repetible, ver corpus_flujo_trabajo.txt §2:
-  - Nueva sección autocontenida en CORPUS_Architecture.md.
-  - Registro en el CHANGELOG del repo afectado.
-  - Si es la primera vez que ese módulo recibe contenido real: CLAUDE.md +
-    docs/{<modulo>_estado.md, <modulo>_roadmap.txt, CHANGELOG.md,
-    <modulo>_convenciones_commits.txt} propios en su repo, mismo template que
-    corpus/, apuntando a corpus/docs/corpus_flujo_trabajo.txt en vez de duplicarlo.
+El checklist NO se enumera acá: vive en corpus_flujo_trabajo.txt §2, que es su sede.
+Este roadmap dice CUÁNDO y en qué ORDEN; el flujo dice QUÉ. Copiarlo era mantener dos
+listas que derivan solas — y derivaron.
+
+  (Reparación 2026-07-16, hallazgos #5/#6/#7 del piloto del gate. Este tramo ordenaba
+  "nueva sección autocontenida en CORPUS_Architecture.md" cuando §2 prohíbe exactamente
+  eso: el doc general queda como resumen + link al particular, y el contenido NUNCA se
+  duplica. El árbol ya había dirimido —los cuatro módulos con Block cerrado desprendieron
+  su doc en su propio repo, y CORPUS_Architecture.md no tiene ninguna sección de módulo—,
+  así que el roadmap era el que estaba mal: es nivel 6, intención, sin autoridad sobre lo
+  que existe. Además enumeraba cuatro docs donde §2 lista cinco. Se corta la duplicación
+  en la raíz en vez de sincronizar las listas otra vez.)
 
 
 =====================================================

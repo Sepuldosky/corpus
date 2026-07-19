@@ -1,0 +1,1827 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# docs/ids.yaml — REGISTRO CANÓNICO DE IDs NORMATIVOS DEL ECOSISTEMA CORPUS
+# ══════════════════════════════════════════════════════════════════════════════
+# · Norma canónica del registro: corpus/docs/corpus_flujo_trabajo.txt §7.4.
+# · ÚNICO para las SIETE raíces (framework + cinco módulos + corpus-stalker). Un
+#   registro por repo multiplicaría los lugares que derivan — que es el problema
+#   que este archivo existe para matar (§7.0).
+# · El registro es ÍNDICE + CONTRATO, jamás segunda definición: la prosa canónica
+#   vive en la SEDE de cada entrada. El `titulo` es ≤1 frase, anti-deriva.
+# · AUTORIDAD: este archivo NO integra la jerarquía §7.1. La SEDE gana siempre; si
+#   el yaml contradice la prosa de la sede, el yaml está DESACTUALIZADO — se
+#   corrige el yaml, no se litiga contra el doc.
+# · Norma nueva ⇒ entrada acá EN EL MISMO PARCHE que la acuña (§7.4).
+# · Prefijo nuevo ⇒ primero en `familias` (§7.4). Reusar un prefijo está PROHIBIDO:
+#   fabrica un ID bicéfalo al nacer (§7.2).
+#
+# EVIDENCIA (§7.4) — acá no hay test runner; los tipos válidos son:
+#     selftest  · un check de `corpus_selftest`
+#     harness   · un check del harness offline con stubs de GMod (dev/harness_*.py)
+#     planilla  · un check de la planilla de verificación EN JUEGO, por su ID
+#                 estable (§1 PASO 4) — p.ej. { tipo: planilla, ref: "Caliber J4" }
+#     codigo    · el call site en Lua que ejerce la norma, cuando no hay check
+#     INTENCION · el literal. Declarada, nada la ejerce todavía.
+# La evidencia es PRESENCIAL, no semántica: prueba que el check existe y cita la
+# norma, NO que la ejerza bien. Eso lo cubren la curaduría y el autor en juego.
+# El conteo de INTENCION es la MÉTRICA DE SALUD del proceso (ver `salud`, al pie).
+#
+# · Creado 2026-07-16 (Bloques A y B del plan dev/HANDOFF_corpus_sdd_workflow.md),
+#   por barrido de las normas que YA existían en prosa. No se acuñó ninguna norma
+#   nueva en la pasada: acuñar y registrar son actos distintos.
+# · El checker determinista (Bloque C) EXISTE desde el 2026-07-16:
+#   corpus/.claude/check-ids/corpus_check_ids.ps1 (§7.7). Corre solo en pre-commit
+#   cuando el commit toca superficie normativa, y a mano cuando quieras. Valida este
+#   archivo contra las siete raíces: yaml, prefijos, duplicados, sedes, evidencia,
+#   huérfanos. Su límite es PRESENCIAL, no semántico — ver §7.7.
+# ══════════════════════════════════════════════════════════════════════════════
+
+familias:
+  COR: { dominio: framework,  sede: "corpus/CLAUDE.md §Contratos que no debes romper" }
+  FLU: { dominio: proceso,    sede: "corpus/docs/corpus_flujo_trabajo.txt" }
+  AUD: { dominio: auditoria,  sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8" }
+  GIT: { dominio: commits,    sede: "corpus/docs/corpus_convenciones_commits.txt" }
+  CAL: { dominio: caliber,    sede: "corpus-caliber/CLAUDE.md" }
+  CRG: { dominio: cargo,      sede: "corpus-cargo/CLAUDE.md" }
+  COA: { dominio: coagulant,  sede: "corpus-coagulant/CLAUDE.md" }
+  CRV: { dominio: craving,    sede: "corpus-craving/CLAUDE.md" }
+  # `pendiente: true` = el prefijo está RESERVADO pero su sede todavía no existe (Cortex
+  # tiene solo LICENSE + README). Reservar no es acuñar: el checker deja pasar la sede
+  # inexistente MIENTRAS la familia no tenga entradas, y se pone rojo el día que alguien
+  # acuñe CTX-1 sin haber creado el CLAUDE.md. Lo destapó el acta del piloto v3: la sede
+  # apuntaba a un archivo fantasma y nadie lo veía porque el checker no miraba las familias.
+  CTX: { dominio: cortex,     sede: "corpus-cortex/CLAUDE.md", pendiente: true }
+  STK: { dominio: stalker,    sede: "corpus-stalker/CLAUDE.md" }
+
+# Prefijo listado acá = PROHIBIDO registrarlo o reusarlo como familia normativa.
+# Derivado por grep del árbol real (FLU-27), no copiado de un doc: las secciones de
+# planilla realmente en uso son las de Coagulant, rondas 1-6.
+familias_excluidas:
+  A: "IDs de check de planilla (A1, A2 — ronda 1) — son EVIDENCIA, no normas; se citan en `evidencia`, tipo planilla"
+  E: "ídem A — el 'punto E' de la ronda 1/2 de Coagulant (la def invisible, COR-12)"
+  G: "ídem A — sección de planilla (G1-G6, rondas 3-4)"
+  H: "ídem A — sección de planilla (H1-H8, rondas 5-6)"
+  I: "ídem A — sección de planilla (I1-I4, ronda 6)"
+  D: "'Block N' y las decisiones de diseño rotuladas (D1, D2… en las semillas y roadmaps) — provenance, no normas"
+# Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
+# EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
+# ningún repo. Es exactamente el error que FLU-27 nombra — enumerar desde un doc en
+# vez de derivar del código — cometido en la misma tanda que acuñó la norma. Queda
+# anotado acá a propósito: la próxima sección de planilla se suma a esta tabla
+# ANTES de usarse (FLU-30), y se deriva del árbol.
+
+ids:
+
+  # ── COR — el framework ──────────────────────────────────────────────────────
+  # Sede de COR-1..6 y COR-9: corpus/CLAUDE.md. Sede de COR-7/8/10/11: la
+  # arquitectura. Los seis primeros son los "Contratos que no debes romper".
+
+  COR-1:
+    titulo: "Nada de lógica de dominio en Corpus: solo registro, persistencia, net, UI shell, ready barrier y log."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/lua/autorun/ — las 6 primitivas y nada más" }
+  COR-2:
+    titulo: "Namespace único: todo cuelga del global Corpus; los módulos se acceden vía Corpus.GetModule, nunca como globals sueltos."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua" }
+  COR-3:
+    titulo: "Persistencia namespaced: Corpus.Data.Save/Load(module, key, tbl) → data/corpus/<module>/<key>.json; un módulo no escribe fuera de su namespace."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua" }
+  COR-4:
+    titulo: "Net namespaced: Corpus.Net.Register(module, msgName) → \"corpus_<module>_<msgName>\", para evitar colisión global de net.Receive."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua" }
+  COR-5:
+    titulo: "Detección, nunca asunción: ningún módulo asume que Corpus u otro módulo ya cargó — lazy check o Corpus.OnReady."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber — boot diferido a Initialize (CAL-1), el patrón template" }
+  COR-6:
+    titulo: "Prefijo de archivo por addon: los seis consumidores (cinco módulos + corpus-stalker) usan corpus_<addon>_*.lua en todo su árbol Lua; el framework se reserva corpus_<primitiva>.lua. Contra colisión entre los siete addons montados a la vez."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/lua/autorun/corpus_<primitiva>.lua sin segmento vs. corpus-cargo/lua/autorun/corpus_cargo_init.lua con segmento" }
+    nota: "Reformulado el 2026-07-19 (voto del autor sobre el hallazgo 2.4 del acta v3 + el voto abierto del CHANGELOG): cierra los dos ejes podridos de la cláusula vieja — «siete addons» cuando el framework usa el prefijo desnudo load-bearing, y «en lua/autorun/» cuando el árbol de los módulos vive fuera."
+  COR-7:
+    titulo: "Invariante by-ref: RegisterModule y GetModule guardan y devuelven la MISMA tabla por referencia — sin deep-copy ni normalización."
+    sede: "corpus/docs/CORPUS_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "harness offline de Corpus, 46 checks, ambos realms (2026-07-09)" }
+      - { tipo: codigo, ref: "corpus-caliber — el patrón 'tabla vacía poblada por side-effect' depende de esto" }
+  COR-8:
+    titulo: "Corpus.Data SÍ normaliza en el round-trip JSON: lo que sale de Load puede no tener el tipo de clave que entró en Save — contrato distinto a COR-7."
+    sede: "corpus/docs/CORPUS_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+  COR-9:
+    titulo: "Cada archivo del framework es autosuficiente (`Corpus = Corpus or {}` al tope) y no asume orden de carga dentro de lua/autorun/."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el tope de cada archivo de corpus/lua/autorun/" }
+  COR-10:
+    titulo: "Regla cardinal — framework delgado: solo sube infraestructura demostrablemente compartida; ni siquiera una pieza de dominio compartida por dos módulos sube."
+    sede: "corpus/docs/CORPUS_Architecture.md §3-4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el pool de HP de extremidades vive en Caliber (corpus_caliber_limbs.lua), no en Corpus" }
+  COR-11:
+    titulo: "Regla cardinal — la única hard-dep del ecosistema es Corpus; todo lo demás es soft-dep detectada en runtime."
+    sede: "corpus/docs/CORPUS_Architecture.md §2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "los edges soft con lazy-check + pcall y degradación honesta (§2 tabla)" }
+  COR-12:
+    titulo: "La def de ítem Y su onUse se registran en AMBOS realms (shared); el onUse solo CORRE en server."
+    sede: "corpus/docs/CORPUS_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant punto E — ronda 1 ✗ → ronda 2 ✓ 14/14 (la def invisible)" }
+      - { tipo: codigo, ref: "Coagulant slice 2 PARCHE 8 — el gate isfunction(def.onUse) client-side" }
+      - { tipo: harness, ref: "Craving y Coagulant, pasada CLIENT con Cargo fake" }
+    nota: >
+      LA NORMA MÁS CARA DEL ECOSISTEMA. Son dos mitades pagadas por separado: una def
+      solo-server no existe en el cliente y el grid no la renderiza (el snapshot de Cargo
+      solo transporta las defs autogen/icon_override); y la UI exige isfunction(def.onUse)
+      client-side para habilitar «Use» y el quick bind, así que un onUse solo-server deja
+      el ítem visible pero inusable. Ésta es la ÚNICA sede que enuncia las dos mitades con
+      su razón. Vive en el framework y no en Cargo — ver deuda D-1, que es seria.
+  COR-13:
+    titulo: "El retorno de onUse gobierna el consumo: Cargo descuenta una unidad solo si devuelve true; false habilita el consumo diferido y el rechazo."
+    sede: "corpus/docs/CORPUS_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant G2 y G5 (consumo diferido); Craving en juego (rechazo con barra llena)" }
+      - { tipo: selftest, ref: "cargo_selftest — contrato" }
+    nota: "Las dos ramas del false están en uso real: Coagulant descuenta al completar (COA-3) y Craving rechaza con el stat lleno (CRV-8). El CLAUDE.md de Cargo la enuncia en media línea, sin los dos casos."
+  COR-14:
+    titulo: "Ningún módulo de dominio necesita Cargo para funcionar: solo lo aprovecha si está."
+    sede: "corpus/docs/CORPUS_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "Coagulant: vía mínima propia sin Cargo; Craving: entity de mundo con WALK+USE" }
+  COR-15:
+    titulo: "UI shell vía la primitiva: una sola entrada por módulo en el menú Q (Corpus.UI.RegisterTab, categoría única Corpus); las ventanas adicionales se abren por botón/concommand desde su tab."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "check visual 2026-07-09: tab de Caliber en Q → Utilities → Corpus; el browser por-NPC va por concommand caliber_browser" }
+    nota: "Acuñado el 2026-07-19 (voto D-11): la prosa vivía en el CLAUDE.md de Caliber (su contrato 5), que ahora la cita."
+  COR-16:
+    titulo: "Log vía la primitiva: toda salida de consola de módulo va por Corpus.Log → prefijo [Corpus:<module>]; única excepción, el fallback ruidoso del boot cuando el framework mismo falta."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 9"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_log.lua; el fallback MsgN del init de Caliber es la excepción declarada" }
+    nota: "Acuñado el 2026-07-19 (voto D-11): la prosa vivía en el CLAUDE.md de Caliber (su contrato 6), que ahora la cita."
+
+  # ── FLU — el proceso (sede: corpus/docs/corpus_flujo_trabajo.txt) ───────────
+
+  FLU-01:
+    titulo: "Todo parche sigue el ORDEN DE EJECUCIÓN de cinco pasos, sin saltarse ninguno."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-02:
+    titulo: "No confiar en que el doc refleja el archivo: se lee el Lua destino antes de aplicar."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-03:
+    titulo: "Si el parche toca código Y docs: código primero, docs después."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-04:
+    titulo: "Si el parche cruza repos, el orden es SIEMPRE Corpus (o el módulo del que se depende) primero."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §0"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-05:
+    titulo: "La verificación en juego la corre EL AUTOR y se le entrega SIEMPRE como Artifact: la planilla."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "las planillas de Caliber, Cargo, Coagulant y Craving" }
+  FLU-06:
+    titulo: "Un módulo tiene UNA planilla, que se actualiza por su URL ronda tras ronda — nunca se crea una nueva."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-07:
+    titulo: "Cada check de planilla tiene ID estable (letra + número) y la letra NUNCA se recicla entre rondas."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · a"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant, rondas 1-7: cada ronda agregó sección nueva" }
+  FLU-08:
+    titulo: "Cada check trae ACCIÓN, ESPERADO (criterio de aprobación, no descripción vaga) y COMANDOS copiables."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · b"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-09:
+    titulo: "Los comandos de la planilla son concommands cortos, NUNCA lua_run largos — la consola de GMod los trunca."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · b"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "pagado en Coagulant, ronda 3" }
+  FLU-10:
+    titulo: "Cada check se responde con TRES estados (PASA/FALLA/N-A) y un campo de notas siempre visible."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · c"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-11:
+    titulo: "La planilla EMITE el reporte: un botón arma el texto que el autor pega de vuelta, en el formato canónico."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · d"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-12:
+    titulo: "El estado de la planilla se guarda solo (localStorage): el autor alt-tabea, y una planilla que se borra al recargar es inservible."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4 · e"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-13:
+    titulo: "Una NOTA sobre un check en PASA es un pedido de diseño o tuning: se discute con el autor ANTES de tocar código."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-14:
+    titulo: "En el CHANGELOG: [PENDIENTE] → [APLICADO YYYY-MM-DD]; nunca se borra ni se renumera."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "los CHANGELOG.md de las siete raíces" }
+  FLU-15:
+    titulo: "El <modulo>_estado.md se refresca EN SITIO (sin historial ni secciones nuevas) y no pasa de una pantalla."
+    sede: "corpus/docs/corpus_estado.md (encabezado)"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-16:
+    titulo: "Si el cambio cierra o mueve un Block, se actualizan además los cuatro docs del FRAMEWORK (estado, §9 de la arquitectura, roadmap, espejo)."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 5"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-17:
+    titulo: "Mock-first: si el peer no existe, se congela primero la firma que se consumiría vía Corpus.GetModule y se construye contra degradación honesta."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el puente mock-first de Craving hacia Coagulant" }
+  FLU-18:
+    titulo: "Un Block se documenta como sección del <modulo>_Architecture.md general; se desprende a doc particular solo si un implementador lo necesita solo."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber/docs/ — el doc particular de escudos de energía" }
+  FLU-19:
+    titulo: "El punto de corte de una sesión lo decide el CAMBIO DE MODO TEMÁTICO, no los turnos ni el % de contexto."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §2"
+    fuerza: GUIA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-20:
+    titulo: "El diseño se autora en Claude Code sobre el árbol real; a Desktop solo se le remiten preguntas puntuales o de investigación."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §0"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Reparación 2026-07-16: §0 y §6 enunciaban lo contrario ('el diseño se autora en Claude Desktop') mientras corpus_estado.md ya decía lo real."
+  FLU-21:
+    titulo: "El espejo desktop-sync es un snapshot REGENERABLE, nunca fuente de verdad: se sobrescribe entero en cada corrida."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §6.4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/.claude/desktop-sync/sync.ps1" }
+  FLU-22:
+    titulo: "JERARQUÍA DE AUTORIDAD: código Lua > estado > CHANGELOG > CLAUDE.md > arquitectura > roadmap. Cuando el doc choca con el repo, el doc está mal."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "precedente ADS: §13 decía 'Block 7 pendiente' con el código ya en el árbol" }
+  FLU-23:
+    titulo: "'Todavía no está implementado' NO es un hallazgo: acá se diseña por delante del código a propósito."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.1"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-24:
+    titulo: "Una afirmación sobre algo NO CONSTRUIDO no tiene árbitro: no se repara sola, se lleva al autor como voto."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.1"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-25:
+    titulo: "REGLA DE NORMALIZACIÓN: toda frase con SIEMPRE/NUNCA/DEBE/JAMÁS define o cita un ID. Una norma sin ID es una norma que va a derivar."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/docs/ids.yaml — este archivo" }
+      - { tipo: codigo, ref: "corpus/.claude/check-ids/corpus_check_ids.ps1 — caza huérfanos y bicéfalos en cada commit" }
+    nota: "La mitad mecánica (huérfano/bicéfalo) la prueba el checker; que la FRASE tenga ID sigue siendo curaduría — el checker ve los IDs citados, no los SIEMPRE sin ID."
+  FLU-26:
+    titulo: "Un comentario de Lua puede CITAR un ID; jamás definirlo — una decisión que solo vive en un comentario es una decisión perdida."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-27:
+    titulo: "Una norma que ENUMERA (realms, escritores, hooks, campos) se deriva por grep del código, no copiando de otro doc."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-28:
+    titulo: "BARRIDO DE RATIFICACIÓN: un parche no termina hasta que ningún otro doc ni comentario sigue enunciando lo viejo; se barre por el VALOR, no por la lista del hallazgo."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  FLU-29:
+    titulo: "El registro docs/ids.yaml es ÚNICO para las siete raíces y es índice, jamás segunda definición: no entra a la jerarquía §7.1."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "docs/ids.yaml — este archivo" }
+  FLU-30:
+    titulo: "Norma nueva ⇒ su entrada en el registro EN EL MISMO PARCHE; prefijo nuevo ⇒ primero en `familias`, y reusar un prefijo está prohibido."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/.claude/check-ids/corpus_check_ids.ps1 — HUERFANO_DOC/CODIGO y FAMILIA_NO_REGISTRADA" }
+      - { tipo: codigo, ref: "corpus/.claude/check-ids/test/run_tests.ps1 — fixtures huerfano y familia-no-registrada" }
+    nota: "Dejó de ser disciplina y pasó a ser mecanismo el 2026-07-16: el checker corre en pre-commit y no deja commitear una norma citada sin entrada."
+  FLU-31:
+    titulo: "La evidencia de una norma es presencial y de tipo selftest | harness | planilla | codigo | INTENCION; el conteo de INTENCION es la métrica de salud."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/.claude/check-ids/corpus_check_ids.ps1 — EVIDENCIA_ROTA y el conteo de INTENCION en cada corrida" }
+  FLU-32:
+    titulo: "CONDUCTA DETENTE: ante ambigüedad, contradicción con el árbol real o un hecho sin árbitro, la primera línea del reporte abre con el literal y se consulta al autor."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.5"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "En Kontrol la marca tiene un hook que la ancla (SDD-6). Acá no hay hook: la norma es de conducta y hoy nada la observa."
+
+  FLU-33:
+    titulo: "ALCANCE NEGATIVO EXPLÍCITO: toda tanda declara en su PROMPT qué NO toca, en la columna NO de §5."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.0"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "El arma directa contra el scope creep silencioso y contra los pecados de arquitectura (subir dominio a Corpus, bajar dominio ajeno a un módulo). La columna NO es la que trabaja."
+  FLU-34:
+    titulo: "TEXTO LITERAL, no descripción de alto nivel: el paso entrega el texto que va, o un diff suficiente para que el ejecutor no improvise."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.0"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Si el ejecutor tiene que inventar el texto, el diseño no estaba cerrado. 'Actualizar el resolver para que contemple el escudo' no es un paso: es un deseo."
+  FLU-35:
+    titulo: "Una tanda = un SLICE VERTICAL, y cada paso = una entrada de CHANGELOG."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.0"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "los CHANGELOG de Coagulant y Craving: slices 1-4, una entrada por paso" }
+    nota: "Divergencia con Kontrol, cuya unidad es 'una task = un PR'. Acá no hay PRs: se commitea a main y el ledger es el CHANGELOG (FLU-14)."
+  FLU-36:
+    titulo: "Si la tanda ACUÑA una norma, su entrada en ids.yaml es parte del paso, no un trámite posterior."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/.claude/check-ids/corpus_check_ids.ps1 — rechaza un ID citado sin registrar" }
+    nota: "Es FLU-30 instanciada en el PROMPT. Ya no es disciplina: el checker corre en pre-commit."
+  FLU-37:
+    titulo: "El §6 CIERRE del PROMPT declara QUÉ CHECKS DE PLANILLA nacen de la tanda, con su letra de sección nueva."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Es la norma que ataca la deuda D-2 en su origen: sin este inciso, la tanda se verifica
+      en juego y no deja rastro citable, y la evidencia tipo planilla (§7.4) no se puede usar
+      desde el registro. Tres de los cuatro módulos verificados ya pagaron eso. La letra no
+      se recicla (FLU-07).
+  FLU-38:
+    titulo: "El PROMPT no es autoridad ni entra a la jerarquía §7.1: es andamiaje. Una v2 reemplaza a la v1 en el mismo archivo, conservando el nombre."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §8.3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Conservar el nombre es por los punteros ya citados en otro lado. Su vigencia se traslada al CHANGELOG y al estado al cerrar; el archivo queda como scratch."
+
+  # ── AUD — cadencia del gate de coherencia (§7.8) ────────────────────────────
+
+  AUD-1:
+    titulo: "El gate SCOPED corre al cerrar cualquier sesión que escribió normas en docs/; las sesiones de solo-código no lo disparan."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "La contradicción de prosa nace en las sesiones de prosa. Un commit de puro Lua no puede crearla — es el mismo criterio con que el checker gatea el pre-commit."
+  AUD-2:
+    titulo: "El gate COMPLETO corre al cerrar un Block de módulo, antes de abrir el siguiente."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "El bloqueo por D-7 rigió hasta el 2026-07-19: la pasada de etiquetado la recortó y el COMPLETO corrió ÍNTEGRO ese mismo día (acta 2026-07-19_coherencia_docs.md). El punto ciego residual es D-3, acotado y declarado (§7.6)."
+  AUD-3:
+    titulo: "Ningún gate de coherencia corre con poco contexto remanente: se difiere explícito a una sesión fresca."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Una ✅ emitida en condiciones degradadas es una hipótesis, no un cierre. Diferir cuesta una línea; el modo de falla que previene es el falso-limpio no re-verificado."
+  AUD-4:
+    titulo: "El gate es READ-ONLY estricto: propone los parches dentro de su acta y JAMÁS los aplica. Las actas son inmutables."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus/.claude/workflows/auditoria-coherencia-docs.js — la constante READ_ONLY va literal en cada agente" }
+    nota: "El acta es la foto del estado AL MOMENTO DE AUDITAR, no la de hoy — esa es el estado. No se edita: si algo cambió, lo dice el acta siguiente."
+  AUD-5:
+    titulo: "Todo hallazgo del gate se clasifica en exactamente un bucket: A reparable | B voto del autor | C bug de código | CADUCO."
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §7.8"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "El bucket B es grande acá: con cinco módulos en diseño, buena parte del cuerpo normativo habla de algo que no existe y no tiene árbitro (FLU-24). Ubicar por CONTENIDO, nunca por número de línea."
+
+  # ── GIT — convenciones de commit ───────────────────────────────────────────
+  # La familia se define en corpus/docs/corpus_convenciones_commits.txt: sus
+  # secciones 0/1/2/4/5 son del ECOSISTEMA (las heredan las seis raíces
+  # consumidoras, corpus-stalker incluido) y la §3 (alcances) es POR REPO —
+  # por eso GIT-6 habla de tablas por repo y las demás no.
+
+  GIT-1:
+    titulo: "Todo commit sigue `<tipo>(<alcance>): <descripción>`, con el tipo en inglés y la descripción en español."
+    sede: "corpus/docs/corpus_convenciones_commits.txt §1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de las siete raíces" }
+  GIT-2:
+    titulo: "La descripción NUNCA empieza con mayúscula, NUNCA lleva punto final, y va en presente imperativo."
+    sede: "corpus/docs/corpus_convenciones_commits.txt §1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de las siete raíces" }
+  GIT-3:
+    titulo: "Los tipos válidos son feat/fix/refactor/docs/chore/test; se prohíben términos genéricos como 'cambios' o 'tarea'."
+    sede: "corpus/docs/corpus_convenciones_commits.txt §2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  GIT-4:
+    titulo: "Los comentarios de código y los mensajes de commit van en español; si el archivo existente mezcla estilos, se iguala el del archivo que se edita."
+    sede: "corpus/CLAUDE.md §Idioma"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  GIT-5:
+    titulo: "PROHIBIDO el trailer Co-Authored-By de Claude/Anthropic, y toda atribución de co-autoría, en los mensajes de commit."
+    sede: "corpus/CLAUDE.md §Git / commits"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log --all — ningún commit lo lleva" }
+  GIT-6:
+    titulo: "Las secciones 0/1/2/4/5 de las convenciones son del ecosistema; la §3 (alcances) es POR REPO: cada raíz consumidora define su tabla en su docs/<modulo>_convenciones_commits.txt (o en su CLAUDE.md mientras no exista) y jamás hereda la §3 del framework."
+    sede: "corpus/docs/corpus_convenciones_commits.txt (encabezado)"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-stalker: docs(assets)/chore(repo) — alcances propios, no de la §3 del framework" }
+    nota: "Reformulada el 2026-07-19 (hallazgo 2.16 del COMPLETO): stalker citaba las convenciones enteras mientras la §3 lo excluía; su tabla interina vive en su CLAUDE.md §Idioma y commits."
+  GIT-7:
+    titulo: "No se commitea ni se pushea salvo pedido explícito del autor."
+    sede: "corpus/CLAUDE.md §Git / commits"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Unificada en los siete repos el 2026-07-19 (voto D-6): corpus-stalker solo prohibía el push y pasó a la versión estricta."
+
+  # ── CAL — Caliber ───────────────────────────────────────────────────────────
+  # CAL-1..9 son EL PATRÓN TEMPLATE DE BOOT del ecosistema: Coagulant y Craving
+  # los implementan citándolos, no redefiniéndolos. Caliber NO tiene selftest ni
+  # harness: su única evidencia es la paridad en juego del 2026-07-09 (CAL-10) y
+  # el checklist de greps de §7 de su arquitectura. De ahí tanto INTENCION acá.
+
+  CAL-1:
+    titulo: "Boot diferido: el init no aborta con error() en file-scope — sonda de framework + boot en el hook Initialize."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber CHANGELOG «Fix de arranque», 2026-07-09 — pagado en juego" }
+      - { tipo: planilla, ref: "Coagulant A1 — log de boot en ambos realms (el módulo que lo copió)" }
+    nota: "Sede del patrón template. Ninguna de sus cuatro copias (estado, CLAUDE.md de Coagulant, dos inits) repite el PORQUÉ: el orden alfabético de lua/autorun/ está FUSIONADO entre addons, así que un error() no protege de nada."
+  CAL-2:
+    titulo: "AddCSLuaFile va siempre en file-scope: no depende de Corpus, y el cliente debe recibir los archivos aunque el boot quede diferido."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_caliber_init.lua:52 y corpus_coagulant_init.lua:76 — copia intencional, es código template" }
+  CAL-3:
+    titulo: "La sonda cubre las primitivas que los sub-archivos usan en file-scope (Data/Net/Log en server, UI en client), no solo el registro."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "Coagulant slice 1 PARCHE 5 — sumó Corpus.Net a la sonda cuando bleeding empezó a usarla" }
+  CAL-4:
+    titulo: "Si tras Initialize no hay framework, la falla es ruidosa por MsgN — nunca por Corpus.Log, que no existiría."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "la rama else del hook Initialize en los tres inits del ecosistema" }
+  CAL-5:
+    titulo: "La iface nunca va inline en RegisterModule: se registra una tabla vacía que los sub-archivos pueblan por side-effect."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "coagulant_selftest, dev.lua:22 — assertea el by-ref del que este patrón depende" }
+    nota: "Depende de COR-7. Si el registro introdujera un deep-copy defensivo, este patrón se cae EN SILENCIO en los tres módulos a la vez."
+  CAL-6:
+    titulo: "Los sub-archivos viven fuera de lua/autorun/: el init es el único loader (en autorun se auto-ejecutarían y duplicarían la carga)."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el árbol lua/corpus_<modulo>/ de Caliber, Coagulant y Craving" }
+  CAL-7:
+    titulo: "El orden de carga es un manifest explícito de include() en el init, determinista y documentado — nunca el alfabético implícito."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_caliber_init.lua — armor antes que core; corpus_coagulant_init.lua — config antes que core" }
+  CAL-8:
+    titulo: "Nunca invocar hacia adelante en file-scope: un archivo solo puede llamar a los anteriores del manifest."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-coagulant — medmenu carga después de hud porque usa su silueta" }
+  CAL-9:
+    titulo: "La guarda de existencia se mantiene aun con el manifest fijo: cubre instalación parcial, no solo orden de carga."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §5"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  CAL-10:
+    titulo: "El criterio de aceptación de la migración es paridad de comportamiento contra ADS 2.0 v1.0: cualquier diferencia es bug de la migración, no de diseño."
+    sede: "corpus-caliber/CLAUDE.md §Verificación"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "verificación en juego del autor, 2026-07-09 — sin IDs de check (ver deuda D-2)" }
+  CAL-11:
+    titulo: "Ningún fix se retro-porta al legacy ADS congelado (tag v1.0): todo fix a partir de ahora es sobre Caliber."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "dev/legacy/AdvancedDamageSystem 2.0 — congelado" }
+  CAL-12:
+    titulo: "La única superficie pública de Caliber es CALIBER.HealLimbs(npc, amount, target); el resto es off-contract por convención."
+    sede: "corpus-caliber/lua/autorun/corpus_caliber_init.lua:6-18 (bloque CONTRATO)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el bloque de comentario en el sitio de registro" }
+    nota: "La firma completa con `target: nil|head|arms|legs|all_limbs` SOLO está en el init; las copias de CLAUDE.md y arquitectura §8 omiten los valores. Es la firma que consumirían Cortex y Coagulant — la copia incompleta es el riesgo."
+  CAL-13:
+    titulo: "El pipeline de daño es ESCUDO → ARMADURA → LIMBS: cada capa es pre-filtro de la siguiente."
+    sede: "corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md §2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "paridad en juego contra ADS v1.0" }
+    nota: "El drift de Caliber_Architecture.md §1 (la cadena SIN el escudo) se reparó el 2026-07-19 (D-4 cerrada); la copia gemela del framework (CORPUS_Architecture.md §7) se reparó en la tanda del COMPLETO ese mismo día (hallazgo 2.19)."
+  CAL-14:
+    titulo: "El escudo no es zonal: es un único pool global por NPC."
+    sede: "corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md §1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_caliber_shields.lua — ShieldNPCs[npc], una entrada por NPC" }
+    nota: "Drift histórico RESUELTO: el diseño de ADS decía zonal, la implementación lo elevó a global. El doc satélite viejo de dev/legacy/ sigue diciendo zonal y está declarado NO AUTORITARIO."
+  CAL-15:
+    titulo: "No-overflow: cuando el escudo absorbe consume el hit COMPLETO (SetDamage(0)) y el caller DEBE early-return del hook; el exceso no pasa a la armadura."
+    sede: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_shields.lua:323"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el comentario de contrato en el sitio de la función" }
+    nota: "El doc de escudos §5 lo llama 'canon'. Consecuencia derivada: cero debuffs de extremidad con escudo arriba, y la placa no gasta durabilidad."
+  CAL-16:
+    titulo: "Solo el melee (DMG_SLASH, DMG_CLUB) bypasea el pool del escudo — y el bypass igual frena la regen."
+    sede: "corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+  CAL-17:
+    titulo: "Los flags plasma/emp se leen de la tabla curada, nunca del extractor: el arma EFT conserva su tuple balístico intacto."
+    sede: "corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Aplicación local de la regla cardinal 'EFT gana la jerarquía del extractor' (CAL-18)."
+  CAL-18:
+    titulo: "Los principios de dominio fijados en ADS se preservan intactos: EFT gana la jerarquía del extractor, resolver puro, armadura pre-filtro de limbs, escudo pre-filtro de la armadura."
+    sede: "corpus-caliber/CLAUDE.md §Qué es (Regla cardinal 1)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "paridad de comportamiento vs ADS 2.0 v1.0 (CAL-10)" }
+  CAL-19:
+    titulo: "Un tipo de escudo nuevo exige la entrada server y su espejo cliente con las MISMAS KEYS; la mecánica no cambia entre tipos, solo assets y defaults."
+    sede: "corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Dos tablas espejo sincronizadas a mano, sin check que lo verifique. Candidato a drift silencioso — es el análogo estructural de COA-1."
+  CAL-20:
+    titulo: "Los entries de whitelist nunca se mezclan: la key específica reemplaza al genérico."
+    sede: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_core.lua:339"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "armor.lua:325 y el doc de escudos §10 lo reafirman" }
+  CAL-21:
+    titulo: "La deuda heredada de ADS viaja sin tocar, con el mismo comportamiento bugueado."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §10"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "los 4 ítems: decal Ricochet inerte, DNumSlider en tab Limbs/WL, doble mult de zona ARC9, cache de hitgroups" }
+  CAL-22:
+    titulo: "La Limbs API es agnóstica NPC/jugador por diseño pero es NPC-only en la práctica: el contrato de CORPUS_Architecture.md §4 NO está cumplido hoy."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §9.b"
+    fuerza: GUIA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Advertencia deliberada para Coagulant y Cortex. Es una norma que existe para que otra no se lea como cumplida."
+
+  # ── COA — Coagulant ─────────────────────────────────────────────────────────
+  # El módulo mejor instrumentado del ecosistema: selftest + harness + seis rondas
+  # de planilla con IDs (A/E/G/H/I). Es el ÚNICO con evidencia tipo planilla real.
+
+  # COA-1 NO EXISTE A PROPÓSITO. La regla de realms de las defs es COR-12: su sede es
+  # el contrato de ítems del framework, y lo que Coagulant, Craving y corpus-stalker
+  # tienen en sus docs son COPIAS de esa norma, no normas propias. Acuñarle un ID a
+  # cada copia habría fabricado el bicéfalo que §7.2 existe para evitar. Las copias
+  # deben pasar a CITAR COR-12 — ver deuda D-1.
+
+  COA-2:
+    titulo: "Presencia de un ítem contra Cargo = Inventory.HasItem, NUNCA CountItem: este último solo cuenta stacks y es ciego a los unique como el torniquete."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant G4 — ronda 3 ✗ → ronda 4 ✓" }
+      - { tipo: selftest, ref: "con Cargo montado exige isfunction(cargo.Inventory.HasItem)" }
+      - { tipo: harness, ref: "23 checks con Cargo REAL" }
+    nota: "La norma mejor respaldada del ecosistema: cadena completa planilla + selftest + harness. Su assert cross-repo es la única aserción ejecutable entre módulos del workspace."
+  COA-3:
+    titulo: "El consumo del ítem ocurre AL COMPLETAR el tratamiento, no al iniciar: onUse devuelve false y el TakeItem va al terminar."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant G2 y G5 — ronda 3 ✓" }
+      - { tipo: harness, ref: "onUse→false y TakeItem al completar; torniquete nunca consumido" }
+    nota: "El flujo del CLAUDE.md llegó a CONTRADECIR este contrato ('usarla loguea el stub y consume una unidad'); lo cazó el PARCHE 7 de la pasada de veracidad."
+  COA-4:
+    titulo: "Coagulant nunca re-escala daño ni pisa SetWalkSpeed: la cojera compone escalando el MaxSpeed del move data vía hook Move + NW2."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant H2 — la cojera compone con el peso de Cargo sin rubber-band" }
+      - { tipo: harness, ref: "escalado del move data con penalización de peso previa" }
+    nota: "Dos módulos escribiendo walk/run se pisan; dos escalando el MaxSpeed se multiplican. El CHANGELOG del slice 3 todavía la cita como 'contrato #6' (hoy es el #8) — puntero podrido benigno, el CHANGELOG no se reescribe por disciplina (FLU-14)."
+  COA-5:
+    titulo: "El hook Move es shared porque Move se predice: si el cliente escalara distinto, el jugador haría rubber-band."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant H2" }
+      - { tipo: harness, ref: "igualdad de escalado entre realms" }
+    nota: "Deriva una norma: las convars de debuff son replicadas por necesidad, porque la cojera se predice."
+  COA-6:
+    titulo: "El piso de velocidad usa math.min(base, piso): jamás SUBE la velocidad de un jugador que otro mod dejó frenado a propósito."
+    sede: "corpus-coagulant/docs/CHANGELOG.md §slice 3 PARCHE 2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "el piso absoluto" }
+      - { tipo: planilla, ref: "Coagulant H2" }
+    nota: "Sede en el CHANGELOG: la arquitectura §6 no la menciona. Es COA-4 llevada al piso. Ver deuda D-3."
+  COA-7:
+    titulo: "El mapa hitgroup→zona NUNCA se borra: es la vía standalone sin Caliber, y siempre devuelve zona válida (torso como fallback)."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "dev.lua:26 — mapa total sobre hitgroups" }
+  COA-8:
+    titulo: "Los IDs de zona (head, torso, left_arm, right_arm, left_leg, right_leg) son contrato."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "consistencia de zonas y mapa total de hitgroups" }
+  COA-9:
+    titulo: "Las heridas nacen del daño FINAL (PostEntityTakeDamage), nunca del daño entrante."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant A-D y F — ronda 3 ✓" }
+      - { tipo: harness, ref: "herida por daño final → drenaje → crítico → muerte" }
+    nota: "Es la bisagra con Caliber: cuando su Block 3 mitigue daño de jugador, las heridas nacerán post-armadura SIN tocar código de Coagulant."
+  COA-10:
+    titulo: "La sangre no mata por sí misma: drena HP y la muerte es SIEMPRE por HP 0 — compatible con killfeed, respawn y mods que setean HP."
+    sede: "corpus-coagulant/docs/Coagulant_Block3_Semilla.md §3.B"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "drenaje de HP → muerte 'You bled out.'" }
+      - { tipo: planilla, ref: "Coagulant A-D y F" }
+  COA-11:
+    titulo: "El drenaje se aplica como DMG_GENERIC sin atacante (mundo): la muerte pasa por el pipeline normal del engine."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "slice 1 PARCHE 3" }
+    nota: "Trae aparejado el guard _selfDrain: el drenaje propio no cuenta como herida ni cancela un tratamiento."
+  COA-12:
+    titulo: "La silueta se pinta y se clickea desde la MISMA tabla (Config.SILHOUETTE + Config.ZoneAt): dos tablas = el jugador venda una zona que no eligió."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "dev.lua:139 — el centro de cada rect resuelve a SU zona" }
+      - { tipo: harness, ref: "69 checks del slice 4" }
+    nota: "Sin ID de planilla: es del slice 4, pendiente de la ronda 7."
+  COA-13:
+    titulo: "El cliente nunca es autoridad: el menú manda intents (treat/cancel) y el server re-valida todo; habilitar un botón es puro UX."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "slice 4 — el intent viajando con {kind, zone}" }
+  COA-14:
+    titulo: "Todo el pintado del HUD va en pcall: GMod DESENGANCHA un HUDPaint que erra y la capa moriría en silencio el resto de la sesión."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §10"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "slice 4 — el HUDPaint completo sin errar" }
+    nota: >
+      Subida a §10 el 2026-07-19 (voto f): era la norma real peor ubicada del
+      ecosistema, con sede en un comentario de código. El comentario de hud.lua ahora
+      la CITA (FLU-26). La trampa la pagó CARGO, no Coagulant.
+  COA-15:
+    titulo: "El sangrado corre en un timer único de 1 s, nunca en un Think."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "drenaje por tick" }
+  COA-16:
+    titulo: "El snapshot de estado viaja on-change, nunca por tick."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §9"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "snapshot llegando al cliente" }
+  COA-17:
+    titulo: "El NW2 de cojera se publica solo cuando el valor cambió: cada escritura de un NW2 se replica a todos los clientes."
+    sede: "corpus-coagulant/docs/CHANGELOG.md §slice 3 PARCHE 3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant H1 — ronda 5/6 ✓" }
+    nota: "Vive SOLO en el CHANGELOG. Ni la arquitectura §9 ni el CLAUDE.md la mencionan. Ver deuda D-3."
+  COA-18:
+    titulo: "La firma de OnEncumbrance está congelada por Cargo, que ya la llama: no se le cambia."
+    sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "contrato público en server, dev.lua:174" }
+    nota: "Firma congelada POR UN CONSUMIDOR — el caso inverso a CAL-12. La sede real del contrato es corpus_cargo_movement.lua, en el otro repo."
+  COA-19:
+    titulo: "Un solo tratamiento a la vez, server-authoritative (st.treatment = {kind, zone, endsAt})."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant G2 — ronda 3 ✓" }
+      - { tipo: selftest, ref: "doble-tratamiento rechazado" }
+    nota: "La mitad de cancelación es ahora COA-34 (curaduría D-10, 2026-07-19)."
+  COA-20:
+    titulo: "El torniquete nunca se consume, y quitarlo no exige ni consume ítem."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant I2 — ronda 6 ✓" }
+      - { tipo: harness, ref: "el torniquete no se consume" }
+    nota: "La mitad «quitarlo no exige ni consume ítem» se enunció en §7 el 2026-07-19 (voto D-10): hasta entonces solo el registro la afirmaba."
+  COA-21:
+    titulo: "La única cura de la secuela tratada es el Medkit: no hay cura pasiva por tiempo, y una herida sin vendar no se toca."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6 (enmienda 2026-07-14)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant I1 — ronda 6 ✓" }
+  COA-22:
+    titulo: "El sway se aplica en el CLIENTE (CreateMove) sumando el DELTA del offset al usercmd, nunca el offset absoluto: si no, la vista deriva en vez de oscilar."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant I3 — ronda 6 ✓" }
+      - { tipo: harness, ref: "el sway oscila y no deriva — recorrido de la mira en 200 frames" }
+    nota: "Drift histórico MAYOR, ya saldado: hasta la ronda 5 el sway era un ViewPunch de SERVER y el mecanismo muerto sobrevivió en SEIS sitios. Los PARCHES 5, 7(a) y 13 de la pasada de veracidad los mataron uno por uno. Es el mejor caso documentado de drift del workspace."
+  COA-23:
+    titulo: "Solo se rampa la amplitud del sway: la fase del bamboleo nunca se corta, así la mira se abre y se cierra en vez de dar un tirón."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "smoothstep, rampa monótona, salto máx 0.19°/frame" }
+    nota: "En juego: PENDIENTE (ronda 7)."
+  COA-24:
+    titulo: "La deriva del sway se compone de senos de períodos inconmensurables: nunca repite un patrón que se pueda aprender a compensar."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "deriva acotada y horizontal" }
+  COA-25:
+    titulo: "La información vital no se apaga por convar ni depende de un soft-dep: la capa de sangre crítica y la mini-barra sin Cargo siempre están."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §11 y §14"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant H8 — ronda 5/6 ✓ (las tres convars apagan)" }
+  COA-26:
+    titulo: "Con coagulant_enabled 0 el módulo queda inerte pero el registro y el contrato siguen vivos: otros módulos no crashean."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §14"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+  COA-27:
+    titulo: "Los números de balance viven en tablas de config: tunearlos no toca lógica."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §11"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_coagulant_config.lua — tablas de balance + funciones puras" }
+    nota: "La sub-norma del check es ahora COA-35 (voto D-10, 2026-07-19), enunciada en §11."
+  COA-28:
+    titulo: "No se implementa nada que la arquitectura no especifique: los cambios de diseño se discuten con el autor y se anotan primero en el doc."
+    sede: "corpus-coagulant/CLAUDE.md §Qué es"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "CHANGELOG «Fix ronda 5»: 'resueltas con el autor antes de tocar código — nada de esto se implementó por iniciativa propia'" }
+    nota: "La norma de proceso más fuerte del ecosistema, y la única con precedente de cumplimiento citado. Caliber no tiene equivalente. Es FLU-13 llevada al repo."
+  COA-29:
+    titulo: "Sin persistencia a disco: spawn = cuerpo nuevo."
+    sede: "corpus-coagulant/docs/Coagulant_Block3_Semilla.md §3.F"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  COA-30:
+    titulo: "El reporte de soft-deps del selftest es informativo, nunca un fallo — salvo un Cargo montado sin HasItem, que sí falla para no reproducir G4 mudo."
+    sede: "corpus-coagulant/lua/corpus_coagulant/shared/corpus_coagulant_dev.lua:310"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "los 4 cruces realm × Cargo dan verde con y sin Cargo" }
+  COA-31:
+    titulo: "Coagulant no detecta a Craving: la soft-dep es de dirección única — Craving lo consume a él."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "La otra mitad es CRV-13. Las dos mitades del mismo pacto, enunciadas por separado en cada repo — si una deriva, nada las cruza hoy."
+  COA-32:
+    titulo: "No hay evento por cada punto de sangre: el estado continuo se lee por GetBlood/NW2."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Gemela de la regla de Craving §8 (no hay evento por punto de stat). Misma decisión anti-spam, dos enunciados independientes."
+  COA-33:
+    titulo: "La barra de progreso de tratamiento se calcula client-side desde {kind, endsAt, duration} del snapshot — sin tick de red."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §9"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Partido de COA-16 en la curaduría D-10 (2026-07-19). UI del slice 4: verificada offline, a ratificar en juego en la ronda 7."
+  COA-34:
+    titulo: "El tratamiento se cancela por daño, salto o superar velocidad de caminata — sin efecto y sin consumir."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: planilla, ref: "Coagulant G3 — ronda 3 ✓ (cancelaciones)" }
+    nota: "Partido de COA-19 en la curaduría D-10 (2026-07-19)."
+  COA-35:
+    titulo: "Un check jamás hardcodea un número tunable: se deriva de la config — si lo congelara, retunear rompería el selftest en vez de validarlo."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §11"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "los checks de amplitud se derivan de SWAY_PER_SCORE en vez de hardcodear 0.70" }
+    nota: "Partido de COA-27 (voto D-10, 2026-07-19): vivía solo en el campo evidencia del registro; ahora §11 la enuncia. Excelente y poco replicada."
+
+  # ── CRV — Craving ───────────────────────────────────────────────────────────
+
+  CRV-1:
+    titulo: "La superficie pública congelada es solo GetHunger/GetHydration, Restore y el evento Craving_StatCritical; todo lo demás es off-contract."
+    sede: "corpus-craving/docs/Craving_Architecture.md §8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "craving_selftest — bloque 'Contrato público congelado (§8)'" }
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+  CRV-2:
+    titulo: "Degradación por CAPACIDAD, no por presencia: el puente exige isfunction(coag.ApplyExternalCondition) — un Coagulant sin la función cae al mismo fallback que su ausencia."
+    sede: "corpus-craving/docs/Craving_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+      - { tipo: codigo, ref: "craving_set 0 0 en juego" }
+    nota: "Es COR-5 afilada: detectar el módulo no alcanza, hay que detectar la función."
+  CRV-3:
+    titulo: "Mientras la delegación a Coagulant está activa, Craving no aplica daño de HP: un solo dueño de la muerte a la vez."
+    sede: "corpus-craving/docs/Craving_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+  CRV-4:
+    titulo: "La firma COAGULANT.ApplyExternalCondition(ply, id, severity) está congelada mock-first y se consume solo vía Corpus.GetModule con pcall."
+    sede: "corpus-craving/docs/Craving_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+    nota: "Instancia de FLU-17. PENDIENTE DE RATIFICAR en Coagulant_Architecture.md §8 — el contrato está congelado por el CONSUMIDOR y el dueño todavía no lo firmó. Ver deuda D-5."
+  CRV-5:
+    titulo: "La severity se reporta on-change (redondeada a 2 decimales), nunca cada tick."
+    sede: "corpus-craving/docs/Craving_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+    nota: "La fórmula es ahora CRV-17 (curaduría D-10, 2026-07-19)."
+  CRV-6:
+    titulo: "Un solo timer: todo el decay/umbral/daño pasa por el tick server de 5 s — nada per-frame, nada de timers por jugador."
+    sede: "corpus-craving/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+  CRV-7:
+    titulo: "Los assets GSC no entran a este repo: todo modelo/sonido se referencia por ruta vía CRAVING.Assets. Modelos con fallback HL2 vanilla GARANTIZADO; sonidos pueden devolver nil — el estómago es la excepción declarada, sin fallback."
+    sede: "corpus-craving/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "resolución de assets (Assets.Model garantiza ruta)" }
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+    nota: "Assets.Sound/Model devuelve el PRIMER candidato montado, sin math.random (enmienda 2026-07-13). Título alineado el 2026-07-19 (hallazgo 2.4 del COMPLETO): el universal «SIEMPRE HL2» era falso para Assets.Sound."
+  CRV-8:
+    titulo: "Anti-desperdicio: con el stat relevante ≥ 98 el onUse devuelve false y Cargo no consume la unidad."
+    sede: "corpus-craving/docs/Craving_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "round-trip de Consume" }
+      - { tipo: codigo, ref: "en juego: con barra llena NO consume" }
+  CRV-9:
+    titulo: "Los stats son server-autoritativos, escala 100 → 0, clampeados siempre a [0,100]."
+    sede: "corpus-craving/docs/Craving_Architecture.md §2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "clamps" }
+    nota: "La mitad del espejo NW2 es ahora CRV-18 (curaduría D-10, 2026-07-19)."
+  CRV-10:
+    titulo: "Reconexión ≠ respawn: reconectar restaura lo persistido (cierra el exploit de comer gratis) y morir aplica el 75/75."
+    sede: "corpus-craving/docs/Craving_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: reconectar restaura stats" }
+  CRV-11:
+    titulo: "El daño del fallback usa DMG_GENERIC con el mundo como attacker: nunca suplanta a otro jugador ni dispara lógica de PvP ajena."
+    sede: "corpus-craving/docs/Craving_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: craving_set 0 0 sin Coagulant" }
+    nota: "Gemela de COA-11. Dos módulos llegaron a la misma solución por separado."
+  CRV-12:
+    titulo: "Balance = data: los números viven en config/convars, y balancear jamás toca core/coagulant/items."
+    sede: "corpus-craving/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "config pura: drenaje, sobrepeso, severity" }
+    nota: "Gemela de COA-27."
+  CRV-13:
+    titulo: "La dirección de la soft-dep es única: Craving detecta a sus peers y nadie detecta a Craving."
+    sede: "corpus-craving/docs/Craving_Architecture.md §1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Gemela de COA-31 (Coagulant no detecta a Craving). Las dos mitades del mismo pacto, enunciadas por separado en cada repo."
+  CRV-14:
+    titulo: "La entity resuelve Corpus y el módulo SIEMPRE en runtime, jamás en file-scope: scripted_ents la carga antes del boot del módulo."
+    sede: "corpus-craving/lua/entities/corpus_craving_food.lua (cabecera)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: spawnear la entity desde Entities → Corpus" }
+    nota: "Patrón tomado de corpus_cargo_item. Es CAL-8 en el único sitio donde el manifest no manda."
+  CRV-15:
+    titulo: "La toma de la entity de comida es deliberada: WALK+E la recoge; E pelado es carry de prop."
+    sede: "corpus-craving/docs/Craving_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: entity Bread con WALK+E (CHANGELOG entry 12)" }
+  CRV-16:
+    titulo: "craving_decay_scale 0 congela hambre y sed: es el 'off suave' para sandbox puro."
+    sede: "corpus-craving/docs/Craving_Architecture.md §11"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+  CRV-17:
+    titulo: "La severity reportada a Coagulant es (25 − stat)/25 clampeada a [0,1]: 0 en el umbral severo o más (y 0 LIMPIA la condición), 1 con el stat en 0."
+    sede: "corpus-craving/docs/Craving_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "config pura: severity" }
+    nota: "Partido de CRV-5 en la curaduría D-10 (2026-07-19)."
+  CRV-18:
+    titulo: "El cliente solo lee el espejo NW2 de los stats, escrito solo si cambió > 0.1 desde el último set."
+    sede: "corpus-craving/docs/Craving_Architecture.md §9"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py — 55 checks client" }
+    nota: "Partido de CRV-9 en la curaduría D-10 (2026-07-19)."
+
+  # ── CRG — Cargo ─────────────────────────────────────────────────────────────
+  # El módulo más grande del ecosistema. Su evidencia es dev/harness_cargo.py (2807
+  # líneas) y cargo_selftest, que reportan CONTEOS agregados sin nombrar checks — así
+  # que la evidencia se cita por harness/selftest, nunca por ID. No tiene planilla
+  # con IDs (ver deuda D-2). Este barrido registró los invariantes portantes; la
+  # prosa de Cargo tiene más normas de grano fino que quedan como deuda (D-8).
+
+  CRG-1:
+    titulo: "Cargo transporta, no interpreta: posee el cómo se define, pesa, guarda y renderiza un ítem; el módulo dueño posee el qué hace."
+    sede: "corpus/docs/CORPUS_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest — superficie de contrato" }
+    nota: "Sede en el framework porque es el contrato del ecosistema; Cargo_Architecture.md §3 es la sede local y CLAUDE.md/README son copias. Es COR-10 aplicada a los ítems."
+  CRG-2:
+    titulo: "El contrato público de Cargo es el bloque CARGO PUBLIC CONTRACT del init; todo lo demás que cuelgue de la tabla es off-contract por convención."
+    sede: "corpus-cargo/lua/autorun/corpus_cargo_init.lua (bloque CARGO PUBLIC CONTRACT)"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "CORPUS_Architecture.md §4 lo declara: 'el contrato completo vive en el bloque CARGO PUBLIC CONTRACT'" }
+    nota: "Mismo patrón que CAL-12: la firma congelada vive en el sitio de registro, no en un doc."
+  CRG-3:
+    titulo: "class es obligatorio y debe ser stackable o unique: Register hace error() si falta, igual que con id, name y weight."
+    sede: "corpus/docs/CORPUS_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest — contrato" }
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "Cargo_Architecture.md §3 describe las dos clases pero NO dice que el campo sea obligatorio — la obligatoriedad solo está enunciada en el framework y en el error() del código."
+  CRG-4:
+    titulo: "La def se almacena y devuelve POR REFERENCIA: el módulo dueño puede seguir poblando su propia tabla."
+    sede: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua (Register)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest" }
+    nota: "Es COR-7 replicada un nivel más abajo: el mismo espíritu del registro de Corpus, aplicado al registro de defs. Un deep-copy acá rompería a los módulos dueños en silencio."
+  CRG-5:
+    titulo: "CountItem/TakeItem son de stacks solamente: un unique es invisible para ellos — quien pregunta '¿lleva uno?' usa HasItem."
+    sede: "corpus-cargo/lua/autorun/corpus_cargo_init.lua (bloque CARGO PUBLIC CONTRACT)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py (entry 18)" }
+      - { tipo: planilla, ref: "Coagulant G4 — el bug que la parió (torniquete unique invisible)" }
+    nota: "La otra cara de COA-2. Nació de un bug real de un módulo consumidor: es la única norma de Cargo escrita desde afuera."
+  CRG-6:
+    titulo: "El server posee el inventario; el cliente solo envía intents y renderiza snapshots. Toda mutación termina en Save + Sync + refresh de movimiento."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "LA REGLA MADRE DE SEGURIDAD DE RED de Cargo. Los 14 net.Receive de intents no necesitan gate de admin por diseño: son intents del jugador sobre su PROPIO inventario, y su defensa es ésta + la re-resolución server-side."
+  CRG-7:
+    titulo: "Sin lavado de desgaste: los stacks solo se fusionan con condición idéntica — una placa gastada que vuelve de un sub-slot es un stack aparte."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+      - { tipo: selftest, ref: "cargo_selftest" }
+  CRG-8:
+    titulo: "Un solo primitivo de sub-slot: óptica, exo/escudo y placas pasan TODOS por DeclareSubSlot + el filtro 'category:a,b'. Nada de variantes ad-hoc."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest — filtros" }
+  CRG-9:
+    titulo: "Eyección obligatoria: todo flujo que destruye un ítem con sub-slots ocupados los eyecta primero — una placa jamás se pierde como efecto colateral."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest — checks de eyección obligatoria" }
+    nota: "No aplica al slot throwable: un stack no tiene sub-slots que eyectar (enmienda 2026-07-13)."
+  CRG-10:
+    titulo: "El id de un tab JAMÁS es una categoría válida en el filtro 'category:a,b'."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §7.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: selftest, ref: "cargo_selftest — filtros" }
+    nota: "La mitad de la fila fija que no crece es ahora CRG-49 (curaduría D-10, 2026-07-19)."
+  CRG-11:
+    titulo: "La curva peso→velocidad es consecuencia NATIVA: funciona standalone, y Cargo nunca depende de la stamina de Coagulant para su propia consecuencia."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — curva determinista" }
+      - { tipo: selftest, ref: "cargo_selftest" }
+    nota: "Evita la degradación deshonesta: un servidor con solo Cargo ya tiene consecuencia real por sobrecarga."
+  CRG-12:
+    titulo: "La pata de movecompat es SHARED porque Move es predicho, con piso absoluto 30 — sobrecargado es lento, nunca inmóvil."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §5 (enmienda 2026-07-13, #34)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — escala/piso/toggles, 220 checks" }
+    nota: "Gemela de COA-5 y COA-6. Los dos módulos que tocan velocidad llegaron a la misma solución: shared por predicción, piso que no sube."
+  CRG-13:
+    titulo: "Techo duro de sobrepeso: pasada la fracción 2.0 no se puede recoger nada más; entre 1.0 y 2.0 se mueve, penosamente."
+    sede: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_weight.lua (MAX_FRACTION)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "El número 2.0 solo vive en el código y en cargo_estado.md; Cargo_Architecture.md §5 no lo enuncia. Hueco de sede (D-3)."
+  CRG-14:
+    titulo: "El cinturón no guarda munición: ES la reserva real del jugador. El grid es solo almacén en data."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §16.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — reglas del cinturón" }
+  CRG-15:
+    titulo: "INVARIANTE DEL ESPEJO: ply:GetAmmoCount(tipo) == suma de los stacks del cinturón de ese tipo (+ el stack throwable equipado, §16.9)."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §16.3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "El invariante central del subsistema de munición. Push usa SetAmmo (asigna, nunca suma): empujar dos veces no infla nada. El espejo va por poll a 4 Hz, no por hooks — es agnóstico de base y funciona sin ningún hook de ARC9."
+  CRG-16:
+    titulo: "La munición del mundo entra al GRID: nunca se vuelve reserva a espaldas del jugador."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §16.5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+  CRG-17:
+    titulo: "En cada spawn se hace StripAmmo() y después Push(): la reserva se reconstruye del cinturón y de nada más; el reconciliador queda suprimido hasta que ese Push corrió."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §16.4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "El gate impide que lo que una base de arma regale durante la ventana de spawn se cuele al cinturón por el espejo. Cargo fuerza arc9_mult_defaultammo 0 (su default es 2): la munición no puede aparecer del éter."
+  CRG-18:
+    titulo: "El precio lo dice el servidor: el basket del cliente es intent puro y su total es decorado; Confirm re-resuelve, re-precia y valida antes de mover."
+    sede: "corpus-cargo/docs/Cargo_Trade_Arquitectura.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "No hay rollback porque no hay nada que revertir: Confirm valida TODO y recién después muta. La defensa del basket no es un lock sino la re-resolución."
+  CRG-19:
+    titulo: "La compra transfiere con skipCap: el peso no bloquea una transacción de comercio — sí sigue rigiendo lo que se recoge del suelo (CRG-13)."
+    sede: "corpus-cargo/docs/Cargo_Trade_Arquitectura.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "CHANGELOG #21, confirmado en juego 2026-07-14; corpus_cargo_trade.lua — sin skipCap la línea se rechazaría y el trato se ejecutaría a medias" }
+    nota: "Nació como derogación (1.ª pasada en juego): el Confirm dejó de validar peso para sostener la regla atómica. Reformulado en positivo el 2026-07-19 (voto del autor, h): sigue VIGENTE porque rige el código de hoy."
+  CRG-20:
+    titulo: "Un ítem sin def.value no se comercia: la ausencia significa 'no está a la venta', no 'gratis'."
+    sede: "corpus-cargo/docs/Cargo_Trade_Arquitectura.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "Alcanza a las armas capturadas vía weapon_prices: sin entrada no es comerciable, incluidas las tools sandbox."
+  CRG-21:
+    titulo: "Un solo inventario-en-entidad: contenedor, trader y cadáver son el MISMO primitivo (Containers.Attach); un trader es ese contenedor + una capa de precio, nunca un inventario paralelo."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 11"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+  CRG-22:
+    titulo: "El net de transferencia del contenedor deliberadamente NO se cablea a un trader: nada cruza salvo por Confirm."
+    sede: "corpus-cargo/docs/Cargo_Trade_Arquitectura.md §12.bis"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "REGLA DE SEGURIDAD DE RED: sin ella, el canal de transferencia del contenedor sería un bypass gratis del pago."
+  CRG-23:
+    titulo: "ARC9: los stats son lectura-only vía GetProcessedValue; instalar/quitar va por SU API. El estado del arma es autoritativo en ARC9; el inventario, en Cargo."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §10.3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "verificado contra dev/other/ — las claves reales son DamageMax/Spread/RPM" }
+  CRG-24:
+    titulo: "Los nombres de API de terceros y del engine (ARC9, mods de movimiento) se verifican contra dev/other/, JAMÁS se asumen de memoria."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "los headers de corpus_cargo_arc9.lua, wheel.lua y movecompat.lua anotan lo ya verificado" }
+    nota: "La lección es de Cargo y la citan Coagulant y Craving. Es la norma más portada del ecosistema."
+  CRG-25:
+    titulo: "GMod DESENGANCHA un hook de HUDPaint que erra: pintado y commit van en pcall + Corpus.Log ruidoso."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "pagado en la 1.ª pasada del entry 13" }
+    nota: "ÉSTA es la sede de la trampa que COA-14 cita — la pagó Cargo. Coagulant la re-enuncia en un comentario de código porque no tenía dónde citarla."
+  CRG-26:
+    titulo: "draw.RoundedBox con radio = mitad NO produce un círculo: su radio está cuantizado. Todo círculo pasa por Theme.DrawCircle."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "pagado en juego, entry 13" }
+  CRG-27:
+    titulo: "Trampas de VGUI: DNumSlider, DPropertySheet:Dock(FILL) y DIconLayout:Dock(FILL) colapsan dentro de un DScrollPanel — filas manuales y Dock(TOP) + InvalidateLayout(true)."
+    sede: "corpus-cargo/CLAUDE.md §Trampas de VGUI y HUD"
+    fuerza: GUIA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "pagado en la primera pasada en juego de este repo" }
+    nota: "Caliber la cita y a la vez la incumple: el DNumSlider de su tab Limbs/WL es deuda heredada que viaja tal cual (CAL-21)."
+  CRG-28:
+    titulo: "HUDPaint no tiene clipping de panel: todo lo que pueda sangrar se recorta con render.SetScissorRect."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.6"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "pagado con el hatching de los quickslots del wheel" }
+  CRG-29:
+    titulo: "Los objetos Color de T.Colors se crean UNA vez: una paleta solo muta sus rgba, conservando la identidad de tabla."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §15.5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — #29 paletas runtime" }
+    nota: "Así todos los closures de Paint se re-skinnean al frame siguiente sin tocar un consumidor. Sin el mod DGL4 o con su API rota, el theme cae a base neutra y jamás crashea."
+  CRG-30:
+    titulo: "El wheel es un front-end alternativo de las teclas 1-7: cero lógica de server nueva, cero mensajes de red nuevos, y jamás intercepta slot8."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+  CRG-31:
+    titulo: "Jamás se pisa un bind del engine en silencio: si la tecla ya tiene bind, aviso único por Corpus.Log y ambos disparan."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Regla explícita del autor."
+  CRG-32:
+    titulo: "En el hub del wheel ningún dato se inventa: la reserva se lee del pool del engine; si el fire mode no está disponible el campo se OCULTA, jamás se adivina."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §17.5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "rutas verificadas contra el ARC9 vivo, 2.ª pasada 2026-07-13" }
+  CRG-33:
+    titulo: "El sistema de íconos es cosmético y client-side puro, cero costo de net: el servidor nunca genera ni transporta imágenes."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+  CRG-34:
+    titulo: "La jerarquía de fuente del ícono es estricta: def.icon → imagen generada → letra. La letra en el grid es SEÑAL DE ERROR, no un estado esperado."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — ResolveIconSource" }
+  CRG-35:
+    titulo: "Regla dura contra el hitch: nada de generar todo el inventario en el frame en que se abre — cola con presupuesto de N renders por frame."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+  CRG-36:
+    titulo: "El footprint vive en el subsistema de imágenes, no en el doc de UI: es una propiedad que solo tiene sentido una vez que existe la imagen que la llena."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §5"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+  CRG-37:
+    titulo: "NUNCA un footprint arbitrario: se cuantiza a un set cerrado de permitidos, con techo por categoría (ammo ≤ 2×1, medical ≤ 2×2, weapons ≤ 6×2)."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — techo por categoría" }
+    nota: "Un tamaño arbitrario rompería el flow de gradas del grid. def.size explícito gana siempre sobre el auto por OBB cuantizado."
+  CRG-38:
+    titulo: "La notación de tamaños del AUTOR es alto×ancho — el reverso del {w,h} del código: su '2x3' es {w=3, h=2}. Hay que invertir antes de escribir def.size."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_cargo_capture.lua:81 — el comentario que la aplica" }
+    nota: >
+      Era LA NORMA MÁS FRÁGIL DEL ECOSISTEMA: su única sede era una entry de CHANGELOG
+      (fosilizada por FLU-14) y se detectó porque el toolgun salió invertido en juego.
+      Subida a §5 el 2026-07-19 (voto f, cierra D-9), con la aclaración de que los
+      pares del doc van en notación de código ancho×alto. La entry de CHANGELOG queda
+      como historia.
+  CRG-39:
+    titulo: "El hash de caché del ícono pliega el mtime de la fuente ARC9: Material() cachea por path, así que reusar un nombre serviría los píxeles viejos."
+    sede: "corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+  CRG-40:
+    titulo: "La captura post-equipa vía WeaponEquip sin vetar PlayerCanPickupWeapon en la ruta de give (compat con mods de pickup, lección L4D IPS); el world gate SÍ lo veta, solo para armas EN REPOSO en el mundo."
+    sede: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_capture.lua (header)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "verificada contra el mod vivo, 2026-07-11; world gate confirmado en juego (CHANGELOG #7)" }
+    nota: "Título alineado el 2026-07-19 (hallazgo 2.3 del COMPLETO): antes enunciaba el absoluto «nunca veta» y la matización vivía solo en esta nota — el índice se contradecía a sí mismo."
+  CRG-41:
+    titulo: "La trivia la pone el SWEP (Description + Trivia), no una tabla; WeaponTrivia es la excepción. Ni trivia ni trivia_rows se persisten: se re-derivan en cada boot."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "entry 23 confirmada en juego" }
+  CRG-42:
+    titulo: "SWEP.Slot NO es la señal para derivar el slot de un arma: es inconsistente entre packs — se usa SWEP.Class y SubCategory, resueltos por herencia."
+    sede: "corpus-cargo/docs/cargo_estado.md §Qué existe hoy (entry 24)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "entry 24 confirmada en juego" }
+    nota: "Sede en el estado, que es volátil. Candidata a perderse en el próximo refresh (D-3)."
+  CRG-43:
+    titulo: "Persistencia namespaced sin SQLite, y el round-trip JSON no preserva tipos de clave: se re-normalizan las claves numéricas al cargar (Util.NumberKeys)."
+    sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — round-trip JSON de quick slots en ambos realms" }
+    nota: "Es COR-8 con su remedio: Cargo es el único módulo que declara explícitamente cómo sobrevive a la normalización del round-trip."
+  CRG-44:
+    titulo: "Si el módulo dueño de una stat-bar no está montado, la barra simplemente no se registra: Cargo no conoce el contenido de cada barra, solo la renderiza."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §11"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Nada se hardcodea. Es COR-11 en la UI."
+  CRG-45:
+    titulo: "Los comandos dev de Cargo quedan SIN gate de admin, con TODO anotado, esperando la primitiva de permisos de Corpus."
+    sede: "corpus-cargo/docs/cargo_roadmap.txt §12"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "TODOs en icons.lua, dev.lua e iconeditor.lua + tablas de pendientes de dos docs" }
+    nota: >
+      Es DEUDA DECLARADA, no una norma cumplida: la norma es 'el TODO está anotado y
+      espera la primitiva'. El único net.Receive que espera gate es NET_ICON_OVERRIDE,
+      hoy ABIERTO a cualquier jugador y contenido solo por el saneo de entrada (CRG-46).
+      Los otros 14 no lo necesitan por diseño: los protege CRG-6.
+  CRG-46:
+    titulo: "El override de ícono que llega por net se sanea server-side: def desconocida se ignora, footprint fuera del set permitido se descarta."
+    sede: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_icons.lua (SanitizeOverride)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py" }
+    nota: "NO está en prosa, solo en código. Es la defensa REAL del único net.Receive sin gate — y por FLU-26 un comentario no debería definirla. Ver D-3."
+  CRG-47:
+    titulo: "El boundary-debt se declara ahora para no perderlo y se resuelve cuando el bloque dueño cierre; el dueño de una frontera se decide EN DISEÑO."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §13"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "el flag de Scavenger en Caliber (CAL-22) es el mismo patrón" }
+  CRG-48:
+    titulo: "Idioma en tres capas que no se mezclan: código (comentarios e identificadores) en inglés; strings de cara al jugador en inglés — nada en español llega a pantalla; docs, commits y logs en español."
+    sede: "corpus-cargo/CLAUDE.md §Idioma"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      DIVERGENCIA DELIBERADA: Cargo comenta en inglés; corpus, Caliber, Coagulant y
+      Craving comentan en español (GIT-4). El propio CLAUDE.md de Cargo lo declara
+      ('estilo fijado al estrenar este repo — difiere de corpus/caliber'). La regla que
+      los concilia es 'iguala el del archivo que editás'. La decisión de los strings en
+      inglés la fijó Cargo el 2026-07-10 y la heredó todo el ecosistema.
+  CRG-49:
+    titulo: "La fila de tabs es una capa de display con set fijo y cerrado: nunca vuelve a crecer — una categoría ajena se auto-registra pero no acuña tab (cae bajo Misc y All)."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §7.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus_cargo_items.lua — Items.GetTabs/TabOf: lo no mapeado cae a Misc" }
+    nota: "Partido de CRG-10 en la curaduría D-10 (2026-07-19). Los módulos hermanos traen sus categorías sin pedir permiso (Items.RegisterCategory las auto-registra), pero la fila nunca crece."
+
+  # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
+
+  STK-1:
+    titulo: "Este addon es consumidor puro: nada de lo que vive acá sube al framework ni a un módulo."
+    sede: "corpus-stalker/CLAUDE.md §Qué es (Regla cardinal)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Es COR-10 desde el otro lado. Si algo 'necesita' subir, la respuesta es exponer un punto de extensión en el módulo, no mover el contenido."
+  STK-2:
+    titulo: "Los assets no se versionan: models/materials/sound/particles/resource están en .gitignore y no se añaden ni con git add -f."
+    sede: "corpus-stalker/CLAUDE.md §Assets: no se versionan"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: ".gitignore del repo / git check-ignore" }
+    nota: "Son ports propiedad de GSC Game World: la MIT del repo cubre el código, no los assets."
+  STK-3:
+    titulo: "Rutas verbatim: las rutas de los modelos se conservan exactamente como vienen del pack de origen — no se re-namespacea ninguna."
+    sede: "corpus-stalker/docs/ASSETS.md §Regla de oro"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: los modelos ZONA resuelven (cargo_dev_give / menú C)" }
+    nota: "Un .mdl referencia sus materiales por la ruta que tenía al compilarse (cdmaterials): re-namespacear exigiría recompilar los 152 modelos."
+  STK-4:
+    titulo: "No se copia el código de los packs de referencia: está roto y es peligroso (monkeypatch de engine.IsMounted, hook que anula explosiones, net.ReadTable sin validar admin). Se reescribe."
+    sede: "corpus-stalker/CLAUDE.md §Contratos que no debes romper · 5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "la autopsia en dev/stalker_rp_packs_mapa.md §5" }
+  STK-5:
+    titulo: "Los nombres de clase de entidad van prefijados corpus_stalker_<cosa>: los packs de origen usan genéricos (blood, fire, teleport) y la colisión está garantizada."
+    sede: "corpus-stalker/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+  STK-6:
+    titulo: "Al referenciar un sonido ZONA nuevo desde cualquier módulo, hay que copiarlo también a este addon."
+    sede: "corpus-stalker/docs/ASSETS.md §2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: sin el pack de Workshop montado, el sonido debe seguir sonando" }
+    nota: "El addon nació sin sound/ y los zona/stalkerrp/* sonaban solo porque el pack de Workshop estaba montado aparte."
+  STK-7:
+    titulo: "Los sonidos se validan por oído: el nombre del archivo del pack miente (los actions/eat*.mp3 son tragos, no masticado)."
+    sede: "corpus-stalker/docs/ASSETS.md §1.3"
+    fuerza: GUIA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "en juego: escuchar el sonido al consumir (Craving, ronda 2)" }
+  STK-8:
+    titulo: "Política de assets de terceros: crédito completo, y retiro inmediato si un titular lo pide."
+    sede: "corpus-stalker/CLAUDE.md §Assets: no se versionan"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Sede movida del README el 2026-07-19 (voto g): un ID interno ensuciaba la cara pública de GitHub. El README la sigue enunciando en lenguaje de visitante, sin etiqueta."
+
+  # ── CTX — Cortex ────────────────────────────────────────────────────────────
+  # Sin entradas: el repo tiene solo LICENSE + README y su README es descriptivo,
+  # no normativo. La familia queda declarada para que su Block la use al abrirse.
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MÉTRICA DE SALUD (§7.4 · SDD-3 en Kontrol) — línea base 2026-07-16.
+# El checker la reporta en cada corrida (§7.7): no se recuenta a mano.
+# Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
+# ══════════════════════════════════════════════════════════════════════════════
+salud:
+  fecha: 2026-07-16
+  # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
+  # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
+  # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
+  # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
+  # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
+  # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
+  total: 189
+  intencion: 51          # 27% — la métrica que hay que bajar (§7.4)
+  referencia_kontrol: "159 INTENCION de 214 (74%) al backfillear"
+  nota: >
+    Línea base del barrido inicial: 27% de INTENCION contra el 74% con que arrancó
+    Kontrol. La diferencia no es virtud, es que este ecosistema ya tenía tres capas
+    de evidencia (selftest + harness offline + planilla en juego) antes de tener
+    registro — lo que faltaba era poder CITARLAS. El grueso del INTENCION restante
+    es FLU: normas de conducta que hoy nada observa salvo la disciplina. Bajar ese
+    número es trabajo legítimo de toda pasada, no se hace por decreto.
+  asimetria_de_evidencia: >
+    El dato más duro del barrido: Coagulant es el ÚNICO módulo con evidencia tipo
+    planilla. Sus checks (A/E/G/H/I) se citan desde docs Y código — G4 aparece 15
+    veces. Caliber, Cargo y Craving verificaron en juego SIN IDs de check: sus
+    rondas existen, pero no dejaron nada citable. Es la lección §10.8 de Kontrol
+    en vivo — una verificación que no deja artefacto citable no es evidencia, es
+    un recuerdo. Ver deuda D-2.
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DEUDA DECLARADA de esta versión. No se repara por decreto (§7.4): cada punto es
+# trabajo de una pasada propia, con el autor. Se listan porque el barrido los
+# encontró, no porque estén resueltos.
+# ══════════════════════════════════════════════════════════════════════════════
+deuda:
+  D-1:
+    titulo: "CERRADA 2026-07-19: Cargo cita COR-12 en su contrato de ítems, las seis copias citan en vez de re-enunciar, y el comentario de items.lua ya no induce el bug de realms."
+    detalle: >
+      La sede canónica es corpus/docs/CORPUS_Architecture.md §5, que la enuncia
+      completa y con su razón. Pero Cargo —dueño de Items.Register, y el que IMPONE
+      el gate isfunction(def.onUse) en su ui.lua— no la menciona en NINGÚN doc: ni
+      Cargo_Architecture.md §3 (su contrato de ítems), ni el bloque CARGO PUBLIC
+      CONTRACT. Peor: el único texto que Cargo ofrece sobre onUse es
+      `onUse function(ply, ctx) -> true to consume one unit (SERVER)` en items.lua,
+      que INDUCE EL BUG al leerse solo — sugiere que onUse es cosa de server.
+      Las seis copias (Coagulant ×3, Craving ×2, corpus-stalker ×1) existen porque
+      cada módulo que se quemó la anotó en su propia casa. corpus-stalker es el
+      próximo que registrará ítems.
+    propuesta: "Cumplida. El remanente (el comentario `onUse ... (SERVER)` de items.lua) se corrigió en la tanda del 2026-07-19: ahora dice que def+onUse van en AMBOS realms y la closure solo CORRE en server, citando COR-12."
+  D-8:
+    titulo: "El barrido de Cargo registró los invariantes portantes; su prosa de grano fino queda sin ID."
+    detalle: >
+      Cargo tiene ~220 enunciados normativos entre CLAUDE.md, cuatro docs de
+      arquitectura, el roadmap y los headers de código. Esta pasada acuñó 48. Lo que
+      quedó fuera es sobre todo GUIA y REGLA de grano fino (detalles de layout del
+      wheel, del editor de íconos, del Workbench —que ni siquiera está implementado—).
+      Se declara para que nadie lea 'CRG tiene 48 IDs' como 'Cargo está cubierto'.
+    propuesta: "Se acuñan cuando su pasada los toque (FLU-30 lo fuerza para toda norma nueva; las viejas se suben por oportunidad)."
+  D-9:
+    titulo: "CERRADA 2026-07-19: CRG-38 vive ahora en Cargo_ItemImages_Arquitectura §5, con la aclaración de que los pares del doc van en ancho×alto de código."
+    detalle: >
+      Es la norma más frágil del ecosistema: el CHANGELOG no se reescribe por
+      disciplina (FLU-14), así que la regla queda fosilizada donde nadie la busca.
+      Y CRG-36 declara que el footprint vive en Cargo_ItemImages §5 — que lista
+      'placa 2×3 vertical' y un set permitido de pares SIN aclarar en qué notación
+      están. Un lector que tome §5 al pie de la letra reproduce el bug del toolgun.
+      Es a la vez D-3 (sede en historial) y una trampa activa.
+    propuesta: "Cumplida (voto f, 2026-07-19): la trampa activa quedó desactivada — §5 ya no puede leerse al pie de la letra y reproducir el bug del toolgun. La entry de CHANGELOG queda como historia (FLU-14)."
+  D-2:
+    titulo: "RECORTADA 2026-07-19 (voto e): los IDs de check rigen HACIA ADELANTE; lo verificado antes de FLU-07 queda como pre-norma, sin reconstrucción retroactiva."
+    detalle: >
+      Solo Coagulant usó IDs (A/E/G/H/I, rondas 1-6). Caliber cerró su Block por
+      'paridad de comportamiento en juego' el 2026-07-09 sin un ID; Cargo y Craving
+      igual. FLU-07 declara los IDs de check obligatorios y canónicos desde el
+      2026-07-14 — o sea que la norma existe y tres repos la incumplen. Sin IDs,
+      la evidencia mejor calibrada del ecosistema (§7.4) no se puede citar desde
+      el registro. (D-1 quedó REPARADA el 2026-07-19: Cargo, el dueño de la API,
+      ya enuncia la regla de realms en Cargo_Architecture.md §3 citando COR-12 con
+      su causa; y las seis copias de los módulos pasaron de re-enunciar a CITAR.
+      Sigue abierto el comentario de items.lua que anota `onUse ... (SERVER)` e
+      induce el bug — es .lua, va en la pasada de D-3.)
+      ACTUALIZADO 2026-07-16: el checker (§7.7) YA valida la evidencia `planilla`
+      —exige que el ID de check esté citado en el repo del módulo— y su fixture
+      `evidencia-planilla-rota` prueba que caza una cita fantasma. Pero hoy solo
+      Coagulant puede usar ese tipo de evidencia: en los otros tres, cualquier
+      `planilla` que se escriba sale EVIDENCIA_ROTA, con razón. La deuda no es del
+      checker; es que tres módulos verificaron sin dejar rastro.
+    propuesta: >
+      Votado por el autor el 2026-07-19: (1) todo cierre de ronda futuro pega el
+      reporte de la planilla con sus IDs al CHANGELOG del repo (FLU-11 ya emite ese
+      formato); (2) las verificaciones pre-2026-07-14 NO se retro-etiquetan —
+      reconstruir evidencia sería fabricarla (Caliber cerró el 2026-07-09, antes de
+      que FLU-07 existiera). Queda abierta solo como recordatorio: se cierra sola
+      cuando Caliber, Cargo y Craving tengan una ronda post-norma con IDs en su
+      CHANGELOG; la primera candidata es la ronda 7 de Coagulant.
+  D-3:
+    titulo: "RECORTADA 2026-07-19: COA-14 (pcall del pintado) y CRG-38 (notación) ya viven en su doc de diseño, y STK-8 en el CLAUDE.md de stalker; quedan las demás sedes fuera de doc."
+    detalle: >
+      COA-14 (todo el pintado en pcall — la trampa la pagó CARGO y ni el CLAUDE.md
+      ni la arquitectura la enuncian), COA-6 (el math.min del piso de velocidad),
+      COA-17 (el NW2 on-change), CAL-15 (el no-overflow del escudo). El CHANGELOG
+      no se reescribe por disciplina (FLU-14) pero tampoco se lee al diseñar; un
+      comentario de código viola FLU-26 (un comentario CITA, jamás DEFINE). Quien
+      escriba un HUDPaint nuevo siguiendo solo los docs rompe COA-14.
+    propuesta: >
+      Aprobado en principio por el autor (voto f, 2026-07-19), ejecutando primero el
+      subconjunto que desactivaba trampas pagadas (COA-14, CRG-38 + el comentario de
+      items.lua). Las restantes (COA-6, COA-17, COA-30, CAL-15 y las demás sedes en
+      .lua/CHANGELOG/estado/roadmap) se suben por oportunidad en la próxima pasada de
+      su repo, dejando la cita por ID en el código. El COMPLETO (H1/H2) sumó a la
+      lista: la sede ROTA de CRG-45 (cargo_roadmap §12 no contiene la etiqueta, y los
+      roadmaps son ahora intención pura — debe mudarse a un doc de diseño) y las 4
+      sedes con norma viva en doc-árbitro (FLU-15 en estado, CRG-42 en estado, COA-6 y
+      COA-17 en CHANGELOG — un INVARIANTE con sede en historial contradice FLU-14).
+  D-4:
+    titulo: "CERRADA 2026-07-19: Caliber_Architecture §1 ya enuncia la cadena completa (Hit → escudo → armadura → limbs) citando CAL-13."
+    detalle: >
+      El autor pidió además reconciliar el doc entero contra el código (sospechaba
+      drift de la era ADS). El barrido encontró el §3 (boot diferido) CORRECTO y
+      tres ajustes más, aplicados: la fila UI del §6 confundía el tab del menú Q con
+      el browser por-NPC (los 6 sub-tabs viven en el browser, concommand
+      caliber_browser); el §6 omitía la segunda key de persistencia scav_weights; y
+      el §7 no declaraba los paths de assets sound/ads/ y materials/ads/ — quedaron
+      anotados como residual de 5.ª clase, fuera del alcance del rename. Los
+      deferrals de §9 están fielmente descritos (sin árbitro, no se tocaron).
+    propuesta: "Cumplida."
+  D-5:
+    titulo: "CRV-4 congela una firma de Coagulant que Coagulant nunca ratificó."
+    detalle: >
+      ApplyExternalCondition(ply, id, severity) está congelada mock-first por el
+      CONSUMIDOR (Craving, §4 de su arquitectura, que la marca 'a ratificar en
+      Coagulant_Architecture.md §8'). El dueño no la firmó. Es FLU-17 funcionando
+      a medias: la firma se congeló, pero la ratificación quedó pendiente.
+    propuesta: "Ratificarla en Coagulant_Architecture.md §8 o negociarla, cuando Coagulant cierre su ronda 7."
+  D-6:
+    titulo: "CERRADA 2026-07-19: política git unificada en la versión estricta — ni commit ni push sin pedido, en los siete repos (voto del autor)."
+    detalle: >
+      corpus-stalker era el único divergente (solo prohibía el push); su CLAUDE.md
+      pasó a la versión estricta citando GIT-7.
+    propuesta: "Cumplida."
+  D-7:
+    titulo: "RECORTADA 2026-07-19: la prosa de módulo ya lleva sus IDs (109 de 125). Quedan las 16 sedes que viven fuera de un doc de diseño."
+    detalle: >
+      La pasada de etiquetado (PROMPT_d7_etiquetado_ids.txt) cubrió los cinco repos:
+      CAL 22/22, COA 27/31, CRV 15/16, CRG 38/48, STK 7/8. Los 16 restantes NO son
+      olvido: son las sedes que viven en archivos .lua, en CHANGELOG.md, en un
+      <modulo>_estado.md, en un roadmap o en un README. Etiquetar ahí volvería
+      DEFINITORIO un comentario (viola FLU-26) o tocaría un doc que no se reescribe
+      (FLU-14) o uno volátil. O sea: lo que queda de D-7 ES la deuda D-3, y se cierra
+      moviendo esas sedes a un doc de diseño — decisión de diseño, no mecánica.
+      El gate COMPLETO (AUD-2) ya puede correr sin ahogarse en `sinId` de módulo.
+    propuesta: "Se cierra junto con D-3, moviendo las 16 sedes restantes a un doc. Hasta entonces, D-7 queda recortada, no cerrada."
+  D-10:
+    titulo: "CERRADA 2026-07-19: los dos casos duros subieron a la prosa (COA-20 a §7; COA-35 acuñado y enunciado en §11) y los títulos fusionados se partieron o recortaron."
+    detalle: >
+      Lo destapó el etiquetado, y es deuda MÍA del barrido inicial: para que el título
+      entrara en "≤1 frase" comprimí normas que la sede enuncia en dos párrafos, dos
+      viñetas o una tabla + prosa. Casos confirmados: COA-16, COA-19, COA-20, COA-27,
+      CRV-5, CRV-9, CRG-6, CRG-10, CRG-24, CRG-48. Consecuencia práctica: la etiqueta
+      no tiene un párrafo único donde anclarse, y el gate ve un título que afirma más
+      de lo que su sede sostiene.
+      DOS SON PEORES QUE LAS OTRAS, porque el registro afirma algo que la sede NO dice:
+        · COA-20 — "quitarlo no exige ni consume ítem" no está enunciado en §7.
+        · COA-27 — "un check jamás hardcodea un número tunable" solo vive en el campo
+          `evidencia` del yaml, no en §11.
+      Es la patología INVERSA a la que el sistema venía cazando (el doc que miente):
+      acá miente el índice. Por §7.1 el yaml no litiga contra su sede, así que el yaml
+      es el que se corrige — salvo que el autor decida que la norma faltante debe subir
+      a la prosa.
+    propuesta: >
+      Cumplida (votos a y f, 2026-07-19). Partidos: COA-16→+COA-33 (barra
+      client-side), COA-19→+COA-34 (cancelación), COA-27→+COA-35 (check no
+      hardcodea), CRV-5→+CRV-17 (fórmula severity), CRV-9→+CRV-18 (espejo NW2),
+      CRG-10→+CRG-49 (la fila de tabs no crece). Sede ampliada para calzar el
+      título: CRG-6 (Save+Sync en el contrato 7) y CRG-24 (terceros en general, no
+      solo ARC9). Reescrito a su sede: CRG-48 (las tres capas de idioma).
+  D-11:
+    titulo: "CERRADA 2026-07-19: COR-15 (UI shell) y COR-16 (log) acuñados en el CLAUDE.md del framework; los contratos 5-6 de Caliber pasaron a citarlos."
+    detalle: >
+      Lo destapó el etiquetado de Caliber: sus contratos 5 ("una sola entrada en el menú
+      Q vía Corpus.UI.RegisterTab") y 6 ("toda salida de consola va por Corpus.Log") son
+      normas del FRAMEWORK, y no hay ID que las cubra. COR-1..14 tiene registro (COR-2),
+      persistencia (COR-3), net (COR-4), detección (COR-5), prefijo (COR-6), by-ref
+      (COR-7)... pero nada para UI ni para Log, que son dos de las seis primitivas que
+      COR-10 declara. El barrido inicial las salteó porque el CLAUDE.md del framework no
+      las enuncia como contrato numerado — solo las lista en el mapa de archivos.
+    propuesta: "Cumplida (voto b, 2026-07-19). Las seis primitivas de COR-10 tienen ahora contrato citable."
+  D-12:
+    titulo: "El harness de Coagulant NO existe como archivo, y hay acreditaciones vivas tipo:harness que apuntan a él."
+    detalle: >
+      Lo destapó el COMPLETO (acta 2026-07-19, §5 H3): corpus-coagulant/CLAUDE.md
+      declara su harness "de scratchpad, se reconstruye por sesión" (régimen viejo,
+      igual que decía Cargo antes del hallazgo 2.5), y corpus-craving/CLAUDE.md
+      acredita el patrón como "verificó Corpus, Cargo y Coagulant" — pero en dev/ solo
+      existen harness_cargo.py y harness_craving.py. Varias entradas COA del registro
+      llevan evidencia tipo:harness (COA-2, COA-4, COA-5, COA-6 entre otras) cuyos
+      checks corrieron en un harness que ya no existe como archivo citable.
+      NO se tocó corpus-coagulant/CLAUDE.md:71 en la tanda de reparación, a propósito:
+      ahí la afirmación de scratchpad podría ser la históricamente correcta.
+    propuesta: "Voto del autor: (a) materializar dev/harness_coagulant.py (portando los checks del scratchpad) y alinear el CLAUDE.md al régimen permanente, o (b) re-acreditar esas COA con selftest/planilla y dejar el harness de Coagulant como histórico. Primero decidir, después parchear — nunca al revés."
+  D-13:
+    titulo: "Pre-2.º COMPLETO: 10 de 29 docs sin un solo ID (35% del corpus en ceguera), y cuatro mejoras del gate que el acta deja recetadas."
+    detalle: >
+      Del acta 2026-07-19 (§5): H1 — los 10 docs ciegos (los 5 *_convenciones de
+      módulo, los 4 roadmaps de módulo, Workbench_Arquitectura y la semilla de
+      Craving) suman 1.828 líneas donde un "limpio" significa "no auditado"; H5 —
+      corpus-stalker necesita stalker_convenciones_commits.txt + una arquitectura
+      mínima (su CLAUDE.md está haciendo de arquitectura), y Cortex necesita un doc
+      de CONTRATOS ENTRANTES (≥5 firmas ya congeladas por otros repos, sin lugar
+      donde cruzarse); H6 — subir la taxonomía a 18 buckets (compat-terceros y
+      ciclo-de-vida-del-jugador primero); H7 — agregar al workflow la fase
+      contrato-vs-árbol (un agente por CLAUDE.md); H8 — que el .js cite la jerarquía
+      por ID en vez de duplicarla, y su columna `total` quedó corta en 5 filas.
+    propuesta: "Pasada de acuñación sobre los 10 docs ciegos (mínimo: un ID por tabla de alcances; la familia CRG en Workbench; etiquetar frentes CERRADOS normativos de los roadmaps como citas) + los dos docs nuevos (stalker, Cortex-entrantes) + las mejoras del workflow. Recién después, el 2.º COMPLETO."

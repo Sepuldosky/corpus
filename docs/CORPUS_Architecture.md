@@ -36,7 +36,7 @@ Analogía de referencia en el mismo stack: **VJ Base + SNPCs** y **ARC9 + weapon
 | **Craving** | Supervivencia de jugador: hambre e hidratación |
 | **Cargo** | Inventario tipo EFT/STALKER: grid, framework de ítems, contenedores |
 
-**Regla cardinal:** Corpus es un framework **delgado**. Solo aloja infraestructura demostrablemente compartida (registro, persistencia, net, UI shell). Ningún módulo sube lógica de dominio a Corpus — ni siquiera algo compartido por dos módulos, como el pool de HP de extremidades, que se queda en su dueño (Caliber) y se consume vía registro. Esa línea es lo que evita que Corpus se vuelva un god-object con el tiempo.
+**Regla cardinal (COR-10):** Corpus es un framework **delgado**. Solo aloja infraestructura demostrablemente compartida: las **seis primitivas** de §3 (registro, persistencia, net, UI shell, ready barrier, log) — la lista canónica está ahí y en el `CLAUDE.md`, no acá. Ningún módulo sube lógica de dominio a Corpus — ni siquiera algo compartido por dos módulos, como el pool de HP de extremidades, que se queda en su dueño (Caliber) y se consume vía registro. Esa línea es lo que evita que Corpus se vuelva un god-object con el tiempo.
 
 **Regla cardinal:** la única dependencia dura de todo el ecosistema es Corpus mismo. Todo lo demás — Caliber, Cargo, Coagulant, Craving, Cortex entre sí — es **soft-dependency**: se detecta en runtime, se enciende si el partner está, degrada honestamente si no.
 
@@ -63,7 +63,7 @@ Corpus  ← hard-dep de TODOS los módulos (se detecta, nunca se asume)
 
 **Cargo no es hoja** (lo fue en el diseño original, dejó de serlo al construirse): consume Coagulant para volcarle el encumbrance y Cortex para pintar la facción en su panel de estado. Los dos edges viven en el código con lazy-check + `pcall` y degradación honesta — el de Coagulant está vivo en ambos extremos, el de Cortex es anticipatorio (Cortex todavía no tiene código).
 
-Ningún módulo, salvo Corpus, es un requisito duro de otro. Un usuario puede instalar solo Cargo (inventario sin combate ni supervivencia), solo Caliber (combate sin médico), o los cinco juntos. Cada combinación produce un sistema honesto, no una mitad rota.
+**COR-11 (ésta es su sede):** ningún módulo, salvo Corpus, es un requisito duro de otro. La única hard-dep del ecosistema es Corpus mismo; todo lo demás es soft-dep, se detecta en runtime vía `Corpus.GetModule`/`Corpus.HasModule` y nunca se asume (el mecanismo, en §6). Un usuario puede instalar solo Cargo (inventario sin combate ni supervivencia), solo Caliber (combate sin médico), o los cinco juntos. Cada combinación produce un sistema honesto, no una mitad rota.
 
 ### Tabla de resumen
 
@@ -115,9 +115,11 @@ function Corpus.OnReady(fn)                   -- fn corre una vez, tras InitPost
 function Corpus.Log(module, ...)              -- print("[Corpus:"..module.."] ", ...)
 ```
 
-> **Invariante del registro (contrato duro):** `Corpus.RegisterModule(name, iface)` y `Corpus.GetModule(name)` guardan y devuelven la **misma tabla por referencia** — sin deep-copy, sin normalización de ningún tipo. El patrón "tabla única poblada por side-effect" con el que los módulos construyen su namespace (ver `Caliber_Architecture.md` §3 y §11) depende de que sea así; un copy defensivo acá lo rompe en silencio. Es un contrato **distinto** al de `Corpus.Data.Save/Load`, que sí normaliza en el round-trip JSON (`util.JSONToTable` puede devolver claves numéricas donde se guardaron strings) — no confundir ambos invariantes.
+> **COR-7 — Invariante del registro (contrato duro; ésta es su sede):** `Corpus.RegisterModule(name, iface)` y `Corpus.GetModule(name)` guardan y devuelven la **misma tabla por referencia** — sin deep-copy, sin normalización de ningún tipo. El patrón "tabla única poblada por side-effect" con el que los módulos construyen su namespace (ver `Caliber_Architecture.md` §3 y §11) depende de que sea así; un copy defensivo acá lo rompe en silencio. Es un contrato **distinto** al de **COR-8** (`Corpus.Data.Save/Load` sí normaliza en el round-trip JSON: `util.JSONToTable` puede devolver claves numéricas donde se guardaron strings) — no confundir ambos invariantes.
 
-**Lo que Corpus NO contiene:** armor math, hitgroups, curvas de sangrado, curvas de hambre, grid de inventario. Si dos módulos comparten una pieza de dominio (limbs, por ejemplo), esa pieza no sube — se queda en su dueño y el otro la consulta por el registro (§4).
+> **COR-8 — Normalización en el round-trip de `Corpus.Data` (ésta es su sede):** lo que sale de `Corpus.Data.Load` **no** es garantizadamente idéntico a lo que entró en `Save`: el viaje por JSON puede cambiar el tipo de las claves. Un módulo que persiste una tabla con claves string no debe asumir que las recupera como string. Es el contrario exacto de COR-7, y por eso conviven: el registro **no** toca la tabla; la persistencia **sí**.
+
+**Lo que Corpus NO contiene (COR-10, la regla cardinal del framework delgado — ésta es su sede, junto con §4):** armor math, hitgroups, curvas de sangrado, curvas de hambre, grid de inventario. Si dos módulos comparten una pieza de dominio (limbs, por ejemplo), esa pieza no sube — se queda en su dueño y el otro la consulta por el registro (§4).
 
 ---
 
@@ -254,7 +256,24 @@ Corpus.OnReady(function()
 end)
 ```
 
-**Regla derivada:** el registro de Corpus (§3) es a la vez el mecanismo de detección de presencia y la ruta de acceso al módulo — `Corpus.GetModule("cargo").Items.Register(...)` es simultáneamente el check y la llamada.
+**Regla derivada (COR-11):** el registro de Corpus (§3) cumple los dos roles a la vez — es el mecanismo de detección de presencia y la ruta de acceso al módulo: una sola llamada a `Corpus.GetModule` entrega el veredicto y la interfaz. Pero el acceso **nunca** se encadena sobre el resultado: `GetModule` devuelve `nil` cuando el módulo no está registrado (`lua/autorun/corpus_registry.lua`), así que indexar sin nil-check produce un error de Lua en vez de la degradación honesta que exige COR-11. La forma canónica es captura local + rama (el lazy check de arriba):
+
+```lua
+local cargo = Corpus.GetModule("cargo")
+if cargo then
+    cargo.Items.Register(...)
+else
+    -- degradar: sin Cargo, los ítems no se registran
+end
+```
+
+Cuando solo se necesita una sub-tabla y `nil` es un valor de trabajo aceptable, la forma corta equivalente ya en producción (`corpus-coagulant/lua/corpus_coagulant/shared/corpus_coagulant_dev.lua`) es:
+
+```lua
+local cargoInv = Corpus.HasModule("cargo") and Corpus.GetModule("cargo").Inventory or nil
+```
+
+— acá el encadenamiento es legal porque `HasModule` lo precede.
 
 ### Namespacing
 
@@ -268,7 +287,7 @@ Archivos y carpetas prefijados por módulo. La disposición **no es libre**, la 
 
 **Ejecutada** — fue el Block 2 de Caliber, cerrado y verificado en juego el 2026-07-09. El detalle vive en [`corpus-caliber/docs/Caliber_Architecture.md`](../../corpus-caliber/docs/Caliber_Architecture.md); acá queda el criterio con el que se hizo:
 
-- **Fue una migración, no una reescritura.** Los 10 archivos de ADS 2.0 (`ads_core.lua`, `ads_armor.lua`, `ads_limbs.lua`, etc.) se convirtieron en Caliber por rename mecánico + adaptación de namespace (`ADS.*` → módulo registrado como `caliber` en Corpus) + prefijo de carpeta (`corpus_caliber_*`) + wiring sobre las 6 primitivas. Los principios de dominio ya fijados en ADS (EFT gana la jerarquía del extractor, resolver puro, armadura como pre-filtro delante de limbs) se preservaron **intactos** — son de Caliber, no artefactos de nombre. El criterio de aceptación fue **paridad de comportamiento**, no mejora.
+- **Fue una migración, no una reescritura.** Los 10 archivos de ADS 2.0 (`ads_core.lua`, `ads_armor.lua`, `ads_limbs.lua`, etc.) se convirtieron en Caliber por rename mecánico + adaptación de namespace (`ADS.*` → módulo registrado como `caliber` en Corpus) + prefijo de carpeta (`corpus_caliber_*`) + wiring sobre las 6 primitivas. Los principios de dominio ya fijados en ADS (EFT gana la jerarquía del extractor, resolver puro, y la cadena completa del pipeline: **escudo como pre-filtro delante de la armadura — CAL-13 —, armadura delante de limbs**: Hit → escudo → armadura → limbs) se preservaron **intactos** — son de Caliber, no artefactos de nombre. El criterio de aceptación fue **paridad de comportamiento**, no mejora.
 - **El legacy ADS quedó congelado** en `dev/legacy/AdvancedDamageSystem 2.0/` — carpeta fuera de todos los repos git del workspace (§8), con su nombre y namespace original (`ADS`), tag `v1.0`. No comparte código con Caliber: cualquier fix futuro se hace en Caliber, nunca se retro-porta al legacy.
 - **Queda pendiente el alcance nuevo** que ADS no cubría: el pipeline de armadura de **jugador** (backend nuevo, no una pestaña — es el Block 3 de Caliber) y la integración formal con Coagulant/Cortex vía el registro. Es ese pipeline el que vuelve agnóstica la `Limbs` API y expone los eventos de daño/limb que Cortex espera (§4).
 
@@ -313,9 +332,9 @@ Reglas del workspace:
 
 - **Un git público por repo (MIT).** Los siete versionan, taguean y releasean de forma independiente entre sí — publicados en `github.com/Sepuldosky/<repo>` bajo licencia MIT desde el 2026-07-13. `dev/` no se versiona.
 - **Cada raíz-repo es un addon Gmod completo**, con su propio `addon.json` en la raíz de la carpeta y su propia estructura `lua/`. Esto permite testear cada módulo por separado copiando su carpeta a `garrysmod/addons/`, o todos juntos para probar integración. (`dev/` queda excluida: no es un addon.)
-- **Código compartido vive SOLO en `corpus/`.** Ningún módulo copia-pega infraestructura de otro — dado el patrón de drift ya observado en este proyecto (ver §16 del doc de ADS 2.0, el fix de `DNumSlider` documentado como final cuando era intermedio), esta es la regla que más protege contra divergencia silenciosa entre módulos.
+- **La infraestructura compartida vive SOLO en `corpus/`** (COR-10, sede en §3-4). Ningún módulo copia-pega infraestructura de otro — dado el patrón de drift ya observado en este proyecto (ver §16 del doc de ADS 2.0, el fix de `DNumSlider` documentado como final cuando era intermedio), esta es la regla que más protege contra divergencia silenciosa entre módulos. **El dominio compartido entre dos módulos NO sube**: se queda en su dueño y el resto lo consume vía registro (COR-10, §1 y §3) — el pool de HP de extremidades vive en Caliber (`corpus_caliber_limbs.lua`) y Coagulant lo detecta con `Corpus.HasModule("caliber")`, no hay copia en el framework.
 - **"Quiero todo"**: una Workshop Collection que bundlea los addons, con metadata de `required items` en cada `addon.json` (informativa para el usuario — Gmod no la impone a nivel de carga real, ver §6).
-- Prefijo de archivo por **addon** (`corpus_<addon>_*.lua`, incluido `corpus_stalker_*`) evita colisión de nombres en `lua/autorun/` cuando los siete están montados simultáneamente en el mismo cliente/servidor.
+- Prefijo de archivo por **addon**: los seis consumidores (cinco módulos + `corpus_stalker_*`) usan `corpus_<addon>_*.lua` en todo su árbol Lua; el framework se reserva `corpus_<primitiva>.lua` (`corpus_registry`, `corpus_data`, `corpus_net`, `corpus_ready`, `corpus_log`, `corpus_selftest`, `client/corpus_ui`). Evita colisión de nombres en `lua/autorun/` con los siete montados a la vez en el mismo cliente/servidor. Sede: **COR-6** en `CLAUDE.md`.
 
 ---
 

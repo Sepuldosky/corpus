@@ -5,7 +5,7 @@
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
 
-**Última actualización:** 2026-07-14 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Solo Cortex sigue vacío)
+**Última actualización:** 2026-07-19 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Solo Cortex sigue vacío. **Nuevo: el ciclo anti-drift completo cerró** — COMPLETO ÍNTEGRO + los 26 hallazgos reparados (voto del GC: Cargo); rumbo al 2.º COMPLETO quedan D-12 y D-13)
 
 ---
 
@@ -25,6 +25,20 @@
   + `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
   general vs. particular ya formalizado en
   [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt).
+- **Anti-drift (2026-07-16, portado del SDD de Kontrol):** §7 del flujo es la
+  **constitución** — jerarquía de autoridad (el código Lua manda sobre el doc), toda norma
+  define o cita un ID, barrido de ratificación en el PASO 5, conducta `DETENTE`. El
+  registro [`ids.yaml`](ids.yaml) indexa **197 IDs** de las siete raíces (10 familias; 26%
+  INTENCION). **Los votos del autor (2026-07-19) cerraron seis deudas** (D-1, D-4, D-6,
+  D-9, D-10, D-11 — incluye acuñar COR-15/COR-16 para UI shell y log, y unificar la
+  política git estricta en los siete repos) **y recortaron D-2/D-3** (los IDs de check
+  rigen hacia adelante; quedan sedes en `.lua`/CHANGELOG por mover). El **checker** (§7.7)
+  corre en `pre-commit` sobre las siete raíces (12/12 tests) y valida yaml, prefijos,
+  duplicados, sedes, evidencia y huérfanos — **presencial, no semántico**. El **§8**
+  formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió tres pilotos
+  ([actas](auditorias/)); **las actas están triadas**: los tres bucket A de la v3 se
+  repararon (el ejemplo encadenado de §6, el §0 del roadmap, el titular de §11) y GIT-1..7
+  quedaron etiquetados en su sede.
 - **Los siete repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos, MIT). Dos
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
@@ -70,6 +84,17 @@
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
    desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
    suben solo cuando el consumo lo justifique — framework delgado (§1).
+4. **Anti-drift: ciclo completo CERRADO (2026-07-19).** El COMPLETO corrió ÍNTEGRO
+   (29/29 docs, Opus 4.8, 8,3M tokens; acta:
+   [`auditorias/2026-07-19_coherencia_docs.md`](auditorias/2026-07-19_coherencia_docs.md))
+   y su **tanda de reparación está APLICADA**: los 25 bucket A parcheados, el voto B
+   resuelto (**GC del cadáver looteado → CARGO**: el cadáver es un contenedor CRG-21,
+   agnóstico al diseño de Cortex, que queda como capa de IA) y el hallazgo escapado de
+   H4 también (Coagulant §6 vs. movecompat). Rumbo al **2.º COMPLETO** quedan: **D-12**
+   (¿harness de Coagulant: materializar `dev/harness_coagulant.py` o re-acreditar las
+   COA?) y **D-13** (acuñar los 10 docs ciegos, docs de stalker/Cortex, taxonomía a 18
+   buckets, fase contrato-vs-árbol). Deudas de verificación en juego: la entry #27 de
+   Cargo (`[PENDIENTE]` con código en árbol) y la ronda 7 de Coagulant.
 
 ---
 

@@ -5,12 +5,13 @@ Documento vivo — actualizaciones según evolución del flujo.
 Basado en las convenciones de KONTROL, portadas vía ADS 2.0, adaptado al stack
 GLua / Garry's Mod y al alcance de Corpus como framework.
 
-Este doc cubre SOLO el repo corpus/. Cada repo hermano (corpus-cortex,
-corpus-caliber, corpus-coagulant, corpus-craving, corpus-cargo) define su PROPIA
-tabla de alcances en su propio docs/<modulo>_convenciones_commits.txt cuando su
-Block de diseño cierra y empieza a recibir código — la estructura (secciones 0, 1,
-2, 4, 5 de este doc) se copia igual; solo la sección 3 (alcances) cambia porque
-depende del mapa de archivos de cada repo.
+GIT-6 — Las secciones 0, 1, 2, 4 y 5 de este doc son del ECOSISTEMA: las heredan
+las seis raíces consumidoras (corpus-cortex, corpus-caliber, corpus-coagulant,
+corpus-craving, corpus-cargo y corpus-stalker). La sección 3 (alcances) es POR
+REPO: cada raíz define su propia tabla en su docs/<modulo>_convenciones_commits.txt
+cuando su Block de diseño cierra y empieza a recibir código; mientras ese doc no
+exista, su tabla vive en su CLAUDE.md. En NINGÚN caso un repo hermano hereda la §3
+de este doc — es el mapa de archivos del framework.
 =====================================================
 
 
@@ -28,14 +29,15 @@ independientemente de quién o qué lo origine.
 1. ESTRUCTURA OBLIGATORIA DEL MENSAJE
 ---------------------------------------
 
-Todo commit DEBE seguir el estándar de Conventional Commits adaptado al proyecto:
+GIT-1 — Todo commit DEBE seguir el estándar de Conventional Commits adaptado al
+proyecto:
 
   <tipo>(<alcance>): <descripción corta>
 
 Los tipos van en inglés (ver sección 2). La descripción y el cuerpo opcional del
 commit van en español.
 
-Reglas críticas de formato:
+Reglas críticas de formato (GIT-2):
 - NUNCA empezar la descripción con mayúscula.
 - NUNCA incluir un punto (.) al final de la descripción.
 - Usar el tiempo presente imperativo (ej: "añade" en lugar de "añadido",
@@ -45,8 +47,8 @@ Reglas críticas de formato:
 2. TIPOS DE COMMIT PERMITIDOS (<tipo>)
 ----------------------------------------
 
-Se prohíben términos genéricos como "cambios", "fix" a secas o "tarea". Los tipos
-válidos son:
+GIT-3 — Se prohíben términos genéricos como "cambios", "fix" a secas o "tarea".
+Los tipos válidos son:
 
   feat:
     Una nueva funcionalidad para el framework (nueva primitiva de la API, un

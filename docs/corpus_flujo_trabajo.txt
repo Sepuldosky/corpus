@@ -23,11 +23,20 @@ documentos PARTICULARES para subsistemas complejos — ver §2) ni estado (eso e
 el <modulo>_estado.md de CADA repo — no hay uno solo global).
 
 División de roles:
-- Planificador (típicamente un modelo Opus, o el autor): lee estado + arquitectura,
+- Planificador (un modelo Opus en Claude Code, o el autor): lee estado + arquitectura,
   decide QUÉ cambia, en qué orden, con qué validaciones. Diseña por bloques.
-- Ejecutor (Claude Code / Sonnet en VSCode): aplica los cambios al Lua / JSON / docs,
-  valida contra el código real, y actualiza el CHANGELOG al cerrar.
+- Ejecutor (Claude Code en VSCode): aplica los cambios al Lua / JSON / docs, valida
+  contra el código real, y actualiza el CHANGELOG al cerrar.
 - El autor (Matías) orquesta: aprueba el plan antes de ejecutar, y VERIFICA EN JUEGO.
+
+Los dos primeros roles conviven en la MISMA sede: Claude Code, sobre el árbol real.
+La planificación y el diseño de un módulo se autoran ACÁ, en el repo, con doc semilla
++ preguntas al autor — no en Claude Desktop. A Opus en Desktop se le remiten sólo
+PREGUNTAS PUNTUALES o de INVESTIGACIÓN (precedente: el doc de arquitectura de Cortex);
+el espejo de §6 existe para que esas consultas no razonen sobre una foto vieja, no
+para mudar el diseño allá. (Corrección 2026-07-16: §0 y §6 declaraban lo contrario
+—"el diseño de un módulo se autora en Claude Desktop"— mientras corpus_estado.md ya
+enunciaba lo real. Drift del tipo exacto que §7 existe para matar.)
 
 Regla base: no hay test runner. La "verificación" de código con superficie de runtime
 es CARGAR EL MAPA Y CONFIRMAR EN JUEGO, no asumir. Preferir confirmar el flujo real
@@ -140,6 +149,10 @@ ejemplo, marcar el CHANGELOG antes de verificar el estado real.
     del 2026-07-14 tuvo que limpiar — el framework decía "seis raíces", daba Blocks
     cerrados por pendientes, y el espejo mandaba a Desktop un ecosistema sin dos módulos.
 
+    Y SIEMPRE, antes de dar el parche por cerrado: el BARRIDO DE RATIFICACIÓN (§7.3).
+    El parche no termina cuando el doc destino queda bien; termina cuando NINGÚN otro
+    doc —ni ningún comentario de Lua— sigue enunciando lo viejo.
+
 
 2. PLANIFICACIÓN DENSA POR BLOQUES
 ------------------------------------
@@ -251,11 +264,15 @@ actualiza UNA vez, en corpus/docs/, nunca se bifurca por repo.
 6. SEAM CODE<->DESKTOP Y ESPEJO DE CONTEXTO
 ---------------------------------------------
 
-El diseño de un módulo se autora en Claude Desktop (RAG, recall amplio); Claude Code en
-VSCode verifica contra el árbol real (bytes, git, juego) y aplica. Desktop trabaja sobre lo
-que tenga cargado en su Project ("Corpus Framework"): si esos docs quedan stale, razona
-sobre una foto vieja. El seam elimina ese impuesto manteniendo un ESPEJO regenerable del
-contexto del ecosistema.
+El diseño y la aplicación viven en Claude Code, contra el árbol real (bytes, git, juego)
+— ver §0. A Claude Desktop (RAG, recall amplio) se le remiten PREGUNTAS PUNTUALES o de
+INVESTIGACIÓN, no el diseño. Pero Desktop responde sobre lo que tenga cargado en su
+Project ("Corpus Framework"): si esos docs quedan stale, razona sobre una foto vieja y
+la respuesta vuelve envenenada. El seam elimina ese impuesto manteniendo un ESPEJO
+regenerable del contexto del ecosistema.
+
+El espejo NO integra la jerarquía de autoridad (§7.1): un espejo que diverge del repo no
+es una posición en disputa, es un espejo desactualizado. Se regenera, no se litiga.
 
   6.1 El espejo. corpus/.claude/desktop-sync/ NO es un bundle-delta (lo que cambió en una
       tanda): es la foto COMPLETA y actual de todos los docs del ecosistema que el Project
@@ -288,9 +305,399 @@ contexto del ecosistema.
       del bundle.
 
 
+7. COHERENCIA DEL CORPUS — CÓMO SE ARBITRA UN HECHO
+-----------------------------------------------------
+
+7.0 Por qué existe esta sección
+    Un hecho enunciado en N lugares deriva. SIEMPRE. No es un descuido que se evite
+    con más cuidado: es la salida esperada del proceso. Y trabajar con modelos lo
+    agrava: el recall trae los chunks RELEVANTES, no TODOS los lugares donde el hecho
+    está afirmado. Una sesión que escribe Cargo_Architecture §4 sin el CLAUDE.md de
+    Coagulant en su ventana no alucina salvajemente — alucina PLAUSIBLEMENTE: produce
+    una regla que suena decidida, encaja con el estilo y cita los nombres correctos.
+    No puede VER la contradicción que está creando.
+
+    Este ecosistema enuncia sus hechos en muchos lugares a la vez: siete CLAUDE.md,
+    siete estados, el roadmap, la tabla §9 de la arquitectura, el espejo de §6. Hasta
+    el 2026-07-16 lo único que los mantenía coherentes era la disciplina del PASO 5 —
+    memoria, no mecanismo. Eso es exactamente lo que deriva, y ya se pagó: la pasada
+    de veracidad del 2026-07-14 (§1 PASO 5). Esta sección es el lazo que faltaba.
+
+    Portado de KONTROL (§10-11 de su kontrol_workflow_parches.txt), donde el mismo
+    diagnóstico se midió: 52 contradicciones confirmadas en el 24% del cuerpo
+    normativo. UNA sola había bajado a código — y la heredó del doc. La prosa es el
+    INDICADOR ADELANTADO: la contradicción nace ahí y DESCIENDE.
+
+7.1 JERARQUÍA DE AUTORIDAD (canónica — antes era tácita; ahora es regla)
+    Cuando dos enunciados chocan, gana el que esté más arriba:
+
+        1. CÓDIGO Lua del repo (lua/**, defs, el árbol real)
+        2. <modulo>_estado.md del repo dueño del hecho
+        3. docs/CHANGELOG.md — una entrada [APLICADO] posterior DEROGA lo que un doc
+           de arquitectura siga enunciando como vigente
+        4. CLAUDE.md (los "Contratos que no debes romper")
+        5. docs de arquitectura (<modulo>_Architecture.md, docs particulares) —
+           son DISEÑO, y son LOS AUDITADOS
+        6. roadmap — es intención, no autoridad sobre lo que existe
+
+    Cuando un doc de arquitectura choca con 1-4: el DOC está mal, no el repo. El
+    precedente es de casa (§1 PASO 2): en ADS, §13 del doc de arquitectura decía
+    "Block 7 pendiente de aplicar" cuando el código YA estaba en el árbol. El doc
+    mentía, el archivo mandaba.
+
+    "Todavía no está implementado" NO ES UN HALLAZGO. Acá se diseña por delante del
+    código A PROPÓSITO — el mock-first de §3 lo institucionaliza. Un doc que describe
+    un slice sin código no está mintiendo; está haciendo su trabajo.
+
+    COROLARIO (importa acá más que en Kontrol): una afirmación sobre algo NO CONSTRUIDO
+    no tiene árbitro. Dos de ellas pueden contradecirse indefinidamente sin que nada las
+    corrija. Esas NO se reparan solas: se le llevan AL AUTOR como voto, con las dos
+    posiciones y una recomendación. Con cinco módulos en diseño simultáneo, la mayor
+    parte del cuerpo normativo del ecosistema está en esta categoría.
+
+    FUERA DE LA JERARQUÍA, a propósito:
+      - El ESPEJO desktop-sync (§6): espejo divergente = espejo desactualizado.
+      - docs/ids.yaml (§7.4): es ÍNDICE, jamás segunda definición. Si el yaml
+        contradice la prosa de su sede, el yaml está DESACTUALIZADO — se corrige el
+        yaml, no se litiga contra el doc.
+
+7.2 REGLA DE NORMALIZACIÓN — toda norma DEFINE o CITA un ID
+    Un hecho tiene UNA definición canónica; todo el resto la CITA. Concretamente: una
+    frase con SIEMPRE / NUNCA / DEBE / JAMÁS o bien DEFINE un ID (COR-nn, CAL-nn,
+    FLU-nn...) o bien CITA uno. Una norma sin ID es una norma que va a derivar.
+
+    Dos patologías a vigilar:
+      HUÉRFANO — ID citado que nadie define.
+      BICÉFALO — mismo ID, dos significados incompatibles. Nace fácil: reusar un
+                 prefijo que ya significaba otra cosa lo fabrica el primer día.
+
+    Un comentario de Lua puede CITAR un ID; JAMÁS definirlo. Una decisión que sólo vive
+    en un comentario es una decisión perdida: el día que alguien "optimice" esa línea,
+    no hay nada que lo frene. (Riesgo vivo en este stack: la invariante by-ref del
+    registro —COR-7— es justo del tipo que un refactor "defensivo" rompe en silencio.)
+
+    Una norma que ENUMERA se deriva del CÓDIGO, no de la prosa: si lista realms,
+    escritores, ítems, hooks o campos, esa lista sale de un grep del árbol y se cita la
+    evidencia. Enumerar desde un doc es cómo se hereda un error.
+
+    Esto NO se caza a ojo: lo caza el CHECKER (§7.7). Corre solo en cada commit que toca
+    superficie normativa, y a mano cuando quieras.
+
+7.3 BARRIDO DE RATIFICACIÓN (al aplicar cualquier parche — sub-paso del PASO 5)
+    Un parche NO termina cuando el doc destino queda bien. Termina cuando NINGÚN otro
+    doc —ni ningún comentario de Lua— sigue enunciando lo viejo.
+
+    Al ratificar una decisión: grep de la afirmación VIEJA sobre los docs de las SIETE
+    raíces y sobre los comentarios del código. Lo que aparezca se corrige EN EL MISMO
+    PARCHE. Dos reglas que en Kontrol costaron caro:
+
+      a) BARRER POR EL VALOR, NO POR LA LISTA. El grep va por la cifra o la frase
+         vieja, no por la lista de destinos que traía el hallazgo. Los ecos que el
+         informe no listó son los que sobreviven.
+      b) VERIFICAR LAS CITAS DEL PROPIO HALLAZGO. Si un hallazgo dice "X contradice
+         a Y", se adjudica ABRIENDO X y ABRIENDO Y. Una cita que se copia entre
+         parches sin abrirse se propaga como verdad.
+
+    Esta es la regla que habría evitado la limpieza del 2026-07-14 entera.
+
+7.4 EL REGISTRO — docs/ids.yaml
+    Índice canónico de IDs normativos del ecosistema: UNO SOLO, en corpus/docs/, para
+    las siete raíces (este flujo ya es canónico y multi-repo; un registro por repo
+    multiplicaría los lugares que derivan — exactamente el problema). Una entrada por
+    ID (titulo ≤ 1 frase, sede, fuerza, estado, evidencia) + la tabla de `familias`
+    (prefijo → dominio → sede). El registro INDEXA; no duplica la prosa.
+
+    Norma nueva ⇒ entrada en el registro EN EL MISMO PARCHE que la acuña.
+    Prefijo nuevo ⇒ primero en `familias`; reusar un prefijo existente está PROHIBIDO.
+
+    EVIDENCIA — la divergencia real con Kontrol. Allá la evidencia de una norma es "un
+    test que cita el ID". Acá no hay test runner (§0), pero hay algo mejor calibrado:
+
+        selftest  — un check de `corpus_selftest` (primitivas del framework)
+        harness   — un check del harness offline con stubs de GMod (dev/harness_*.py)
+        planilla  — un check de la planilla de verificación EN JUEGO, por su ID
+                    estable (§1 PASO 4): "planilla Coagulant, check G4"
+        codigo    — el call site en Lua que ejerce la norma, o el artefacto que la
+                    prueba, cuando no hay check que la cubra. Es el tipo MÁS USADO del
+                    registro hoy (COR-1, COR-5, COR-6, COR-9..11, COR-14 y casi toda
+                    la familia CAL): el ecosistema tiene mucha norma cuya única prueba
+                    es que el árbol la obedece.
+        INTENCION — el literal. La norma está declarada y nada la ejerce todavía.
+
+    (Voto del autor, 2026-07-16: `codigo` faltaba acá y el registro ya operaba con él —
+    lo cazó el piloto del gate, hallazgo #2 / divergencia de FLU-31. Formalmente el yaml
+    no litiga contra su sede, así que "correspondía" corregir el yaml; pero eso habría
+    mandado a INTENCION a ~30 normas con evidencia real. Cedió la sede, que era la que
+    había nacido corta. Es el caso que §7.1 llama un hecho sin árbitro de un solo lado.)
+
+    La planilla asciende así de checklist a REGISTRO DE EVIDENCIA EN JUEGO — que es
+    lo que siempre fue de hecho. Sus IDs no se reciclan entre rondas justamente para
+    poder citarse desde acá.
+
+    La evidencia es PRESENCIAL, no semántica: probar que el check existe y cita el ID,
+    NO que ejerza bien el invariante. Eso lo cubren la curaduría humana y el ojo del
+    autor en juego. El conteo de INTENCION es la MÉTRICA DE SALUD del proceso; bajarla
+    es trabajo legítimo de toda pasada. No se impone evidencia retroactiva por decreto:
+    la deuda se baja por pasadas.
+
+7.5 CONDUCTA DETENTE
+    Ante ambigüedad, o contradicción entre lo que el plan dice y lo que el árbol real
+    muestra, o un hecho que no tiene árbitro (§7.1, corolario): la PRIMERA LÍNEA del
+    reporte ABRE con el literal DETENTE, y se consulta al autor. No se elige por el
+    autor y se sigue.
+
+    Ya está cableado en el PASO 1 y el PASO 2 ("DETENERSE y consultar"); §7.5 lo hace
+    conducta general y le fija el ancla textual. Regla de redacción para no
+    auto-dispararse: la palabra jamás abre un mensaje salvo disparo intencional —
+    citarla siempre en medio de la frase, como en este párrafo.
+
+7.6 LOS DOS ANILLOS, Y POR QUÉ SON DOS
+    §7.7 es el anillo BARATO: un script determinista, exhaustivo, que corre en cada commit
+    y prueba lo MECÁNICO (huérfanos, bicéfalos, sedes, evidencia). §7.8 es el CARO: un gate
+    LLM adversarial que caza lo único que un script no puede ver — la contradicción
+    SEMÁNTICA entre prosa. No se solapan a propósito: el gate no re-deriva lo que el checker
+    ya probó, y el checker no opina sobre significado.
+
+    Y la advertencia que Kontrol pagó con 22 hallazgos: un gate que cruza IDs es CIEGO a un
+    documento SIN IDs. Un "limpio" suyo sobre un doc sin IDs no es evidencia de nada — es
+    "no auditado". La cobertura se mide en NORMAS CON ID, no en archivos leídos.
+    Eso tuvo nombre y número hasta el 2026-07-19: la deuda D-7 mantuvo el COMPLETO diferido
+    mientras la prosa de los módulos no llevaba sus IDs. La pasada de etiquetado la RECORTÓ
+    (109 de 125 + GIT-1..7 anclados a su sede), así que AUD-2 corre sin bloqueos. Lo que
+    resta —las sedes fuera de un doc de diseño (.lua, CHANGELOG, estado, roadmap)— es la
+    deuda D-3: un punto ciego ACOTADO Y DECLARADO, no un bloqueo. Un check verde del
+    COMPLETO se lee "auditado salvo esas sedes".
+
+
+7.7 EL CHECKER — corpus/.claude/check-ids/corpus_check_ids.ps1
+    El anillo BARATO: caza la parte MECÁNICA del drift en cada commit, para que §7.2 y
+    §7.4 dejen de depender de que alguien se acuerde de greppear.
+
+    QUÉ VALIDA, sobre las siete raíces:
+      YAML_INVALIDO          el registro no parsea (incluye claves repetidas: bicéfalo exacto)
+      FAMILIA_NO_REGISTRADA  un ID con prefijo que no está en `familias`
+      PREFIJO_EXCLUIDO       acuñar sobre un prefijo de `familias_excluidas`
+      DUPLICADO              colisión en forma canónica — COR-1 y COR-01 son el MISMO ID
+      SEDE_ROTA              la sede apunta a un archivo que no existe
+      EVIDENCIA_ROTA         la evidencia apunta a un archivo que no existe; y para el tipo
+                             `planilla`, que el ID de check no esté citado en su repo
+      HUERFANO_DOC/CODIGO    un ID citado en el corpus que el registro no define
+
+    CÓMO CORRE:
+      - Solo, en `pre-commit` (`.githooks/`, enganchado con
+        `git config core.hooksPath ../corpus/.githooks` en cada repo hermano; en corpus/
+        es `.githooks`). Dispara SOLO si el commit toca superficie normativa — un commit
+        de puro Lua no puede crear drift de prosa.
+      - A mano, siempre: `.\.claude\check-ids\corpus_check_ids.ps1`
+      - Escape consciente: `git commit --no-verify`. Acá NO hay CI que lo cace después
+        (son addons GMod, sin pipeline), así que saltearlo es una decisión, no un trámite.
+
+    EL CORPUS ESCANEADO son `CLAUDE.md` + `docs/` + `lua/` de las siete raíces. Quedan
+    FUERA a propósito: `ids.yaml` (es el registro, no el corpus — se indexaría a sí mismo)
+    y `.claude/desktop-sync/` (es el espejo: contarlo duplicaría cada cita del ecosistema).
+    Los prefijos de `familias_excluidas` son invisibles para el checker por diseño: el
+    regex de citas se DERIVA de la tabla `familias` (FLU-27).
+
+    SU LÍMITE, y no lo estires: la evidencia es PRESENCIAL, no semántica. El checker
+    prueba que el archivo existe y que el check CITA el ID; JAMÁS que el test ejerza bien
+    el invariante. Eso lo cubren la curaduría y el autor en juego. A nadie le está
+    permitido leerle al checker más de lo que hace.
+
+    FALLA RUIDOSO, NUNCA EN SILENCIO: PowerShell 5.1 no parsea YAML, así que el checker
+    usa python (+ `pyyaml`) solo para eso. Si falta, sale con error y la línea de
+    instalación — nunca se saltea a sí mismo. Un "limpio" que no corrió no es un limpio;
+    es el §7.6 desde el otro lado.
+
+    SUS TESTS: `.claude/check-ids/test/run_tests.ps1` — un fixture por categoría, con su
+    propio árbol falso. Existen porque un checker que nadie vio en ROJO no es evidencia de
+    nada: no alcanza con que salga distinto de cero, porque un script roto también sale 1.
+
+
+7.8 EL GATE DE COHERENCIA — .claude/workflows/auditoria-coherencia-docs.js
+    El anillo CARO. Caza la contradicción SEMÁNTICA entre prosa: dos docs que dicen cosas
+    incompatibles sobre el mismo hecho, con el mismo alcance. Es lo que ningún script ve.
+
+    SEIS FASES: Glosario → Lectura → Cruce → Adjudicación → Completitud → Síntesis.
+    Un lector por tramo extrae afirmaciones normativas con `archivo:línea` y ALCANCE
+    explícito; el cruce las agrupa por tema y busca pares incompatibles; y cada candidata
+    pasa por TRES verificadores adversariales con lentes distintas —refutador,
+    árbitro-código, árbitro-historia—, sobreviviendo solo por mayoría (≥2 de 3). El
+    refutador solo no puede matar un hallazgo, pero si los tres dudan, muere.
+
+    SUS TRES REGLAS DURAS, y no se tocan:
+      a) READ-ONLY ESTRICTO. El único archivo que escribe es su acta. El gate PROPONE los
+         parches dentro del informe; jamás los aplica. El gate propone, el autor dispone.
+      b) LA JERARQUÍA (§7.1) VA INYECTADA LITERAL en cada agente. Sin eso, un gate LLM
+         degenera en opinología.
+      c) RECHAZA LOS FALSOS POSITIVOS. "No implementado todavía" NO es un hallazgo —
+         acá se diseña por delante a propósito. Distinto ALCANCE tampoco, y acá el alcance
+         tiene CUATRO ejes que confundir es el 90% del ruido: REALM (server/client/shared),
+         MÓDULO (cada uno dueño de su dominio), SOFT-DEP (con o sin el peer: eso es
+         degradación honesta, COR-11, el patrón de producción) y BLOCK/SLICE. Y el
+         MOCK-FIRST (FLU-17) no es contradicción: un doc que congela la firma de un peer
+         que no existe está haciendo su trabajo.
+
+    DIVERGENCIA CON KONTROL, deliberada: allá la fase 1 reconstruye el índice de IDs a grep,
+    porque su gate se escribió ANTES que su registro. Acá el registro ya existe y el checker
+    (§7.7) ya prueba huérfanos/bicéfalos/sedes mecánicamente — así que el gate LEE `ids.yaml`
+    como glosario en vez de re-derivarlo. Es el "P-19" de Kontrol (cablear el gate al yaml
+    curado) hecho desde el día uno: ahorra una fase entera y es más confiable, porque el
+    script es exhaustivo y el agente es probabilístico. Lo que el gate SÍ hace y el checker
+    no puede: verificar que el `titulo` del yaml coincida con la PROSA de su sede. El checker
+    prueba que la sede existe; solo un lector ve que dice otra cosa.
+
+    DOS MODOS:
+      SCOPED (`piloto: true`) — solo los docs del framework. Barato.
+      COMPLETO (`piloto: false`) — TODOS los docs normativos de las siete raíces.
+        La lista vive en la tabla `CORPUS_COMPLETO` del propio workflow y se DERIVA del
+        árbol (FLU-27), nunca se enuncia acá: un número escrito a mano en este doc se
+        desincroniza del script y el COMPLETO arranca con docs invisibles — su "limpio"
+        no significaría nada. (Pagado: hasta el 2026-07-19 acá decía "19 docs" cuando el
+        árbol tenía 29 y el script auditaba 25. Lo cazó el acta del piloto v3, y era
+        FLU-27 violada en el doc que la acuña.)
+
+    CADENCIA:
+      AUD-1 — SCOPED al cerrar cualquier sesión que ESCRIBIÓ NORMAS en docs/. Las sesiones
+        de solo-código no lo disparan: la contradicción de prosa nace en las sesiones de prosa.
+      AUD-2 — COMPLETO al cerrar un Block de módulo, antes de abrir el siguiente.
+      AUD-3 — NINGÚN gate corre con poco contexto remanente en la sesión que lo ejecuta: se
+        DIFIERE explícito a una sesión fresca. Una ✅ emitida en condiciones degradadas es
+        una hipótesis, no un cierre — es §7.6 desde el otro lado.
+
+    ACTAS INMUTABLES en `docs/auditorias/`: son la foto del estado AL MOMENTO DE AUDITAR, no
+    la de hoy (esa es el estado). No se editan; si algo cambió, lo dice el acta siguiente.
+    Su README es el tracker de cobertura.
+
+    TRIAGE DE HALLAZGOS — no todo hallazgo se "arregla" igual. Cada uno va a exactamente uno:
+      A — REPARABLE. El ganador está decidido por el Lua, el estado o el CHANGELOG. Se
+          escribe lo verdadero: lo falso se QUITA o se REEMPLAZA, no se le anota "revisar"
+          al lado.
+      B — VOTO DEL AUTOR. Los docs chocan y el código NO dirime (§7.1, corolario). NO se
+          parcha: se consolida como voto abierto, con las dos posiciones y una recomendación.
+          Acá este bucket es GRANDE — con cinco módulos en diseño, buena parte del cuerpo
+          normativo habla de algo que todavía no existe.
+      C — BUG DE CÓDIGO. El doc tiene razón y el Lua está mal. Va a pasada aparte.
+      CADUCO — la frase citada ya no existe.
+    Y siempre: ubicar cada punto por CONTENIDO (la frase citada), nunca por número de línea
+    — los números corren.
+
+    COSTO. Referencia de Kontrol: ~216 agentes / ~11M tokens / ~84 min para 3 docs. El
+    SCOPED de acá se midió el 2026-07-16 en 41 agentes / 1,69M tokens / ~23 min — pero
+    sobre el corpus de ESE día, anterior al parche que sumó los CLAUDE.md como sujetos
+    obligatorios en todo modo. CUÁNTOS DOCS ENTRAN HOY LO DICE LA TABLA DEL SCRIPT, no
+    este párrafo: mismo motivo que arriba (FLU-27). El costo se MIDE antes de la pasada
+    completa y se anota en el acta de la corrida; no se estima, y no se hereda de la
+    corrida anterior.
+
+
+8. LA TANDA COMO SPEC EJECUTABLE — el PROMPT
+----------------------------------------------
+
+8.0 Por qué existe esta sección
+    §1 dice en qué ORDEN se aplica un parche. §2 y §3 dicen cómo se DISEÑA. Faltaba el
+    artefacto del medio: qué se le entrega al ejecutor para que aplique una tanda sin
+    improvisar. Hasta ahora eso era prosa libre — los cinco `dev/HANDOFF_*.md` son PROMPTs
+    de facto, cada uno con su forma. Un formato que sale distinto cada vez es el mismo
+    problema que la planilla tenía antes del 2026-07-14 (§1 PASO 4).
+
+    Portado de Kontrol (§5 de su referencia SDD), que no separa spec/plan/tasks en tres
+    archivos: los fusiona en un PROMPT único. Tres rasgos cargan casi todo el peso, y son
+    la razón de la sección:
+
+      a) FLU-33 — EL ALCANCE NEGATIVO EXPLÍCITO. Toda tanda declara qué NO toca. Es el
+         arma directa contra el scope creep silencioso, y contra los "pecados de
+         arquitectura" (subir dominio a Corpus, bajar dominio ajeno a un módulo).
+      b) FLU-34 — TEXTO LITERAL, NO DESCRIPCIÓN DE ALTO NIVEL. El paso entrega el texto
+         que va, o un diff suficiente. "Actualizar el resolver para que contemple el
+         escudo" no es un paso: es un deseo. Si el ejecutor tiene que inventar el texto,
+         el diseño no estaba cerrado.
+      c) FLU-35 — UNA TANDA = UN SLICE VERTICAL. Divergencia con Kontrol: allá la unidad
+         es "una task = un PR". Acá no hay PRs — se commitea a `main` y el ledger es el
+         CHANGELOG. La unidad es el SLICE de §3, y cada paso es una entrada de CHANGELOG.
+
+8.1 EL ESQUELETO
+    Sede: `dev/PROMPT_<slug>.txt` (§8.3). Encabezado + seis secciones:
+
+      ====================================================================
+      PROMPT DE EJECUCIÓN — <MÓDULO>, <TANDA>
+      v<N> — <fecha>, <qué la originó>
+      Ejecutor: Claude Code sobre el árbol real.
+      PRERREQUISITOS (verificados <fecha>, RE-CHEQUEAR AL ARRANCAR):
+        - <la primitiva/firma que la tanda asume, con su check> [OK]
+      ====================================================================
+      §0. NO NEGOCIABLES
+      §1. OBJETIVO DE LA TANDA
+      §2. LECTURAS ORDENADAS
+      §3..N. LOS PASOS  (uno por entrada de CHANGELOG)
+      §5. ALCANCE          SÍ | NO
+      §6. CIERRE
+      ====================================================================
+
+    §0 NO NEGOCIABLES — se HEREDAN, no se reescriben: los "Contratos que no debes romper"
+      del CLAUDE.md del repo que se toca (por su ID: COR-nn, CAL-nn…), las convenciones de
+      commit, y "no se implementa nada que la arquitectura no especifique" (COA-28 es el
+      precedente). Citar por ID; copiar el texto acá es fabricar una segunda definición
+      (§7.2).
+
+    §1 OBJETIVO — una frase de qué queda distinto al terminar. Si la tanda cierra o mueve
+      un Block, decirlo acá: dispara el inciso del PASO 5 (FLU-16).
+
+    §2 LECTURAS ORDENADAS — qué abrir y en qué orden, con la jerarquía de §7.1 en mente:
+      estado antes que arquitectura. Es lo que evita que el ejecutor "descubra" a mano lo
+      que ya está escrito.
+
+    §3..N LOS PASOS — uno por entrada de CHANGELOG, con FLU-34 (texto literal). Cada paso
+      cita el doc+sección y los IDs que toca. FLU-36: si la tanda ACUÑA una norma, su
+      entrada en `ids.yaml` es parte del paso, no un trámite posterior — lo fuerza el
+      checker (§7.7), que rechaza un ID citado sin registrar.
+
+    §5 ALCANCE — dos columnas, SÍ y NO. La columna NO es la que trabaja: enumera lo que
+      la tanda podría razonablemente tocar y no va a tocar, con el motivo cuando no sea
+      obvio ("el pipeline de jugador NO — es Caliber Block 3, mock-first hasta que cierre").
+
+    §6 CIERRE — el PASO 5 instanciado: qué entradas de CHANGELOG se flipean, qué estados
+      se refrescan, si el espejo se regenera, y —FLU-37— QUÉ CHECKS DE PLANILLA NACEN de
+      esta tanda, con su letra de sección nueva (FLU-07: la letra no se recicla). Sin este
+      inciso la tanda se verifica en juego y no deja rastro citable, que es exactamente la
+      deuda D-2 del registro: tres de los cuatro módulos verificados no tienen un solo ID
+      de check, y su evidencia no se puede citar desde `ids.yaml`.
+
+8.2 SI LA TANDA CRUZA REPOS
+    El PROMPT declara en su encabezado QUÉ raíces toca y en qué orden. El orden no se
+    negocia: Corpus (o el módulo del que se depende) primero (FLU-04) — un módulo no puede
+    consumir una primitiva que su hard-dep todavía no expone. Y los PRERREQUISITOS del
+    encabezado se verifican ABRIENDO el repo del que se depende (§4), no asumiendo que el
+    diseño y el árbol coinciden.
+
+8.3 SEDE Y CICLO DE VIDA
+    Los PROMPT viven en `dev/PROMPT_<slug>.txt`, la carpeta del workspace que ya está
+    FUERA de todos los git y nunca se publica. No hay un `docs/dev/` por repo: el scratch
+    ya existe, y una tanda que cruza repos (hoy, dos de cinco) no tendría casa en el
+    `docs/dev/` de ninguno. (Kontrol usa `docs/dev/` porque es un MONOREPO: allá es la
+    única opción. Acá no.)
+
+    FLU-38 — El PROMPT NO es autoridad y no entra a la jerarquía de §7.1: es andamiaje.
+    Su vigencia se traslada al CHANGELOG y al estado al cerrar; el archivo queda como
+    scratch. Una v2 REEMPLAZA a la v1 en el mismo archivo, conservando el nombre — los
+    punteros que ya se citaron en otro lado siguen resolviendo.
+
+    Los cinco `dev/HANDOFF_*.md` son el mismo artefacto con el nombre viejo. No se
+    renombran (sus punteros ya están citados en docs y en memoria); los nuevos nacen
+    `PROMPT_`.
+
+8.4 QUÉ NO ES
+    No reemplaza al diseño (§2): un PROMPT se escribe cuando el bloque ya convergió. Si al
+    redactarlo aparece una decisión abierta, esa decisión va al autor ANTES (§7.5), no se
+    resuelve en el §3 de un PROMPT. Tampoco aplica a parches puntuales ni typos (§5): una
+    tanda que entra en dos frases no necesita seis secciones.
+
+
 =====================================================
 Documentos complementarios:
   corpus/CLAUDE.md                         → contratos no-negociables del framework
+  corpus/docs/ids.yaml                     → registro de IDs normativos (§7.4)
+  dev/PROMPT_<slug>.txt                    → la tanda como spec ejecutable (§8),
+                                              fuera de git, nunca se publica
   corpus/docs/corpus_estado.md             → foto de HOY del framework
   corpus/docs/corpus_roadmap.txt           → rumbo / qué sigue (Blocks 1-4)
   corpus/docs/CHANGELOG.md                 → historial de parches del framework
