@@ -4,8 +4,10 @@
 > **antes** que el doc de arquitectura. Se actualiza **en sitio** (no se agregan
 > secciones ni historial). El historial vive en `git` + [`CHANGELOG.md`](CHANGELOG.md).
 > Si crece de una pantalla, está mal redactado: recortar.
+> Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
+> §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-19 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Solo Cortex sigue vacío. **Nuevo: el ciclo anti-drift completo cerró** — COMPLETO ÍNTEGRO + los 26 hallazgos reparados (voto del GC: Cargo); rumbo al 2.º COMPLETO quedan D-12 y D-13)
+**Última actualización:** 2026-07-19 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: D-12 y D-13 CERRADAS** — el harness de Coagulant existe y el gate quedó afilado; **el ecosistema está listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
 
 ---
 
@@ -28,8 +30,9 @@
 - **Anti-drift (2026-07-16, portado del SDD de Kontrol):** §7 del flujo es la
   **constitución** — jerarquía de autoridad (el código Lua manda sobre el doc), toda norma
   define o cita un ID, barrido de ratificación en el PASO 5, conducta `DETENTE`. El
-  registro [`ids.yaml`](ids.yaml) indexa **197 IDs** de las siete raíces (10 familias; 26%
-  INTENCION). **Los votos del autor (2026-07-19) cerraron seis deudas** (D-1, D-4, D-6,
+  registro [`ids.yaml`](ids.yaml) indexa **207 IDs** de las siete raíces (10 familias; 27%
+  INTENCION — subió porque la familia Workbench, acuñada el 2026-07-19, es intención pura
+  por construcción: su bloque no está implementado). **Los votos del autor (2026-07-19) cerraron seis deudas** (D-1, D-4, D-6,
   D-9, D-10, D-11 — incluye acuñar COR-15/COR-16 para UI shell y log, y unificar la
   política git estricta en los siete repos) **y recortaron D-2/D-3** (los IDs de check
   rigen hacia adelante; quedan sedes en `.lua`/CHANGELOG por mover). El **checker** (§7.7)
@@ -53,7 +56,10 @@
   ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
   mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,
   barras; los 12 entries de su CHANGELOG en `[APLICADO]`, ya commiteados y pusheados).
-  **Solo Cortex sigue vacío.** Cada
+  **Cortex sigue sin código**, pero desde el 2026-07-19 tiene
+  [`docs/Cortex_ContratosEntrantes.md`](../../corpus-cortex/docs/Cortex_ContratosEntrantes.md):
+  las **seis** firmas que otros repos ya le congelaron, juntas y cruzadas entre sí por primera
+  vez (no se contradicen). Es doc de RECEPCIÓN, no su diseño. Cada
   módulo con docs lleva su propia foto en `<repo>/docs/<modulo>_estado.md`; legacy ADS 2.0 en
   `dev/legacy/` (tag `v1.0`, congelado) ya migrado a Caliber (§7 de la arquitectura).
 
@@ -84,17 +90,29 @@
 3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
    desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
    suben solo cuando el consumo lo justifique — framework delgado (§1).
-4. **Anti-drift: ciclo completo CERRADO (2026-07-19).** El COMPLETO corrió ÍNTEGRO
+4. **Anti-drift: LISTO PARA EL 2.º COMPLETO (2026-07-19).** El 1.er COMPLETO corrió ÍNTEGRO
    (29/29 docs, Opus 4.8, 8,3M tokens; acta:
-   [`auditorias/2026-07-19_coherencia_docs.md`](auditorias/2026-07-19_coherencia_docs.md))
-   y su **tanda de reparación está APLICADA**: los 25 bucket A parcheados, el voto B
-   resuelto (**GC del cadáver looteado → CARGO**: el cadáver es un contenedor CRG-21,
-   agnóstico al diseño de Cortex, que queda como capa de IA) y el hallazgo escapado de
-   H4 también (Coagulant §6 vs. movecompat). Rumbo al **2.º COMPLETO** quedan: **D-12**
-   (¿harness de Coagulant: materializar `dev/harness_coagulant.py` o re-acreditar las
-   COA?) y **D-13** (acuñar los 10 docs ciegos, docs de stalker/Cortex, taxonomía a 18
-   buckets, fase contrato-vs-árbol). Deudas de verificación en juego: la entry #27 de
-   Cargo (`[PENDIENTE]` con código en árbol) y la ronda 7 de Coagulant.
+   [`auditorias/2026-07-19_coherencia_docs.md`](auditorias/2026-07-19_coherencia_docs.md)),
+   su tanda de reparación está APLICADA (25 bucket A + el voto B: **GC del cadáver looteado
+   → CARGO**), y **las dos deudas que quedaban se cerraron**:
+   - **D-12 —** existe [`dev/harness_coagulant.py`](../../dev/harness_coagulant.py) (voto
+     del autor: materializar). 173 checks en ambos realms; el snapshot que produce el realm
+     SERVER se inyecta en el CLIENT, así que la igualdad entre realms (COA-5) se verifica de
+     verdad. Las **17** acreditaciones `tipo: harness` que apuntaban a un archivo inexistente
+     —16 COA + COR-12, no las 4 que el acta nombraba— ya son citables.
+   - **D-13 —** los 10 docs ciegos declaran IDs (**9 acuñados**, el resto citas: los roadmaps
+     y las semillas son intención pura y no acuñan); nacieron los 3 docs que faltaban
+     (arquitectura y convenciones de `corpus-stalker`, contratos entrantes de Cortex); y el
+     gate tiene sus 4 mejoras: 18 buckets, fase **contrato-vs-árbol**, la jerarquía citada
+     por ID en vez de duplicada, y la columna `total` re-derivada — **estaba mal en las 29
+     filas, no en 5** (se había contado sin las líneas vacías, y los TRAMOS salen de ahí:
+     la cola de cada doc quedaba sin leer).
+   Registro: **207 IDs**, 27 % INTENCION. **D-3** quedó recortada a **once sedes en `.lua`**
+   —cero en CHANGELOG, estado o roadmap—, y varias de esas once son legítimas.
+   **Lo que sigue: correr el 2.º COMPLETO** (sesión fresca, Opus 4.8, su propio PROMPT —
+   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). Deudas de verificación
+   **en juego, del autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y la
+   ronda 7 de Coagulant.
 
 ---
 

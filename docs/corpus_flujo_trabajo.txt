@@ -139,6 +139,15 @@ ejemplo, marcar el CHANGELOG antes de verificar el estado real.
     borrar ni renumerar. En su <modulo>_estado.md: refrescar EN SITIO la foto de HOY.
     Si el parche cruzó repos, actualizar el estado de AMBOS.
 
+    FLU-15 — El <modulo>_estado.md se refresca EN SITIO: no se le agregan secciones ni
+    historial, y no pasa de UNA PANTALLA. Si creció de una pantalla, está mal redactado
+    y se recorta — no se parte en dos docs. Los tres formatos son deliberadamente
+    distintos y no se mezclan: el estado es la foto VOLÁTIL del ahora (nivel 2 de la
+    jerarquía de §7.1), el CHANGELOG es historial INMUTABLE que nunca se reescribe
+    (FLU-14, nivel 3), y el roadmap es INTENCIÓN pura (nivel 6). Un estado con
+    historial adentro deja de ser legible de un vistazo, que es lo único que lo hace
+    útil al retomar el proyecto.
+
     SI EL CAMBIO CIERRA O MUEVE UN BLOCK, además (fijado 2026-07-14):
       - corpus/docs/corpus_estado.md          -> la foto del ecosistema, en sitio
       - CORPUS_Architecture.md §9             -> la fila del Block en la tabla
@@ -517,18 +526,35 @@ es una posición en disputa, es un espejo desactualizado. Se regenera, no se lit
     El anillo CARO. Caza la contradicción SEMÁNTICA entre prosa: dos docs que dicen cosas
     incompatibles sobre el mismo hecho, con el mismo alcance. Es lo que ningún script ve.
 
-    SEIS FASES: Glosario → Lectura → Cruce → Adjudicación → Completitud → Síntesis.
-    Un lector por tramo extrae afirmaciones normativas con `archivo:línea` y ALCANCE
-    explícito; el cruce las agrupa por tema y busca pares incompatibles; y cada candidata
-    pasa por TRES verificadores adversariales con lentes distintas —refutador,
-    árbitro-código, árbitro-historia—, sobreviviendo solo por mayoría (≥2 de 3). El
-    refutador solo no puede matar un hallazgo, pero si los tres dudan, muere.
+    SIETE FASES: Glosario → Lectura → Cruce → Adjudicación → Contrato-vs-Árbol →
+    Completitud → Síntesis. Un lector por tramo extrae afirmaciones normativas con
+    `archivo:línea` y ALCANCE explícito; el cruce las agrupa por tema y busca pares
+    incompatibles; y cada candidata pasa por TRES verificadores adversariales con lentes
+    distintas —refutador, árbitro-código, árbitro-historia—, sobreviviendo solo por mayoría
+    (≥2 de 3). El refutador solo no puede matar un hallazgo, pero si los tres dudan, muere.
+
+    CONTRATO-VS-ÁRBOL (sumada el 2026-07-19, hueco H7 del 1.er COMPLETO) es la única fase
+    que NO es doc-vs-doc: un agente por `CLAUDE.md` toma cada contrato numerado y va a
+    buscar su implementación al Lua. Existe porque los tres hallazgos más accionables de la
+    1.ª corrida salieron por esa vía DE CASUALIDAD, y ninguna otra fase la cubre. No lleva
+    adjudicación adversarial a propósito: un `CLAUDE.md` es nivel 4 y el Lua es nivel 1, así
+    que cuando chocan no hay nada que deliberar —el doc está mal— y el veredicto lo da un
+    `archivo:línea`, no una mayoría de opiniones. Su veredicto más valioso es PARCIAL: el
+    contrato se cumple en la ruta principal y se saltea en una rama.
+
+    El número de BUCKETS de la taxonomía y el de DOCS del corpus viven en el `.js` y se
+    derivan del árbol (FLU-27) — acá no se enuncian, por la misma razón que la lista de
+    `CORPUS_COMPLETO` tampoco.
 
     SUS TRES REGLAS DURAS, y no se tocan:
       a) READ-ONLY ESTRICTO. El único archivo que escribe es su acta. El gate PROPONE los
          parches dentro del informe; jamás los aplica. El gate propone, el autor dispone.
-      b) LA JERARQUÍA (§7.1) VA INYECTADA LITERAL en cada agente. Sin eso, un gate LLM
-         degenera en opinología.
+      b) LA JERARQUÍA (§7.1) LLEGA A CADA AGENTE. **Enmienda 2026-07-19 (hueco H8):** el
+         `.js` la CITA por su ID (FLU-22) y manda a leer §7.1, en vez de reproducirla en
+         prosa. Reproducirla era duplicación normativa dentro del gate que existe porque la
+         prosa duplicada se desincroniza — y ya se había desincronizado (arrastraba la
+         premisa caduca de D-7). Lo que el prompt sí afirma es el ALCANCE de la tarea (qué
+         es árbitro y qué es sujeto), que no es la norma sino su aplicación acá.
       c) RECHAZA LOS FALSOS POSITIVOS. "No implementado todavía" NO es un hallazgo —
          acá se diseña por delante a propósito. Distinto ALCANCE tampoco, y acá el alcance
          tiene CUATRO ejes que confundir es el 90% del ruido: REALM (server/client/shared),

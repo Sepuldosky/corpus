@@ -39,8 +39,22 @@ Workflow({ name: 'auditoria-coherencia-docs', args: { fecha: '2026-07-16', pilot
 
 - **SCOPED / piloto** (`piloto: true`) — solo el framework. Barato.
 - **COMPLETO** (`piloto: false`) — los docs normativos de las siete raíces. La lista canónica
-  es la tabla `CORPUS_COMPLETO` del script (**29 docs** al 2026-07-19) — se deriva del árbol,
-  no se enumera acá (FLU-27); verificá que `docsAuditados` del retorno coincida con ella.
+  es la tabla `CORPUS_COMPLETO` del script — se deriva del árbol, no se enumera acá (FLU-27);
+  verificá que `docsAuditados` del retorno coincida con ella.
+
+**Cambios del gate tras la 1.ª corrida COMPLETO** (aplicados el 2026-07-19, tanda D-13 — son
+las cuatro recetas que su propia acta dejó en §5):
+
+| Hueco | Cambio |
+|---|---|
+| H6 | Taxonomía **ampliada**: entran `compat-terceros`, `ciclo-de-vida-del-jugador`, `config-y-balance` y `rendimiento`. Los dos primeros son fronteras entre repos, que es donde este gate rinde; el hallazgo escapado de H4 era exactamente un hallazgo del bucket ausente `compat-terceros` |
+| H7 | Fase nueva **`ContratoArbol`**: un agente por `CLAUDE.md`, cada contrato numerado contra el Lua. Es la única fase que no es doc-vs-doc |
+| H8 | El `.js` **dejó de duplicar** la jerarquía de §7.1 y ahora la cita por ID (FLU-22), mandando a leer la sede |
+| H8 | La columna `total` **re-derivada**. Estaba desincronizada en **todas** las filas, no en cinco: se había contado sin las líneas vacías. No es cosmético — los TRAMOS se calculan con ese número, así que la **cola de cada doc quedaba fuera del rango leído** |
+| H1/H5 | El corpus creció a **32 docs**: los 10 docs ciegos ya declaran IDs, y nacieron `STALKER_Arquitectura.md`, `stalker_convenciones_commits.txt` y `Cortex_ContratosEntrantes.md` |
+
+> **Editar el `.js` invalida el caché de resume** de cualquier corrida anterior. Es esperable
+> y no es un error: la próxima corrida arranca de cero.
 
 **Cadencia:** AUD-1 (SCOPED al cerrar cualquier sesión que escribió normas), AUD-2 (COMPLETO
 al cerrar un Block de módulo), AUD-3 (ningún gate corre con poco contexto: se difiere).

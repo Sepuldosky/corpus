@@ -696,3 +696,113 @@ parte en su CHANGELOG; acá lo del framework y lo transversal.
 
 Verificación: checker en verde + suite 12/12. Sin superficie de runtime (solo
 comentarios y strings de reporte del `.js` del gate).
+
+---
+
+## PARCHES DE sesión D-12 + D-13: rumbo al 2.º COMPLETO — 2026-07-19
+
+Cierra las **dos** deudas que la tanda anterior dejó abiertas (PARCHE 6 de arriba), guiada
+por `dev/PROMPT_d12_d13_segundo_completo.txt`. Multi-repo; acá lo del framework y lo
+transversal. **El 2.º COMPLETO NO se corre en esta tanda** (va en sesión fresca aparte —
+AUD-3).
+
+**D-12 — el harness de Coagulant (voto del autor: MATERIALIZAR)**
+
+- PARCHE 1 — **Nace `dev/harness_coagulant.py`**, tercero del patrón. 173 checks propios en
+  ambos realms + el `_SelfTest` del módulo. La decisión se tomó con el número **derivado del
+  árbol** (FLU-27), y ahí estuvo el hallazgo: el acta nombraba 4 entradas COA con
+  `tipo: harness` y el registro llevaba **16** (47 % de la familia) más la de `COR-12` —
+  el costo real de re-acreditar era 17 adjudicaciones, no 4. Detalle en el CHANGELOG de
+  Coagulant. **[APLICADO 2026-07-19]**
+- PARCHE 2 — **Las 17 acreditaciones pasan a ser citables:** las refs `tipo: harness` de las
+  16 COA y de `COR-12` nombran la ruta del archivo y el escenario que corre, en vez de
+  describir un check suelto. **El checker cazó de paso que una ref con DOS rutas no resuelve
+  a ninguna** (`EVIDENCIA_ROTA`): la de `COR-12` quedó partida en dos entradas, una por
+  harness. **[APLICADO 2026-07-19]**
+
+**D-13(a) — acuñación sobre los 10 docs ciegos (H1)**
+
+- PARCHE 3 — **9 IDs nuevos, ni uno de más.** Cuatro para la tabla de alcances de cada
+  módulo (`CAL-23`, `COA-36`, `CRV-19`, `CRG-55` — aplican GIT-6, que declara la §3
+  por-repo) y cinco para Workbench (`CRG-50`..`CRG-54`), que eran 128 líneas de diseño de un
+  subsistema entero con **cero** IDs: no estaba limpio, estaba invisible.
+  **Lo que NO se acuñó importa igual:** tres reglas de Workbench ya eran normas de otra sede
+  y el doc pasó a **citarlas** — la eyección antes de destruir es `CRG-9`, el patrón de
+  módulo dueño es `CRG-1`, el canal ARC9 es `CRG-23`. Acuñarlas habría fabricado tres IDs
+  bicéfalos. **[APLICADO 2026-07-19]**
+- PARCHE 4 — **Los 4 roadmaps y la semilla de Craving reciben CITAS, no acuñación** (voto del
+  autor), más una **NOTA DE LECTURA** que los declara intención pura / registro histórico:
+  un "limpio" del gate sobre ellos se reporta **NO-AUDITABLE POR DISEÑO**, no como cobertura.
+  **[APLICADO 2026-07-19]**
+
+**D-13(b) — las sedes fuera de un doc de diseño (H2, y D-3 con ellas)**
+
+- PARCHE 5 — **Cinco sedes movidas.** `CRG-45` salía de `cargo_roadmap` §12 y era una sede
+  **rota por partida doble**: el archivo no contenía la etiqueta, y un roadmap es intención
+  pura (nivel 6) que no puede alojar una norma vigente — el checker no la cazó porque la
+  RUTA existía, y su validación de sede es presencial sobre el archivo, no sobre la etiqueta.
+  Va a `Cargo_Architecture.md` §13.1. Las otras cuatro: `FLU-15` (del encabezado de
+  `corpus_estado.md` — **la norma sobre cómo se escribe un estado tenía por sede un estado,
+  y se autodestruía en cada refresh**) al flujo §1 PASO 5; `CRG-42` a `Cargo_Architecture` §4;
+  `COA-6` y `COA-17` (del CHANGELOG de Coagulant, donde un INVARIANTE contradice FLU-14) a
+  `Coagulant_Architecture` §6. **Estado derivado al cierre: sedes en CHANGELOG = 0, en
+  estado = 0, en roadmap = 0.** Quedan once en `.lua`, y varias son legítimas.
+  **[APLICADO 2026-07-19]**
+
+**D-13(c) — los tres docs que no existían (H5)**
+
+- PARCHE 6 — Detalle en los CHANGELOG de `corpus-stalker` y en el propio doc de Cortex.
+  `STALKER_Arquitectura.md` + `stalker_convenciones_commits.txt` (`STK-9`) y
+  `Cortex_ContratosEntrantes.md`. **[APLICADO 2026-07-19]**
+
+**D-13(d) — las cuatro mejoras del gate (H6/H7/H8)**
+
+- PARCHE 7 — **Taxonomía ampliada:** entran `compat-terceros`, `ciclo-de-vida-del-jugador`,
+  `config-y-balance` y `rendimiento`. Los dos primeros son **fronteras entre repos**, que es
+  donde este gate rinde; el hallazgo que se le escapó a la 1.ª corrida (H4 — Coagulant
+  describiendo mal el mecanismo interno de Cargo) era exactamente un hallazgo del bucket
+  ausente `compat-terceros`, y salió por lectura de prosa, de casualidad. El bucket nuevo
+  lleva ese eje escrito en su consigna. **[APLICADO 2026-07-19]**
+- PARCHE 8 — **Fase nueva `ContratoArbol`** (H7): un agente por `CLAUDE.md`, cada contrato
+  numerado contra el Lua. Es la única fase que **no** es doc-vs-doc, así que ninguna otra la
+  cubría — y los tres hallazgos más accionables de la 1.ª corrida salieron por esa vía de
+  casualidad. Sin adjudicación adversarial **a propósito**: un `CLAUDE.md` es nivel 4 y el
+  Lua es nivel 1, así que cuando chocan no hay nada que deliberar. Su veredicto más valioso
+  es `PARCIAL` — el contrato se cumple en la ruta principal y se saltea en una rama.
+  **[APLICADO 2026-07-19]**
+- PARCHE 9 — **El `.js` deja de duplicar la jerarquía** (H8) y la cita por `FLU-22`,
+  mandando a leer §7.1. Un gate que existe porque la prosa duplicada se desincroniza no
+  puede permitirse duplicar la norma que lo gobierna — y ya se le había desincronizado.
+  Lo que el prompt sí afirma es el **alcance** de la tarea (qué es árbitro y qué es sujeto),
+  que no es la norma sino su aplicación. §7.8 del flujo queda alineado. **[APLICADO 2026-07-19]**
+- PARCHE 10 — **La columna `total` re-derivada, y era peor de lo que el acta creía.** El acta
+  la daba corta en 5 filas; estaba desincronizada en **las 29**: la derivación anterior había
+  contado **sin las líneas vacías**. No es cosmético — los TRAMOS se calculan con ese número,
+  así que **la cola de cada doc quedaba fuera del rango leído** y nadie lo notaba. Es un
+  limpio-por-omisión escondido en una constante, cometido por el gate que existe para
+  cazarlos. La lista pasa a **32 docs** (los 3 nuevos de D-13). **[APLICADO 2026-07-19]**
+
+- PARCHE 11 — **`D-7` re-recortada: decía «16 sedes» y el PARCHE 5 de esta misma tanda había
+  movido cinco.** Drift introducido por la propia tanda que cierra deudas, cazado en el
+  barrido de ratificación (FLU-28) al revisar el bloque `deuda` entero. Se corrige el número
+  a **11** y —más importante que el número— se corrige el CRITERIO DE CIERRE: no es «cero
+  sedes en `.lua`», porque varias son legítimas (CAL-12, CRG-2 y CRG-5 viven en el bloque
+  CONTRATO del init, que **es** el lugar canónico de un contrato público). El criterio real
+  es «ninguna norma vive donde nadie la busca al diseñar», y el caso pendiente claro es
+  `CRG-46`. **[APLICADO 2026-07-19]**
+
+**Registro:** `D-12` CERRADA, `D-13` CERRADA, `D-3` y `D-7` recortadas con su estado
+derivado del propio registro. 9 IDs nuevos → **207**.
+
+**Deudas que quedan abiertas, y ninguna bloquea los roadmaps:** `D-5` (la firma que CRV-4
+congeló espera ratificación del dueño — se cierra en la ronda 7 de Coagulant), `D-8` (prosa
+de grano fino de Cargo sin ID — se acuña por oportunidad, FLU-30 ya lo fuerza para toda norma
+nueva), `D-2`, `D-3` y `D-7` (recortadas, se cierran solas al pasar por su repo).
+
+Verificación: harness de Coagulant en verde (`ALL GREEN`, exit 0) + checker en verde sobre
+207 IDs + suite 12/12 + `node --check` del `.js` del gate. Sin superficie de runtime: **ni una
+línea de Lua cambió en toda la tanda**, y **ningún check de planilla nace de ella** (FLU-37) —
+un harness es capa offline, no planilla.
+
+> **Editar el `.js` invalida el caché de resume** de las corridas anteriores del gate. Es
+> esperable: el 2.º COMPLETO arranca de cero.

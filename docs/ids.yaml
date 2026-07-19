@@ -161,7 +161,8 @@ ids:
     evidencia:
       - { tipo: planilla, ref: "Coagulant punto E — ronda 1 ✗ → ronda 2 ✓ 14/14 (la def invisible)" }
       - { tipo: codigo, ref: "Coagulant slice 2 PARCHE 8 — el gate isfunction(def.onUse) client-side" }
-      - { tipo: harness, ref: "Craving y Coagulant, pasada CLIENT con Cargo fake" }
+      - { tipo: harness, ref: "dev/harness_craving.py — pasada CLIENT con Cargo fake: las 6 defs y su onUse se registran también en el cliente" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — pasada CLIENT con Cargo fake: las 4 defs médicas y su onUse se registran también en el cliente" }
     nota: >
       LA NORMA MÁS CARA DEL ECOSISTEMA. Son dos mitades pagadas por separado: una def
       solo-server no existe en el cliente y el grid no la renderiza (el snapshot de Cargo
@@ -294,10 +295,16 @@ ids:
       - { tipo: codigo, ref: "los CHANGELOG.md de las siete raíces" }
   FLU-15:
     titulo: "El <modulo>_estado.md se refresca EN SITIO (sin historial ni secciones nuevas) y no pasa de una pantalla."
-    sede: "corpus/docs/corpus_estado.md (encabezado)"
+    sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 5"
     fuerza: REGLA
     estado: VIGENTE
     evidencia: INTENCION
+    nota: >
+      SEDE MOVIDA el 2026-07-19 (D-3/D-13): vivía en el encabezado de
+      corpus_estado.md — o sea, la norma sobre cómo se escribe un estado tenía por
+      sede un estado, que es un doc VOLÁTIL de nivel 2 y se reescribe entero en cada
+      refresh. Se autodestruía. Ahora vive en el PASO 5 del flujo, que es donde se
+      ejecuta; los encabezados de los seis estado.md la citan.
   FLU-16:
     titulo: "Si el cambio cierra o mueve un Block, se actualizan además los cuatro docs del FRAMEWORK (estado, §9 de la arquitectura, roadmap, espejo)."
     sede: "corpus/docs/corpus_flujo_trabajo.txt §1 PASO 5"
@@ -723,6 +730,18 @@ ids:
     estado: VIGENTE
     evidencia: INTENCION
     nota: "Advertencia deliberada para Coagulant y Cortex. Es una norma que existe para que otra no se lea como cumplida."
+  CAL-23:
+    titulo: "Los alcances de commit de Caliber son los 8 de §3 de su doc de convenciones (armor, core, limbs, shields, scavenger, browser, config, docs); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-caliber/docs/caliber_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-caliber — los alcances realmente usados" }
+    nota: >
+      Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6, que declara la §3 POR REPO: es la
+      tabla concreta de ESTE repo, no una copia de la del framework. Los cuatro
+      *_convenciones_commits.txt de módulo eran docs sin un solo ID — sobre ellos el gate
+      no salía limpio, salía CIEGO.
 
   # ── COA — Coagulant ─────────────────────────────────────────────────────────
   # El módulo mejor instrumentado del ecosistema: selftest + harness + seis rondas
@@ -742,7 +761,7 @@ ids:
     evidencia:
       - { tipo: planilla, ref: "Coagulant G4 — ronda 3 ✗ → ronda 4 ✓" }
       - { tipo: selftest, ref: "con Cargo montado exige isfunction(cargo.Inventory.HasItem)" }
-      - { tipo: harness, ref: "23 checks con Cargo REAL" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — el fake de Cargo MIENTE en CountItem para los unique: solo HasItem salva al torniquete" }
     nota: "La norma mejor respaldada del ecosistema: cadena completa planilla + selftest + harness. Su assert cross-repo es la única aserción ejecutable entre módulos del workspace."
   COA-3:
     titulo: "El consumo del ítem ocurre AL COMPLETAR el tratamiento, no al iniciar: onUse devuelve false y el TakeItem va al terminar."
@@ -751,7 +770,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant G2 y G5 — ronda 3 ✓" }
-      - { tipo: harness, ref: "onUse→false y TakeItem al completar; torniquete nunca consumido" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — onUse→false, inventario intacto al iniciar, TakeItem al completar, y re-validación item_gone si la unidad se fue" }
     nota: "El flujo del CLAUDE.md llegó a CONTRADECIR este contrato ('usarla loguea el stub y consume una unidad'); lo cazó el PARCHE 7 de la pasada de veracidad."
   COA-4:
     titulo: "Coagulant nunca re-escala daño ni pisa SetWalkSpeed: la cojera compone escalando el MaxSpeed del move data vía hook Move + NW2."
@@ -760,7 +779,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant H2 — la cojera compone con el peso de Cargo sin rubber-band" }
-      - { tipo: harness, ref: "escalado del move data con penalización de peso previa" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — compone sobre el MaxSpeed que ya dejó Cargo, con los contadores de SetWalkSpeed/SetRunSpeed en cero" }
     nota: "Dos módulos escribiendo walk/run se pisan; dos escalando el MaxSpeed se multiplican. El CHANGELOG del slice 3 todavía la cita como 'contrato #6' (hoy es el #8) — puntero podrido benigno, el CHANGELOG no se reescribe por disciplina (FLU-14)."
   COA-5:
     titulo: "El hook Move es shared porque Move se predice: si el cliente escalara distinto, el jugador haría rubber-band."
@@ -769,17 +788,23 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant H2" }
-      - { tipo: harness, ref: "igualdad de escalado entre realms" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — el snapshot que produjo el realm SERVER se inyecta en el CLIENT: ambos derivan el mismo score y el mismo multiplicador" }
     nota: "Deriva una norma: las convars de debuff son replicadas por necesidad, porque la cojera se predice."
   COA-6:
     titulo: "El piso de velocidad usa math.min(base, piso): jamás SUBE la velocidad de un jugador que otro mod dejó frenado a propósito."
-    sede: "corpus-coagulant/docs/CHANGELOG.md §slice 3 PARCHE 2"
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "el piso absoluto" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — con base 10 (bajo el piso de 30) la velocidad NO sube: max(base×mult, min(base, floor))" }
       - { tipo: planilla, ref: "Coagulant H2" }
-    nota: "Sede en el CHANGELOG: la arquitectura §6 no la menciona. Es COA-4 llevada al piso. Ver deuda D-3."
+    nota: >
+      Es COA-4 llevada al piso. SEDE MOVIDA el 2026-07-19 (D-3/D-13): vivía en el
+      CHANGELOG §slice 3 PARCHE 2, y un INVARIANTE con sede en historial contradice
+      FLU-14 — el CHANGELOG no se reescribe por disciplina, así que la norma quedaba
+      fosilizada donde nadie la busca al diseñar. Ahora §6 la enuncia con su razón:
+      la mitad que importa es el math.min, porque sin él un piso MÉDICO le subiría la
+      velocidad a un jugador que otro mod frenó a propósito.
   COA-7:
     titulo: "El mapa hitgroup→zona NUNCA se borra: es la vía standalone sin Caliber, y siempre devuelve zona válida (torso como fallback)."
     sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 3"
@@ -801,7 +826,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant A-D y F — ronda 3 ✓" }
-      - { tipo: harness, ref: "herida por daño final → drenaje → crítico → muerte" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — daño entrante 60 mitigado a 20: la severidad sale del FINAL (sev 2), no del entrante (sev 3)" }
     nota: "Es la bisagra con Caliber: cuando su Block 3 mitigue daño de jugador, las heridas nacerán post-armadura SIN tocar código de Coagulant."
   COA-10:
     titulo: "La sangre no mata por sí misma: drena HP y la muerte es SIEMPRE por HP 0 — compatible con killfeed, respawn y mods que setean HP."
@@ -809,7 +834,7 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "drenaje de HP → muerte 'You bled out.'" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — la muerte llega por HP 0 con el aviso 'You bled out.', nunca por la sangre en sí" }
       - { tipo: planilla, ref: "Coagulant A-D y F" }
   COA-11:
     titulo: "El drenaje se aplica como DMG_GENERIC sin atacante (mundo): la muerte pasa por el pipeline normal del engine."
@@ -817,7 +842,7 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "slice 1 PARCHE 3" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — el DamageInfo del drenaje viaja con DMG_GENERIC y el guard _selfDrain evita que se lea como herida nueva" }
     nota: "Trae aparejado el guard _selfDrain: el drenaje propio no cuenta como herida ni cancela un tratamiento."
   COA-12:
     titulo: "La silueta se pinta y se clickea desde la MISMA tabla (Config.SILHOUETTE + Config.ZoneAt): dos tablas = el jugador venda una zona que no eligió."
@@ -826,7 +851,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: selftest, ref: "dev.lua:139 — el centro de cada rect resuelve a SU zona" }
-      - { tipo: harness, ref: "69 checks del slice 4" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — barrido de 441 puntos de la caja: lo que se clickea cae siempre dentro de lo que se pinta" }
     nota: "Sin ID de planilla: es del slice 4, pendiente de la ronda 7."
   COA-13:
     titulo: "El cliente nunca es autoridad: el menú manda intents (treat/cancel) y el server re-valida todo; habilitar un botón es puro UX."
@@ -834,14 +859,14 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "slice 4 — el intent viajando con {kind, zone}" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — intents con zona y con tipo inventados: el server los rechaza sin tocar estado" }
   COA-14:
     titulo: "Todo el pintado del HUD va en pcall: GMod DESENGANCHA un HUDPaint que erra y la capa moriría en silencio el resto de la sesión."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §10"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "slice 4 — el HUDPaint completo sin errar" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — se rompe surface.SetDrawColor a propósito y el error NO escapa del hook (sin el pcall, GMod lo desengancharía)" }
     nota: >
       Subida a §10 el 2026-07-19 (voto f): era la norma real peor ubicada del
       ecosistema, con sede en un comentario de código. El comentario de hud.lua ahora
@@ -852,22 +877,26 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "drenaje por tick" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — el timer de 1 s existe y la cuenta de hooks Think del módulo es CERO" }
   COA-16:
     titulo: "El snapshot de estado viaja on-change, nunca por tick."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §9"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "snapshot llegando al cliente" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — un tick sin cambios no manda nada; una herida nueva dispara exactamente UN snapshot" }
   COA-17:
     titulo: "El NW2 de cojera se publica solo cuando el valor cambió: cada escritura de un NW2 se replica a todos los clientes."
-    sede: "corpus-coagulant/docs/CHANGELOG.md §slice 3 PARCHE 3"
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant H1 — ronda 5/6 ✓" }
-    nota: "Vive SOLO en el CHANGELOG. Ni la arquitectura §9 ni el CLAUDE.md la mencionan. Ver deuda D-3."
+    nota: >
+      SEDE MOVIDA el 2026-07-19 (D-3/D-13): vivía SOLO en el CHANGELOG §slice 3
+      PARCHE 3 — ni la arquitectura ni el CLAUDE.md la mencionaban. Un INVARIANTE con
+      sede en historial contradice FLU-14. Ahora la enuncia §6 (junto a la cojera, que
+      es lo que publica ese NW2) y la tabla de canales de §9 la cita.
   COA-18:
     titulo: "La firma de OnEncumbrance está congelada por Cargo, que ya la llama: no se le cambia."
     sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 4"
@@ -892,7 +921,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant I2 — ronda 6 ✓" }
-      - { tipo: harness, ref: "el torniquete no se consume" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — ponerlo no descuenta la unidad, y quitarlo funciona con el inventario VACÍO" }
     nota: "La mitad «quitarlo no exige ni consume ítem» se enunció en §7 el 2026-07-19 (voto D-10): hasta entonces solo el registro la afirmaba."
   COA-21:
     titulo: "La única cura de la secuela tratada es el Medkit: no hay cura pasiva por tiempo, y una herida sin vendar no se toca."
@@ -908,7 +937,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: planilla, ref: "Coagulant I3 — ronda 6 ✓" }
-      - { tipo: harness, ref: "el sway oscila y no deriva — recorrido de la mira en 200 frames" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — 400 frames de CreateMove: el yaw OSCILA dentro de su banda en vez de derivar" }
     nota: "Drift histórico MAYOR, ya saldado: hasta la ronda 5 el sway era un ViewPunch de SERVER y el mecanismo muerto sobrevivió en SEIS sitios. Los PARCHES 5, 7(a) y 13 de la pasada de veracidad los mataron uno por uno. Es el mejor caso documentado de drift del workspace."
   COA-23:
     titulo: "Solo se rampa la amplitud del sway: la fase del bamboleo nunca se corta, así la mira se abre y se cierra en vez de dar un tirón."
@@ -916,7 +945,7 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "smoothstep, rampa monótona, salto máx 0.19°/frame" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — entrando en ADS ningún frame salta la amplitud entera; la rampa es monótona y su mitad cae entre las dos capas" }
     nota: "En juego: PENDIENTE (ronda 7)."
   COA-24:
     titulo: "La deriva del sway se compone de senos de períodos inconmensurables: nunca repite un patrón que se pueda aprender a compensar."
@@ -1004,6 +1033,14 @@ ids:
     evidencia:
       - { tipo: selftest, ref: "los checks de amplitud se derivan de SWAY_PER_SCORE en vez de hardcodear 0.70" }
     nota: "Partido de COA-27 (voto D-10, 2026-07-19): vivía solo en el campo evidencia del registro; ahora §11 la enuncia. Excelente y poco replicada."
+  COA-36:
+    titulo: "Los alcances de commit de Coagulant son los 12 de §3 de su doc de convenciones (zones, core, config, treatment, debuffs, items, hud, medmenu, options, dev, init, docs); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-coagulant/docs/coagulant_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-coagulant — los alcances realmente usados" }
+    nota: "Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6. `chore` NO es un alcance sino un tipo (§2) — el propio CLAUDE.md lo aclara porque la confusión ya se cometió."
 
   # ── CRV — Craving ───────────────────────────────────────────────────────────
 
@@ -1147,6 +1184,14 @@ ids:
     evidencia:
       - { tipo: harness, ref: "dev/harness_craving.py — 55 checks client" }
     nota: "Partido de CRV-9 en la curaduría D-10 (2026-07-19)."
+  CRV-19:
+    titulo: "Los alcances de commit de Craving son los 11 de §3 de su doc de convenciones (config, assets, core, coagulant, items, entity, bars, options, dev, init, docs); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-craving/docs/craving_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-craving — los alcances realmente usados" }
+    nota: "Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6. `coagulant` es alcance propio: nombra el PUENTE hacia ese módulo (soft-dep), no código ajeno."
 
   # ── CRG — Cargo ─────────────────────────────────────────────────────────────
   # El módulo más grande del ecosistema. Su evidencia es dev/harness_cargo.py (2807
@@ -1475,12 +1520,18 @@ ids:
       - { tipo: codigo, ref: "entry 23 confirmada en juego" }
   CRG-42:
     titulo: "SWEP.Slot NO es la señal para derivar el slot de un arma: es inconsistente entre packs — se usa SWEP.Class y SubCategory, resueltos por herencia."
-    sede: "corpus-cargo/docs/cargo_estado.md §Qué existe hoy (entry 24)"
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §4 (Cómo se deriva el slot de un arma capturada)"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
       - { tipo: codigo, ref: "entry 24 confirmada en juego" }
-    nota: "Sede en el estado, que es volátil. Candidata a perderse en el próximo refresh (D-3)."
+    nota: >
+      SEDE MOVIDA el 2026-07-19 (D-3/D-13): vivía en cargo_estado.md (entry 24), un
+      doc VOLÁTIL de nivel 2 que se reescribe entero en cada refresh — la norma estaba
+      a un refresh de desaparecer sin que nadie lo notara. Es el mismo principio que
+      CRG-41 aplica a la trivia: se le pregunta al SWEP por su identidad (Class +
+      SubCategory, resueltas por herencia) en vez de confiar en un campo que cada pack
+      llena a su criterio.
   CRG-43:
     titulo: "Persistencia namespaced sin SQLite, y el round-trip JSON no preserva tipos de clave: se re-normalizan las claves numéricas al cargar (Util.NumberKeys)."
     sede: "corpus-cargo/CLAUDE.md §Contratos que no debes romper · 6"
@@ -1498,7 +1549,7 @@ ids:
     nota: "Nada se hardcodea. Es COR-11 en la UI."
   CRG-45:
     titulo: "Los comandos dev de Cargo quedan SIN gate de admin, con TODO anotado, esperando la primitiva de permisos de Corpus."
-    sede: "corpus-cargo/docs/cargo_roadmap.txt §12"
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §13.1"
     fuerza: REGLA
     estado: VIGENTE
     evidencia:
@@ -1508,6 +1559,12 @@ ids:
       espera la primitiva'. El único net.Receive que espera gate es NET_ICON_OVERRIDE,
       hoy ABIERTO a cualquier jugador y contenido solo por el saneo de entrada (CRG-46).
       Los otros 14 no lo necesitan por diseño: los protege CRG-6.
+      SEDE MOVIDA el 2026-07-19 (D-3/D-13, hueco H1 del COMPLETO). Vivía en
+      cargo_roadmap.txt §12 y era una sede ROTA POR PARTIDA DOBLE: el archivo no
+      contenía la cadena 'CRG-45' en ninguna parte, y un roadmap es intención pura
+      (nivel 6 de §7.1) — no puede alojar un INVARIANTE ni una REGLA vigente. El
+      checker no la cazó porque la RUTA existía: su validación de sede es presencial
+      sobre el archivo, no sobre la etiqueta. El roadmap ahora cita §13.1.
   CRG-46:
     titulo: "El override de ícono que llega por net se sanea server-side: def desconocida se ignora, footprint fuera del set permitido se descarta."
     sede: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_icons.lua (SanitizeOverride)"
@@ -1543,6 +1600,73 @@ ids:
     evidencia:
       - { tipo: codigo, ref: "corpus_cargo_items.lua — Items.GetTabs/TabOf: lo no mapeado cae a Misc" }
     nota: "Partido de CRG-10 en la curaduría D-10 (2026-07-19). Los módulos hermanos traen sus categorías sin pedir permiso (Items.RegisterCategory las auto-registra), pero la fila nunca crece."
+
+  CRG-55:
+    titulo: "Los alcances de commit de Cargo son los 15 de §3 de su doc de convenciones (items, inventory, weight, money, containers, arc9, capture, trade, ammo, ui, icons, dev, init, docs, workbench); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-cargo/docs/cargo_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-cargo — los alcances realmente usados" }
+    nota: "Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6. `workbench` está RESERVADO hasta que abra su bloque (CRG-50..54): existe en la tabla para que el día que abra no se invente un alcance nuevo."
+
+  # ── CRG-50..54 — Workbench (banco de trabajo, bloque FUTURO) ────────────────
+  # Acuñados el 2026-07-19 (deuda D-13, hueco H1 del COMPLETO): Workbench_Arquitectura.md
+  # eran 128 líneas de diseño de un subsistema entero con CERO IDs — el gate no estaba
+  # limpio sobre él, estaba CIEGO. Las cinco de abajo son normas que la prosa YA enuncia;
+  # las otras tres reglas del doc NO se acuñaron porque ya son normas de otra sede y el
+  # doc pasó a CITARLAS: la eyección antes de destruir es CRG-9, el patrón de módulo
+  # dueño es CRG-1, y el canal ARC9 de lectura-only es CRG-23.
+  # Toda la familia Workbench es INTENCION por construcción: el bloque no está
+  # implementado y no hay un solo call site que ejercerlas. Eso es honesto, no deuda.
+
+  CRG-50:
+    titulo: "El rendimiento del desarme sale de una tabla EXPLÍCITA que declara el módulo dueño, jamás de invertir la receta de crafteo; un ítem sin tabla no es desarmable."
+    sede: "corpus-cargo/docs/Workbench_Arquitectura.md §5.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      La razón es de balance, no de implementación: craftear consume un multitool
+      entero, así que devolverlo intacto al desarmar el resultado abre un bucle de
+      ganancia infinita. 'Sin tabla declarada = no desarmable' es la posición
+      conservadora: un ítem nuevo no se vuelve desarmable por olvido.
+  CRG-51:
+    titulo: "Herencia de condición del desarme: condicion_de_parte = condicion_de_zona × tasa_de_herramienta, determinista y previsualizable; una zona rota no entrega nada."
+    sede: "corpus-cargo/docs/Workbench_Arquitectura.md §5.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Fórmula única de todo el subsistema. Lo que la hace valiosa es la consecuencia
+      EMERGENTE sin lógica extra: la armadura destrozada da partes mediocres y el
+      equipo prístino vale lo mismo puesto que desarmado. Determinista a propósito —
+      el jugador ve el preview exacto antes de confirmar, así que no hay tirada oculta.
+  CRG-52:
+    titulo: "La herramienta de corte cambia la TASA de recuperación, nunca el ACCESO: cualquier herramienta desarma cualquier ítem que tenga tabla."
+    sede: "corpus-cargo/docs/Workbench_Arquitectura.md §5.3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Sin bloqueo por categoría de herramienta: el cuchillo desarma lo mismo que el toolkit avanzado, con peor rendimiento (~60 % vs 100 %). Evita el anti-patrón de la llave que solo abre una puerta."
+  CRG-53:
+    titulo: "Asimetría de toolkit: craftear CONSUME una carga, reparar solo exige que el toolkit esté PRESENTE."
+    sede: "corpus-cargo/docs/Workbench_Arquitectura.md §7"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Deliberada, y es lo que le da identidad a cada pestaña. El desarme es el tercer comportamiento: no gasta carga del toolkit, desgasta la herramienta de corte (~-2 % de condición)."
+  CRG-54:
+    titulo: "Tope de reparación por calidad de parte: la condición de la parte asignada define el máximo restaurable de esa zona — una parte al 94 % no deja la zona al 100 %."
+    sede: "corpus-cargo/docs/Workbench_Arquitectura.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Es lo que sostiene la demanda de partes de calidad y le da sentido al desarme
+      selectivo (CRG-51). El banco repara zonas ROTAS; las placas (mecánica de campo,
+      Cargo_Architecture §4) solo restauran zonas placables y no reparan una rota:
+      dos dominios de reparación sin solapamiento.
 
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
@@ -1604,6 +1728,20 @@ ids:
     estado: VIGENTE
     evidencia: INTENCION
     nota: "Sede movida del README el 2026-07-19 (voto g): un ID interno ensuciaba la cara pública de GitHub. El README la sigue enunciando en lenguaje de visitante, sin etiqueta."
+
+  STK-9:
+    titulo: "Los alcances de commit de corpus-stalker son los 10 de §3 de su doc de convenciones (assets, repo y docs EN USO; anomalias, artefactos, pda, detectores, npc, items y models RESERVADOS); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-stalker/docs/stalker_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-stalker: docs(assets), docs(docs), chore(repo) — los tres conformes" }
+    nota: >
+      Acuñado el 2026-07-19 (D-13/H5). Aplica GIT-6. Hasta hoy este repo era el único
+      de las siete raíces sin doc de convenciones y su tabla vivía INTERINAMENTE en una
+      línea del CLAUDE.md — que es justo lo que GIT-6 contempla como estado transitorio.
+      Los siete alcances RESERVADOS se declaran antes de tener contenido a propósito:
+      el día que nazca la primera anomalía, el alcance ya existe y nadie lo improvisa.
 
   # ── CTX — Cortex ────────────────────────────────────────────────────────────
   # Sin entradas: el repo tiene solo LICENSE + README y su README es descriptivo,
@@ -1707,7 +1845,7 @@ deuda:
       cuando Caliber, Cargo y Craving tengan una ronda post-norma con IDs en su
       CHANGELOG; la primera candidata es la ronda 7 de Coagulant.
   D-3:
-    titulo: "RECORTADA 2026-07-19: COA-14 (pcall del pintado) y CRG-38 (notación) ya viven en su doc de diseño, y STK-8 en el CLAUDE.md de stalker; quedan las demás sedes fuera de doc."
+    titulo: "RECORTADA 2026-07-19 (2.ª vez): NINGUNA sede vive ya en un CHANGELOG, un estado ni un roadmap. Quedan 11 sedes en archivos .lua, y varias son legítimas."
     detalle: >
       COA-14 (todo el pintado en pcall — la trampa la pagó CARGO y ni el CLAUDE.md
       ni la arquitectura la enuncian), COA-6 (el math.min del piso de velocidad),
@@ -1716,15 +1854,24 @@ deuda:
       comentario de código viola FLU-26 (un comentario CITA, jamás DEFINE). Quien
       escriba un HUDPaint nuevo siguiendo solo los docs rompe COA-14.
     propuesta: >
-      Aprobado en principio por el autor (voto f, 2026-07-19), ejecutando primero el
-      subconjunto que desactivaba trampas pagadas (COA-14, CRG-38 + el comentario de
-      items.lua). Las restantes (COA-6, COA-17, COA-30, CAL-15 y las demás sedes en
-      .lua/CHANGELOG/estado/roadmap) se suben por oportunidad en la próxima pasada de
-      su repo, dejando la cita por ID en el código. El COMPLETO (H1/H2) sumó a la
-      lista: la sede ROTA de CRG-45 (cargo_roadmap §12 no contiene la etiqueta, y los
-      roadmaps son ahora intención pura — debe mudarse a un doc de diseño) y las 4
-      sedes con norma viva en doc-árbitro (FLU-15 en estado, CRG-42 en estado, COA-6 y
-      COA-17 en CHANGELOG — un INVARIANTE con sede en historial contradice FLU-14).
+      Aprobado en principio por el autor (voto f, 2026-07-19), ejecutado en dos tandas.
+      1.ª tanda: el subconjunto que desactivaba trampas pagadas (COA-14, CRG-38 + el
+      comentario de items.lua).
+      2.ª tanda (D-13, 2026-07-19): se movieron las CINCO sedes que vivían en un
+      doc-árbitro o en un doc de intención — CRG-45 (de cargo_roadmap, que además NO
+      contenía la etiqueta: sede rota por partida doble) a Cargo_Architecture §13.1;
+      FLU-15 (del encabezado de corpus_estado — la norma sobre cómo se escribe un
+      estado tenía por sede un estado, y se autodestruía) al flujo §1 PASO 5; CRG-42
+      (de cargo_estado) a Cargo_Architecture §4; y COA-6 y COA-17 (del CHANGELOG de
+      Coagulant, donde un INVARIANTE contradice FLU-14) a Coagulant_Architecture §6.
+      ESTADO DERIVADO DEL REGISTRO al cierre de esa tanda: sedes en CHANGELOG = 0, en
+      <modulo>_estado.md = 0, en roadmap = 0. Quedan ONCE en archivos .lua, y el
+      recorte que falta es de CRITERIO, no de trabajo: varias son legítimas —CAL-12,
+      CRG-2 y CRG-5 tienen su sede en el bloque CONTRATO del init, que ES el lugar
+      canónico de un contrato público— mientras que CRG-46 (el saneo del único
+      net.Receive sin gate) no está en prosa en ninguna parte y sí debería subir.
+      Distinguir una de otra es decisión de diseño y va por oportunidad, en la próxima
+      pasada de cada repo, dejando la cita por ID en el código.
   D-4:
     titulo: "CERRADA 2026-07-19: Caliber_Architecture §1 ya enuncia la cadena completa (Hit → escudo → armadura → limbs) citando CAL-13."
     detalle: >
@@ -1752,7 +1899,7 @@ deuda:
       pasó a la versión estricta citando GIT-7.
     propuesta: "Cumplida."
   D-7:
-    titulo: "RECORTADA 2026-07-19: la prosa de módulo ya lleva sus IDs (109 de 125). Quedan las 16 sedes que viven fuera de un doc de diseño."
+    titulo: "RECORTADA 2026-07-19 (2.ª vez, con D-3): la prosa de módulo ya lleva sus IDs y las sedes fuera de un doc de diseño bajaron de 16 a 11, todas en .lua."
     detalle: >
       La pasada de etiquetado (PROMPT_d7_etiquetado_ids.txt) cubrió los cinco repos:
       CAL 22/22, COA 27/31, CRV 15/16, CRG 38/48, STK 7/8. Los 16 restantes NO son
@@ -1762,7 +1909,17 @@ deuda:
       (FLU-14) o uno volátil. O sea: lo que queda de D-7 ES la deuda D-3, y se cierra
       moviendo esas sedes a un doc de diseño — decisión de diseño, no mecánica.
       El gate COMPLETO (AUD-2) ya puede correr sin ahogarse en `sinId` de módulo.
-    propuesta: "Se cierra junto con D-3, moviendo las 16 sedes restantes a un doc. Hasta entonces, D-7 queda recortada, no cerrada."
+    propuesta: >
+      Se cierra junto con D-3, moviendo a un doc las sedes que lo ameriten. ACTUALIZADO
+      2026-07-19 (tanda D-13): de las 16 se movieron CINCO —las que vivían en un
+      doc-árbitro o en un doc de intención, que eran las verdaderamente insostenibles
+      (CRG-45, FLU-15, CRG-42, COA-6, COA-17)—. Quedan ONCE, todas en `.lua`, y el
+      número no va a bajar a cero: varias de esas sedes son LEGÍTIMAS. CAL-12, CRG-2 y
+      CRG-5 viven en el bloque CONTRATO del init de su módulo, que ES el lugar canónico
+      de un contrato público — moverlas empeoraría el doc. El criterio de cierre no es
+      "cero sedes en .lua" sino "ninguna norma vive donde nadie la busca al diseñar":
+      el caso pendiente claro es CRG-46 (el saneo del único net.Receive sin gate), que
+      no está en prosa en ninguna parte.
   D-10:
     titulo: "CERRADA 2026-07-19: los dos casos duros subieron a la prosa (COA-20 a §7; COA-35 acuñado y enunciado en §11) y los títulos fusionados se partieron o recortaron."
     detalle: >
@@ -1799,7 +1956,7 @@ deuda:
       las enuncia como contrato numerado — solo las lista en el mapa de archivos.
     propuesta: "Cumplida (voto b, 2026-07-19). Las seis primitivas de COR-10 tienen ahora contrato citable."
   D-12:
-    titulo: "El harness de Coagulant NO existe como archivo, y hay acreditaciones vivas tipo:harness que apuntan a él."
+    titulo: "CERRADA 2026-07-19: dev/harness_coagulant.py existe, corre en verde y las 16 acreditaciones COA tipo:harness (más la de COR-12) ya lo citan por ruta."
     detalle: >
       Lo destapó el COMPLETO (acta 2026-07-19, §5 H3): corpus-coagulant/CLAUDE.md
       declara su harness "de scratchpad, se reconstruye por sesión" (régimen viejo,
@@ -1810,9 +1967,25 @@ deuda:
       checks corrieron en un harness que ya no existe como archivo citable.
       NO se tocó corpus-coagulant/CLAUDE.md:71 en la tanda de reparación, a propósito:
       ahí la afirmación de scratchpad podría ser la históricamente correcta.
-    propuesta: "Voto del autor: (a) materializar dev/harness_coagulant.py (portando los checks del scratchpad) y alinear el CLAUDE.md al régimen permanente, o (b) re-acreditar esas COA con selftest/planilla y dejar el harness de Coagulant como histórico. Primero decidir, después parchear — nunca al revés."
+    propuesta: >
+      Cumplida por la opción (a), votada por el autor el 2026-07-19. Lo que la
+      decisión encontró al derivarse del árbol (FLU-27): el acta nombraba COA-2,
+      COA-4, COA-5 y COA-6, pero el registro llevaba DIECISÉIS entradas COA con
+      `tipo: harness` — el 47 % de la familia — más la de COR-12, que se apoyaba a
+      medias en el mismo archivo ausente. El costo real de (b) era re-adjudicar 17
+      acreditaciones, no 4.
+      El harness se construyó re-derivando los checks del CHANGELOG de Coagulant
+      (rondas 1-6) y del código, nunca inventándolos, y corre 173 checks propios
+      (124 server / 49 client) más el `_SelfTest` del módulo en ambos realms
+      (145 + 108). Dos escenarios del primer borrador eran IRREALES y se
+      corrigieron contra el código, no al revés: sin herida abierta el tick
+      regenera antes de calcular el drenaje (§4), así que "sangre 0" exigía una
+      herida activa; y comparar el multiplicador de cojera del cliente contra un
+      estado del server POSTERIOR al snapshot no probaba igualdad entre realms.
+      Las 17 refs pasaron de describir un check suelto a nombrar la ruta del
+      archivo y el escenario que corre.
   D-13:
-    titulo: "Pre-2.º COMPLETO: 10 de 29 docs sin un solo ID (35% del corpus en ceguera), y cuatro mejoras del gate que el acta deja recetadas."
+    titulo: "CERRADA 2026-07-19: los 10 docs ciegos ya declaran IDs, nacieron los 3 docs que faltaban, y las 4 mejoras del gate están aplicadas. El corpus auditable pasó de 29 a 32 docs."
     detalle: >
       Del acta 2026-07-19 (§5): H1 — los 10 docs ciegos (los 5 *_convenciones de
       módulo, los 4 roadmaps de módulo, Workbench_Arquitectura y la semilla de
@@ -1824,4 +1997,34 @@ deuda:
       ciclo-de-vida-del-jugador primero); H7 — agregar al workflow la fase
       contrato-vs-árbol (un agente por CLAUDE.md); H8 — que el .js cite la jerarquía
       por ID en vez de duplicarla, y su columna `total` quedó corta en 5 filas.
-    propuesta: "Pasada de acuñación sobre los 10 docs ciegos (mínimo: un ID por tabla de alcances; la familia CRG en Workbench; etiquetar frentes CERRADOS normativos de los roadmaps como citas) + los dos docs nuevos (stalker, Cortex-entrantes) + las mejoras del workflow. Recién después, el 2.º COMPLETO."
+    propuesta: >
+      Cumplida. Lo que se hizo, en los cuatro frentes:
+      (a) ACUÑACIÓN — 9 IDs nuevos, ni uno de más: los cuatro de la tabla de alcances de
+      cada módulo (CAL-23, COA-36, CRV-19, CRG-55) y los cinco de Workbench (CRG-50..54).
+      En Workbench se acuñó lo que la prosa YA enunciaba y se CITÓ el resto: la eyección
+      antes de destruir es CRG-9, el patrón de módulo dueño es CRG-1 y el canal ARC9 es
+      CRG-23 — tres normas que la tentación era re-acuñar. Los 4 roadmaps y la semilla de
+      Craving reciben CITAS y una NOTA DE LECTURA que los declara intención pura /
+      registro histórico, NO-AUDITABLE POR DISEÑO (voto del autor: no acuñan).
+      (b) D-3 parcial — ver esa entrada: cinco sedes movidas, cero restantes fuera de un
+      doc de diseño salvo las once en .lua.
+      (c) DOCS NUEVOS — corpus-stalker ganó STALKER_Arquitectura.md (mínima: alcance,
+      frontera y mapa de consumo por módulo) y stalker_convenciones_commits.txt (STK-9,
+      con 3 alcances en uso y 7 reservados); corpus-cortex ganó Cortex_ContratosEntrantes.md,
+      doc de RECEPCIÓN que junta las SEIS firmas que otros repos ya le congelaron y las
+      cruza entre sí por primera vez — no se contradicen. Ese doc no acuña ningún CTX:
+      la familia sigue reservada sin entradas, y su primera entrada exige antes crear el
+      CLAUDE.md de Cortex.
+      (d) GATE — taxonomía a 18 buckets (entran compat-terceros, ciclo-de-vida-del-jugador,
+      config-y-balance y rendimiento); fase nueva ContratoArbol (un agente por CLAUDE.md,
+      contrato por contrato contra el Lua, sin adjudicación adversarial porque el Lua es
+      nivel 1 y no hay nada que deliberar); el .js dejó de duplicar la jerarquía y la cita
+      por FLU-22; y la columna `total` re-derivada.
+      HALLAZGO DE LA RE-DERIVACIÓN, y era peor de lo que el acta creía: la columna estaba
+      desincronizada en las 29 filas, no en 5 — la derivación anterior había contado SIN
+      las líneas vacías. No es cosmético: los TRAMOS se calculan con ese número, así que
+      la COLA de cada doc quedaba fuera del rango leído y nadie lo notaba. Es un
+      limpio-por-omisión escondido en una constante, cometido por el gate que existe para
+      cazarlos.
+      Queda para el 2.º COMPLETO: correrlo. Va en sesión fresca aparte con su propio
+      PROMPT (AUD-3, Opus 4.8), y editar el .js invalida el caché de resume — esperable.

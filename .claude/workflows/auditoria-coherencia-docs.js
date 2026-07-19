@@ -7,6 +7,7 @@ export const meta = {
     { title: 'Lectura', detail: 'Un lector por tramo: extrae afirmaciones normativas con archivo:linea, tema, fuerza y ALCANCE' },
     { title: 'Cruce', detail: 'Un agente por tema: busca contradicciones entre docs dentro de su tema' },
     { title: 'Adjudicacion', detail: '3 verificadores adversariales por candidata; el Lua / estado.md / CHANGELOG desempatan' },
+    { title: 'ContratoArbol', detail: 'Un agente por CLAUDE.md: cada contrato numerado contra el Lua real. No es doc-vs-doc' },
     { title: 'Completitud', detail: 'Critico: que quedo sin cubrir' },
     { title: 'Sintesis', detail: 'Acta en docs/auditorias/ + parches PROPUESTOS (jamas aplicados)' },
   ],
@@ -41,19 +42,26 @@ indique explicitamente. Los parches a docs se PROPONEN dentro del acta; JAMAS se
 aplican. El gate propone, el autor dispone.
 `.trim()
 
+// H8 del COMPLETO 2026-07-19, ya reparado: este bloque DUPLICABA la jerarquia de
+// seccion 7.1 en prosa. Un gate que existe porque la prosa duplicada se desincroniza
+// no puede permitirse duplicar la norma que lo gobierna. Ahora la CITA por ID y manda
+// a leer la sede, que es lo que FLU-26 pide de cualquier otro lugar del ecosistema.
 const JERARQUIA = `
-JERARQUIA DE AUTORIDAD (corpus_flujo_trabajo.txt seccion 7.1 - no negociable):
-  1. CODIGO Lua del repo (lua/**, defs, el arbol real) - verdad final.
-  2. <modulo>_estado.md del repo dueno del hecho - foto de HOY.
-  3. docs/CHANGELOG.md - una entrada [APLICADO] posterior DEROGA lo que un doc de
-     arquitectura siga enunciando como vigente.
-  4. CLAUDE.md - los "Contratos que no debes romper" de cada repo.
-  5. Docs de arquitectura (<modulo>_Architecture.md y los particulares) - son DISENO,
-     y son LOS AUDITADOS.
-  6. roadmap - es intencion, no autoridad sobre lo que existe.
-Cuando un doc de arquitectura choca con 1-4: el DOC esta mal, no el repo.
-docs/ids.yaml NO entra a la jerarquia: es INDICE, jamas segunda definicion. Si el yaml
-contradice la prosa de su sede, el yaml esta desactualizado.
+JERARQUIA DE AUTORIDAD - la rige FLU-22, y su SEDE es corpus/docs/corpus_flujo_trabajo.txt
+seccion 7.1. NO la reproduzcas de memoria: ABRI ESE ARCHIVO Y LEE LA SECCION 7.1 ANTES
+DE ADJUDICAR NADA. Si lo que leas ahi difiere de cualquier resumen que hayas visto,
+GANA EL ARCHIVO.
+
+Lo unico que este prompt afirma sobre ella, porque define el ALCANCE de tu tarea y no
+la norma en si:
+  · El codigo Lua, los <modulo>_estado.md y los docs/CHANGELOG.md son ARBITROS: se
+    consultan para adjudicar, NUNCA se auditan como sujetos.
+  · Los docs de DISENO (las arquitecturas y sus docs particulares) son LOS AUDITADOS.
+  · Los CLAUDE.md tienen DOBLE ROL: son arbitro Y son sujeto auditado, porque son la
+    sede de decenas de IDs. Se los audita como sede y se los usa como arbitro.
+  · docs/ids.yaml NO integra la jerarquia: es INDICE, jamas segunda definicion. Si el
+    yaml contradice la prosa de su sede, el DESACTUALIZADO ES EL YAML.
+Cuando un doc de diseno choca con un arbitro: el DOC esta mal, no el repo.
 
 FALSOS POSITIVOS QUE DEBES RECHAZAR (este ecosistema disena por delante del codigo A PROPOSITO):
   · "Esto no esta implementado todavia" NO es un hallazgo. JAMAS. El corpus es diseno futuro.
@@ -98,6 +106,16 @@ const TEMAS = [
   { key: 'evidencia',         desc: 'FLU-05..12: la planilla, sus IDs de check, el harness, el selftest, que cuenta como verificado' },
   { key: 'proceso',           desc: 'FLU-*: orden de ejecucion, jerarquia, barrido de ratificacion, el PROMPT, el registro, commits' },
   { key: 'assets-licencias',  desc: 'STK-*: consumidor puro, assets fuera de git, rutas verbatim, RECICLAR vs COMPAT-RUNTIME' },
+
+  // ── Los cuatro de la v2 (sumados 2026-07-19, hueco H6 del COMPLETO) ────────
+  // Ninguno tenia bucket, asi que sus contradicciones NUNCA SE BUSCARON. Van
+  // primero los dos que son FRONTERA ENTRE REPOS, que es donde este gate rinde.
+  // El hallazgo de H4 (Coagulant describiendo mal el mecanismo interno de Cargo)
+  // es exactamente un hallazgo de `compat-terceros`, y salio de casualidad.
+  { key: 'compat-terceros',   desc: 'EL MAS GRANDE: ARC9 / VJ Base / better movement v2 / DarkRP aparecen en 25 archivos. NO es el eje de LICENCIA (eso es assets-licencias) sino el de CONTRATO DE INTEGRACION RUNTIME: que API se lee, quien es dueno del hook, quien gana cuando dos mods escriben la misma propiedad. CRG-23, CRG-24, el puente ARC9, el movecompat, la deuda Front-4 de Caliber. INCLUYE el eje que H4 destapo: COMO UN MODULO DESCRIBE EL MECANISMO INTERNO DE OTRO -- si el doc de A explica que hace B, verificalo contra el Lua de B, no contra el doc de B' },
+  { key: 'ciclo-de-vida-del-jugador', desc: 'muerte / respawn / disconnect / PlayerSpawn / PlayerInitialSpawn: 12 archivos. Hoy se repartia entre persistencia, dominio-medico e inventario, y POR ESO NADIE LO CRUZABA ENTERO. El triangulo a mirar: la decision F de Coagulant (spawn = cuerpo nuevo, sin persistencia) contra la persistencia de stats de Craving contra el inventario persistido de Cargo. Tres politicas distintas sobre el mismo evento' },
+  { key: 'config-y-balance',  desc: 'convars, tunables, DONDE VIVEN LOS NUMEROS: 24 archivos. CRV-12 (balance = data) y COA-35 (un check jamas hardcodea un numero tunable) son normas duras sin bucket. Ojo al numero que vive en dos lados: el propio yaml anota en CRG-38 que el 2.0 solo vive en el codigo y en un estado.md' },
+  { key: 'rendimiento',       desc: 'Think / timers / presupuesto de red: 7 archivos. CRV-6 (un solo timer) y COA-15 (timer unico de 1s, nunca Think) son normativos y no tenian con que cruzarse. Incluye el costo de replicacion: COA-17 (un NW2 se replica a TODOS los clientes en cada escritura) y COA-16 (snapshot on-change, no por tick)' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,40 +145,65 @@ const TEMAS = [
 // significa nada (es la seccion 10.8 por la puerta de atras). El comando que la deriva:
 //   for r in corpus corpus-*; do ls $r/CLAUDE.md $r/docs/*.{md,txt}; done
 //   ... excluyendo CHANGELOG (historial), *_estado (foto volatil) y auditorias/ (actas).
+// RE-DERIVADO 2026-07-19 (segunda vez, H8 del COMPLETO). La columna `total` estaba
+// desincronizada EN LAS 29 FILAS, no en 5: la derivacion anterior habia contado sin
+// las lineas vacias. Un `total` corto no rompe la corrida -- rompe algo peor: los
+// TRAMOS se calculan con el, asi que la COLA de cada doc quedaba fuera del rango
+// leido y nadie lo notaba. Es el modo de falla de la seccion 10.8 (limpio por
+// omision) escondido en una constante.
+//
+// El comando que la deriva (PowerShell), y el detalle que lo hace correcto:
+//   @(Get-Content $f).Count      <- SI cuenta las lineas vacias
+//   NO: Get-Content $f | Measure-Object -Line   <- las SALTEA, y por eso mentia
+// La lista de archivos:
+//   for r in corpus corpus-*; do ls $r/CLAUDE.md $r/docs/*.{md,txt}; done
+//   ... excluyendo CHANGELOG (historial), *_estado (foto volatil) y auditorias/ (actas).
+//
+// 32 docs al 2026-07-19 (eran 29): la tanda de D-13 sumo los tres que faltaban --
+// stalker gano su arquitectura y sus convenciones (su CLAUDE.md estaba haciendo de
+// arquitectura), y Cortex gano el doc de CONTRATOS ENTRANTES, que es el unico lugar
+// donde las firmas que otros repos le congelaron se pueden cruzar entre si.
 const CORPUS_COMPLETO = [
   // Framework
-  { file: 'corpus/CLAUDE.md',                                           total:  85, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/corpus_flujo_trabajo.txt',                       total: 696, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/CORPUS_Architecture.md',                         total: 339, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/corpus_convenciones_commits.txt',                total: 138, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/corpus_roadmap.txt',                             total: 100, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/CLAUDE.md',                                           total:  87, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/corpus_flujo_trabajo.txt',                       total: 720, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/CORPUS_Architecture.md',                         total: 356, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/corpus_convenciones_commits.txt',                total: 140, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/corpus_roadmap.txt',                             total: 109, chunks: 1, repo: 'corpus' },
   // Modulos - el CLAUDE.md primero: es la sede de sus contratos
   { file: 'corpus-cargo/CLAUDE.md',                                     total: 140, chunks: 1, repo: 'corpus-cargo' },
   { file: 'corpus-caliber/CLAUDE.md',                                   total:  86, chunks: 1, repo: 'corpus-caliber' },
   { file: 'corpus-coagulant/CLAUDE.md',                                 total:  83, chunks: 1, repo: 'corpus-coagulant' },
   { file: 'corpus-craving/CLAUDE.md',                                   total:  82, chunks: 1, repo: 'corpus-craving' },
-  { file: 'corpus-stalker/CLAUDE.md',                                   total:  75, chunks: 1, repo: 'corpus-stalker' },
-  { file: 'corpus-cargo/docs/Cargo_Architecture.md',                    total: 899, chunks: 1, repo: 'corpus-cargo' },
-  { file: 'corpus-cargo/docs/cargo_roadmap.txt',                        total: 546, chunks: 1, repo: 'corpus-cargo' },
-  { file: 'corpus-cargo/docs/Cargo_Trade_Arquitectura.md',              total: 332, chunks: 1, repo: 'corpus-cargo' },
-  { file: 'corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md',         total: 314, chunks: 1, repo: 'corpus-cargo' },
+  { file: 'corpus-stalker/CLAUDE.md',                                   total:  98, chunks: 1, repo: 'corpus-stalker' },
+  { file: 'corpus-cargo/docs/Cargo_Architecture.md',                    total: 925, chunks: 1, repo: 'corpus-cargo' },
+  { file: 'corpus-cargo/docs/cargo_roadmap.txt',                        total: 573, chunks: 1, repo: 'corpus-cargo' },
+  { file: 'corpus-cargo/docs/Cargo_Trade_Arquitectura.md',              total: 338, chunks: 1, repo: 'corpus-cargo' },
+  { file: 'corpus-cargo/docs/Cargo_ItemImages_Arquitectura.md',         total: 320, chunks: 1, repo: 'corpus-cargo' },
   { file: 'corpus-cargo/docs/Workbench_Arquitectura.md',                total: 185, chunks: 1, repo: 'corpus-cargo' },
-  { file: 'corpus-coagulant/docs/Coagulant_Architecture.md',            total: 335, chunks: 1, repo: 'corpus-coagulant' },
-  { file: 'corpus-coagulant/docs/Coagulant_Block3_Semilla.md',          total: 148, chunks: 1, repo: 'corpus-coagulant' },
-  { file: 'corpus-coagulant/docs/coagulant_roadmap.txt',                total:  55, chunks: 1, repo: 'corpus-coagulant' },
-  { file: 'corpus-caliber/docs/Caliber_Architecture.md',                total: 298, chunks: 1, repo: 'corpus-caliber' },
-  { file: 'corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md',  total: 291, chunks: 1, repo: 'corpus-caliber' },
-  { file: 'corpus-caliber/docs/caliber_roadmap.txt',                    total:  94, chunks: 1, repo: 'corpus-caliber' },
-  { file: 'corpus-craving/docs/Craving_Architecture.md',                total: 401, chunks: 1, repo: 'corpus-craving' },
-  { file: 'corpus-craving/docs/Craving_Block4_Semilla.md',              total: 240, chunks: 1, repo: 'corpus-craving' },
-  { file: 'corpus-craving/docs/craving_roadmap.txt',                    total:  68, chunks: 1, repo: 'corpus-craving' },
+  { file: 'corpus-coagulant/docs/Coagulant_Architecture.md',            total: 341, chunks: 1, repo: 'corpus-coagulant' },
+  { file: 'corpus-coagulant/docs/Coagulant_Block3_Semilla.md',          total: 155, chunks: 1, repo: 'corpus-coagulant' },
+  { file: 'corpus-coagulant/docs/coagulant_roadmap.txt',                total:  70, chunks: 1, repo: 'corpus-coagulant' },
+  { file: 'corpus-caliber/docs/Caliber_Architecture.md',                total: 300, chunks: 1, repo: 'corpus-caliber' },
+  { file: 'corpus-caliber/docs/Caliber_EnergyShields_Arquitectura.md',  total: 292, chunks: 1, repo: 'corpus-caliber' },
+  { file: 'corpus-caliber/docs/caliber_roadmap.txt',                    total: 105, chunks: 1, repo: 'corpus-caliber' },
+  { file: 'corpus-craving/docs/Craving_Architecture.md',                total: 404, chunks: 1, repo: 'corpus-craving' },
+  { file: 'corpus-craving/docs/Craving_Block4_Semilla.md',              total: 263, chunks: 1, repo: 'corpus-craving' },
+  { file: 'corpus-craving/docs/craving_roadmap.txt',                    total:  79, chunks: 1, repo: 'corpus-craving' },
   { file: 'corpus-stalker/docs/ASSETS.md',                              total: 116, chunks: 1, repo: 'corpus-stalker' },
   // Los convenciones_commits de modulo: normativos por GIT-6 (cada repo define su propia
   // tabla de alcances). Faltaban en la v1 de esta lista -- eran cuatro docs invisibles.
-  { file: 'corpus-cargo/docs/cargo_convenciones_commits.txt',           total: 180, chunks: 1, repo: 'corpus-cargo' },
-  { file: 'corpus-coagulant/docs/coagulant_convenciones_commits.txt',   total: 165, chunks: 1, repo: 'corpus-coagulant' },
-  { file: 'corpus-craving/docs/craving_convenciones_commits.txt',       total: 153, chunks: 1, repo: 'corpus-craving' },
-  { file: 'corpus-caliber/docs/caliber_convenciones_commits.txt',       total: 142, chunks: 1, repo: 'corpus-caliber' },
+  // Desde la tanda D-13 cada uno acuna el ID de su tabla (CAL-23, COA-36, CRV-19, CRG-55),
+  // asi que ya no son ciegos al cruce de IDs.
+  { file: 'corpus-cargo/docs/cargo_convenciones_commits.txt',           total: 182, chunks: 1, repo: 'corpus-cargo' },
+  { file: 'corpus-coagulant/docs/coagulant_convenciones_commits.txt',   total: 167, chunks: 1, repo: 'corpus-coagulant' },
+  { file: 'corpus-craving/docs/craving_convenciones_commits.txt',       total: 155, chunks: 1, repo: 'corpus-craving' },
+  { file: 'corpus-caliber/docs/caliber_convenciones_commits.txt',       total: 144, chunks: 1, repo: 'corpus-caliber' },
+  // Nacidos en la tanda D-13 (2026-07-19), hueco H5 del COMPLETO.
+  { file: 'corpus-stalker/docs/STALKER_Arquitectura.md',                total: 112, chunks: 1, repo: 'corpus-stalker' },
+  { file: 'corpus-stalker/docs/stalker_convenciones_commits.txt',       total: 172, chunks: 1, repo: 'corpus-stalker' },
+  // Cortex: doc de RECEPCION, no de diseno. Su repo no tiene CLAUDE.md todavia.
+  { file: 'corpus-cortex/docs/Cortex_ContratosEntrantes.md',            total: 129, chunks: 1, repo: 'corpus-cortex' },
 ]
 
 // PILOTO: solo el framework. Modo acotado historico: nacio cuando solo la prosa del
@@ -567,7 +610,105 @@ const COBERTURA_PERDIDA = [
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FASE 5 - Critico de completitud. Lo que encuentre se convierte en trabajo.
+// FASE 5 - CONTRATO-VS-ARBOL. Un agente por CLAUDE.md.
+//
+// H7 del COMPLETO 2026-07-19. Los CLAUDE.md YA entraban al corpus y 13 de los 26
+// hallazgos tocaron uno -- ese arreglo funciono. Lo que NO se hacia es la pasada
+// contrato-por-contrato CONTRA EL LUA: de los 53 contratos numerados de los cinco
+// CLAUDE.md de modulo, solo cinco produjeron hallazgo, y los tres mas accionables de
+// toda la corrida (2.3, 2.4, 2.18) salieron por esa via DE CASUALIDAD.
+//
+// Por que merece fase propia: NO es doc-vs-doc, asi que ninguna fase anterior lo
+// cubre. El cruce compara afirmaciones entre si; esto compara UNA afirmacion contra
+// el arbol. Y el asimetria de autoridad lo hace barato de adjudicar: un CLAUDE.md es
+// nivel 4 y el Lua es nivel 1, asi que cuando chocan NO HAY QUE DELIBERAR -- el
+// CLAUDE.md esta mal. Es, ademas, el doc que todo ejecutor lee primero.
+//
+// Sin adjudicacion adversarial a proposito: el veredicto lo da el archivo:linea del
+// Lua, no una mayoria de opiniones. Lo que si se exige es la CITA.
+// ─────────────────────────────────────────────────────────────────────────────
+phase('ContratoArbol')
+
+const CONTRATO_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['repo', 'contratos'],
+  properties: {
+    repo: { type: 'string' },
+    contratos: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['numero', 'enunciado', 'veredicto', 'evidencia'],
+        properties: {
+          numero:    { type: 'string', description: 'Numero o titulo del contrato tal como lo lista el CLAUDE.md' },
+          enunciado: { type: 'string', description: 'Que afirma el contrato, autocontenido' },
+          idsCitados:{ type: 'array', items: { type: 'string' }, description: 'IDs que el contrato define o cita' },
+          veredicto: {
+            type: 'string',
+            enum: ['CUMPLIDO', 'INCUMPLIDO', 'PARCIAL', 'NO_VERIFICABLE'],
+            description: 'CUMPLIDO = el Lua lo ejerce y lo citas. INCUMPLIDO = el Lua hace otra cosa (el CLAUDE.md esta mal). PARCIAL = se cumple en unos call sites y no en otros. NO_VERIFICABLE = no hay codigo todavia (diseno por delante) o es una norma de proceso sin superficie en el arbol.',
+          },
+          evidencia: { type: 'string', description: 'archivo:linea del Lua. OBLIGATORIO salvo NO_VERIFICABLE.' },
+          detalle:   { type: 'string', description: 'Solo si INCUMPLIDO o PARCIAL: que dice el arbol y como habria que corregir el CLAUDE.md' },
+        },
+      },
+    },
+  },
+}
+
+const CLAUDES = CORPUS.filter(d => d.file.endsWith('CLAUDE.md'))
+
+const contratos = await parallel(CLAUDES.map(d => () => agent(
+  `Verifica CONTRATO POR CONTRATO el archivo ${d.file} contra el ARBOL DE CODIGO REAL de ${d.repo}.
+
+${JERARQUIA}
+
+GLOSARIO DE IDS DEL REGISTRO:
+${GLOSARIO || '(vacio)'}
+
+TU TRABAJO: abri ${d.file}, tomá su seccion de contratos (los "Contratos que no debes
+romper" -- estan numerados) y, UNO POR UNO, andá a buscar su implementacion en el Lua de
+${d.repo}/lua/**. No opines desde el doc: ABRI LOS ARCHIVOS.
+
+Esto NO es doc-vs-doc. Es doc-vs-ARBOL, y la asimetria de autoridad hace el veredicto
+barato: un CLAUDE.md es nivel 4 y el Lua es nivel 1. Cuando chocan, EL CLAUDE.md ESTA MAL
+-- no hay nada que deliberar. Y es el doc que todo ejecutor lee primero, asi que un
+contrato que miente se propaga a todo lo que se escriba despues.
+
+Para cada contrato devolve un veredicto CON archivo:linea del Lua. Reglas:
+  · CUMPLIDO exige CITA. Sin archivo:linea no hay CUMPLIDO -- eso es NO_VERIFICABLE.
+  · Un contrato que dice "TODOS los X pasan por Y" se verifica buscando los X que NO
+    pasan por Y. Encontrar un solo call site que cumple NO prueba el "todos": si el
+    contrato es universal, buscá el contraejemplo. Si no lo buscaste, es PARCIAL.
+  · NO_VERIFICABLE es un veredicto legitimo y frecuente: este ecosistema disena por
+    delante del codigo A PROPOSITO. "Todavia no esta implementado" NUNCA es INCUMPLIDO.
+    Tampoco lo son las normas de proceso (idioma, commits, que doc leer): no tienen
+    superficie en el arbol.
+  · PARCIAL es el veredicto mas valioso y el que mas se pierde: el contrato se cumple en
+    la ruta principal y se lo saltea en una rama. Buscá activamente esa rama.
+
+Se exhaustivo: TODOS los contratos numerados, ninguno salteado. Si el archivo lista 13,
+devolve 13 entradas.`,
+  { label: `contrato:${d.repo}`, phase: 'ContratoArbol', schema: CONTRATO_SCHEMA }
+)))
+
+const CONTRATOS_OK = contratos.filter(Boolean)
+const CLAUDES_CAIDOS = CLAUDES.filter((_, i) => !contratos[i]).map(d => d.file)
+const CONTRATOS_TODOS = CONTRATOS_OK.flatMap(c =>
+  (c.contratos || []).map(x => ({ ...x, repo: c.repo })))
+const CONTRATOS_ROTOS = CONTRATOS_TODOS.filter(
+  c => c.veredicto === 'INCUMPLIDO' || c.veredicto === 'PARCIAL')
+
+log(`Contrato-vs-arbol: ${CONTRATOS_TODOS.length} contratos verificados en ${CONTRATOS_OK.length}/${CLAUDES.length} CLAUDE.md - ${CONTRATOS_ROTOS.length} incumplido(s)/parcial(es)`)
+if (CLAUDES_CAIDOS.length) {
+  log(`AVISO: ${CLAUDES_CAIDOS.length} CLAUDE.md NO se verificaron contra el arbol (agente caido): ${CLAUDES_CAIDOS.join(', ')}`)
+  COBERTURA_PERDIDA.push(...CLAUDES_CAIDOS.map(f => `contratos NO verificados contra el arbol: ${f}`))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FASE 6 - Critico de completitud. Lo que encuentre se convierte en trabajo.
 // ─────────────────────────────────────────────────────────────────────────────
 phase('Completitud')
 
@@ -585,10 +726,14 @@ Lo que se cubrio:
   · ${SIN_ID.length} normativas SIN ID (violan FLU-25)
   · ${DIVERGENCIAS.length} divergencias entre el titulo del yaml y la prosa de su sede
   · ${SIN_ALCANCE.length} afirmaciones cuyo ALCANCE el doc nunca declara
+  · ${CONTRATOS_TODOS.length} contratos de CLAUDE.md verificados contra el arbol Lua (fase ContratoArbol), ${CONTRATOS_ROTOS.length} incumplido(s)/parcial(es)
 ${PILOTO ? '  · MODO PILOTO: solo se auditaron los docs del FRAMEWORK. Los de modulo quedaron fuera a proposito (alcance acotado del modo piloto).' : ''}
 
 Contradicciones confirmadas:
 ${JSON.stringify(CONFIRMADAS.map(f => ({ tema: f.tema, refA: f.refA, refB: f.refB, resumen: f.porQueChocan })), null, 1)}
+
+Contratos que el arbol NO respalda:
+${JSON.stringify(CONTRATOS_ROTOS.map(c => ({ repo: c.repo, contrato: c.numero, veredicto: c.veredicto, evidencia: c.evidencia })), null, 1)}
 
 PREGUNTAS QUE DEBES RESPONDER, yendo al arbol a mirar:
   1. ¿Algun doc de diseno de las siete raices quedo FUERA del corpus y deberia estar?
@@ -598,7 +743,10 @@ PREGUNTAS QUE DEBES RESPONDER, yendo al arbol a mirar:
   3. Un tema con CERO contradicciones, ¿esta limpio de verdad o nadie lo miro bien?
      Señala los sospechosos.
   4. ¿Hay docs que se contradicen con un CLAUDE.md (los contratos no negociables) y que este
-     cruce, al comparar solo doc-vs-doc, no podia ver? Revisa los contratos uno por uno.
+     cruce, al comparar solo doc-vs-doc, no podia ver? OJO: la fase ContratoArbol ya barrio
+     cada contrato contra el LUA -- no repitas ese trabajo. Lo tuyo es el angulo que ella no
+     cubre: contrato-vs-DOC (un doc de arquitectura que promete algo que el CLAUDE.md
+     prohibe), y los contratos que volvieron NO_VERIFICABLE, que son puntos ciegos.
   5. LA PREGUNTA DE LA SECCION 10.8: ¿cuantos de los docs auditados NO declaran ningun ID
      propio? Para un gate que cruza IDs, un doc sin IDs es un punto ciego perfecto: un
      "limpio" sobre el no es evidencia de nada - es "no auditado". Contalos y nombralos,
@@ -637,6 +785,18 @@ ${JSON.stringify(SIN_ID.slice(0, 60), null, 1)}
 ## Afirmaciones sin alcance declarado (${SIN_ALCANCE.length}) - ambiguedad latente
 ${JSON.stringify(SIN_ALCANCE.slice(0, 40), null, 1)}
 
+## CONTRATO-VS-ARBOL - ${CONTRATOS_TODOS.length} contratos de ${CONTRATOS_OK.length} CLAUDE.md verificados contra el Lua
+Esta fase NO es doc-vs-doc: compara cada contrato numerado contra el arbol real. Cuando un
+CLAUDE.md (nivel 4) choca con el Lua (nivel 1) NO hay deliberacion -- el CLAUDE.md esta mal,
+y es el doc que todo ejecutor lee primero.
+
+Incumplidos y parciales (${CONTRATOS_ROTOS.length}):
+${CONTRATOS_ROTOS.length ? JSON.stringify(CONTRATOS_ROTOS, null, 1) : '(ninguno: todos los contratos verificables tienen respaldo en el arbol)'}
+
+Resumen por veredicto:
+${JSON.stringify(['CUMPLIDO', 'INCUMPLIDO', 'PARCIAL', 'NO_VERIFICABLE'].map(v =>
+  ({ veredicto: v, n: CONTRATOS_TODOS.filter(c => c.veredicto === v).length })), null, 1)}
+
 ## COBERTURA PERDIDA (${COBERTURA_PERDIDA.length}) - agentes que murieron y NO auditaron su parte
 ${COBERTURA_PERDIDA.length ? JSON.stringify(COBERTURA_PERDIDA, null, 1) : '(ninguna: la cobertura fue completa)'}
 
@@ -658,6 +818,12 @@ ESTRUCTURA DEL ACTA:
        CADUCO: la frase citada ya no existe.
   3. Patologia del registro: divergencias yaml-vs-sede, y normativas sin ID.
   4. Ambiguedades de alcance.
+  4.bis CONTRATO-VS-ARBOL: seccion propia, con la tabla por repo y el detalle de cada
+     INCUMPLIDO/PARCIAL. Un contrato INCUMPLIDO es bucket A por construccion (el Lua es el
+     arbitro de nivel 1 y ya dirimio: se parcha el CLAUDE.md), asi que no lo mandes a voto.
+     Un PARCIAL es el hallazgo mas util de esta fase: el contrato se cumple en la ruta
+     principal y se saltea en una rama -- decila con archivo:linea. Y reporta cuantos
+     volvieron NO_VERIFICABLE: son el punto ciego de la fase, no su exito.
   5. Huecos de esta auditoria (de la critica de completitud) - honestidad sobre lo NO cubierto.
      Si algun doc auditado no tiene IDs propios, DECILO ACA con todas las letras: sobre ese
      doc este gate es ciego, y su "limpio" significa "no auditado", no "sano".
