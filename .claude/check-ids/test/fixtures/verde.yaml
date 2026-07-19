@@ -1,0 +1,11 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+familias_excluidas:
+  A: "IDs de check de planilla"
+ids:
+  COR-1:
+    titulo: "Nada de logica de dominio en Corpus."
+    sede: "corpus/CLAUDE.md"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION

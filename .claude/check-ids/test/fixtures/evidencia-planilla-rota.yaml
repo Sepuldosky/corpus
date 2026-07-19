@@ -1,0 +1,8 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-1:
+    titulo: "Cita un check de planilla que no dejo rastro."
+    sede: "corpus/CLAUDE.md"
+    evidencia:
+      - { tipo: planilla, ref: "Caliber J4 - el check que el handoff inventaba" }

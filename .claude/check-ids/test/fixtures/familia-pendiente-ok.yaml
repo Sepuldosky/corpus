@@ -1,0 +1,8 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+  ZZZ: { dominio: futuro,    sede: "corpus/docs/todavia_no_existe.md", pendiente: true }
+ids:
+  COR-1:
+    titulo: "El ID que el arbol de fixture cita, para aislar el hallazgo."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION

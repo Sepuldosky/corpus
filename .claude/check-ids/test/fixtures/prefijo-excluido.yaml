@@ -1,0 +1,13 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+familias_excluidas:
+  A: "IDs de check de planilla"
+ids:
+  COR-1:
+    titulo: "El ID que el arbol de fixture cita, para aislar el hallazgo."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION
+  A-1:
+    titulo: "Acunar sobre un prefijo de evidencia."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION

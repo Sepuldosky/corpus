@@ -1,0 +1,7 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-1:
+    titulo: "Sede a un archivo que no existe."
+    sede: "corpus/docs/no_existe_este_doc.md §3"
+    evidencia: INTENCION

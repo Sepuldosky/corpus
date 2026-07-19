@@ -1,0 +1,11 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-1:
+    titulo: "Una cosa."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION
+  COR-1:
+    titulo: "Otra cosa incompatible."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION

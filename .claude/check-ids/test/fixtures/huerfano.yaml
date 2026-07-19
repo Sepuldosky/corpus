@@ -1,0 +1,7 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-99:
+    titulo: "El registro olvida COR-1, que el CLAUDE.md real cita."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION

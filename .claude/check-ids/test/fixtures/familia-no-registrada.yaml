@@ -1,0 +1,11 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-1:
+    titulo: "El ID que el arbol de fixture cita, para aislar el hallazgo."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION
+  ZZZ-1:
+    titulo: "Prefijo que nadie declaro."
+    sede: "corpus/CLAUDE.md"
+    evidencia: INTENCION

@@ -1,0 +1,54 @@
+#!/bin/sh
+# pre-commit del ecosistema Corpus - gate del registro de IDs normativos.
+#
+# Dispara SOLO si el commit toca superficie normativa (docs/, CLAUDE.md, ids.yaml):
+# un commit de puro Lua no puede crear drift de prosa, y no vale la pena pagarle el
+# arranque de PowerShell. Ver corpus_flujo_trabajo.txt sec. 7.4.
+#
+# Se instala por repo con:  git config core.hooksPath .githooks
+# Corrida manual siempre disponible:
+#   powershell -File <ruta>/corpus/.claude/check-ids/corpus_check_ids.ps1
+#
+# Escape consciente, igual que en Kontrol: git commit --no-verify. No hay CI que lo
+# cace despues -- son addons GMod sin pipeline -- asi que saltearlo es una decision,
+# no un tramite.
+
+CHANGED=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$CHANGED" ] && exit 0
+
+if ! echo "$CHANGED" | grep -qE '(^|/)docs/|(^|/)CLAUDE\.md$|ids\.yaml$'; then
+    exit 0
+fi
+
+# El checker vive en el repo del framework. Este hook puede estar en cualquiera de las
+# siete raices, asi que se resuelve desde la raiz del repo actual hacia el workspace.
+REPO_ROOT=$(git rev-parse --show-toplevel)
+CHECKER="$REPO_ROOT/.claude/check-ids/corpus_check_ids.ps1"
+[ -f "$CHECKER" ] || CHECKER="$REPO_ROOT/../corpus/.claude/check-ids/corpus_check_ids.ps1"
+
+if [ ! -f "$CHECKER" ]; then
+    echo "pre-commit: no encuentro el checker de IDs."
+    echo "  Buscado en: $CHECKER"
+    echo "  El registro vive en corpus/ y es unico para las siete raices (sec. 7.4)."
+    echo "  Si moviste el framework, actualiza este hook."
+    exit 1
+fi
+
+PS=$(command -v powershell || command -v pwsh)
+if [ -z "$PS" ]; then
+    echo "pre-commit: no encuentro powershell; no puedo correr el checker de IDs."
+    echo "  No se saltea en silencio: un 'limpio' que no corrio no es un limpio."
+    exit 1
+fi
+
+"$PS" -NoProfile -ExecutionPolicy Bypass -File "$CHECKER" -Quiet
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    echo ""
+    echo "pre-commit: el registro de IDs (corpus/docs/ids.yaml) tiene hallazgos."
+    echo "  Corregilos, o commiteá con --no-verify si sabés lo que estás haciendo."
+    exit 1
+fi
+
+exit 0

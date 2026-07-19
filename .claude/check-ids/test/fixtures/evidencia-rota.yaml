@@ -1,0 +1,8 @@
+familias:
+  COR: { dominio: framework, sede: "corpus/CLAUDE.md" }
+ids:
+  COR-1:
+    titulo: "Evidencia que apunta al vacio."
+    sede: "corpus/CLAUDE.md"
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_que_no_existe.py" }
