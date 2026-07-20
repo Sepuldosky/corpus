@@ -45,7 +45,8 @@ familias:
   COA: { dominio: coagulant,  sede: "corpus-coagulant/CLAUDE.md" }
   CRV: { dominio: craving,    sede: "corpus-craving/CLAUDE.md" }
   # `pendiente: true` = el prefijo está RESERVADO pero su sede todavía no existe (Cortex
-  # tiene solo LICENSE + README). Reservar no es acuñar: el checker deja pasar la sede
+  # tiene LICENSE, README y docs/Cortex_ContratosEntrantes.md, pero no CLAUDE.md).
+  # Reservar no es acuñar: el checker deja pasar la sede
   # inexistente MIENTRAS la familia no tenga entradas, y se pone rojo el día que alguien
   # acuñe CTX-1 sin haber creado el CLAUDE.md. Lo destapó el acta del piloto v3: la sede
   # apuntaba a un archivo fantasma y nadie lo veía porque el checker no miraba las familias.
@@ -187,7 +188,7 @@ ids:
     evidencia:
       - { tipo: codigo, ref: "Coagulant: vía mínima propia sin Cargo; Craving: entity de mundo con WALK+USE" }
   COR-15:
-    titulo: "UI shell vía la primitiva: una sola entrada por módulo en el menú Q (Corpus.UI.RegisterTab, categoría única Corpus); las ventanas adicionales se abren por botón/concommand desde su tab."
+    titulo: "UI shell vía la primitiva: una sola entrada por módulo en el menú Q (Corpus.UI.RegisterTab, categoría única Corpus); las ventanas adicionales se abren por botón/concommand desde su tab, y los stools quedan fuera de la norma (pestaña Tools, categoría del módulo)."
     sede: "corpus/CLAUDE.md §Contratos que no debes romper · 8"
     fuerza: INVARIANTE
     estado: VIGENTE
@@ -195,7 +196,7 @@ ids:
       - { tipo: codigo, ref: "check visual 2026-07-09: tab de Caliber en Q → Utilities → Corpus; el browser por-NPC va por concommand caliber_browser" }
     nota: "Acuñado el 2026-07-19 (voto D-11): la prosa vivía en el CLAUDE.md de Caliber (su contrato 5), que ahora la cita."
   COR-16:
-    titulo: "Log vía la primitiva: toda salida de consola de módulo va por Corpus.Log → prefijo [Corpus:<module>]; única excepción, el fallback ruidoso del boot cuando el framework mismo falta."
+    titulo: "Log vía la primitiva: toda salida de consola de módulo va por Corpus.Log → prefijo [Corpus:<module>]; dos excepciones, ambas del framework — el fallback MsgN del boot cuando el framework mismo falta, y el reporte de corpus_selftest.lua."
     sede: "corpus/CLAUDE.md §Contratos que no debes romper · 9"
     fuerza: REGLA
     estado: VIGENTE
@@ -1744,8 +1745,10 @@ ids:
       el día que nazca la primera anomalía, el alcance ya existe y nadie lo improvisa.
 
   # ── CTX — Cortex ────────────────────────────────────────────────────────────
-  # Sin entradas: el repo tiene solo LICENSE + README y su README es descriptivo,
-  # no normativo. La familia queda declarada para que su Block la use al abrirse.
+  # Sin entradas: el repo todavía no tiene su CLAUDE.md, que es la sede de la familia.
+  # Su README es descriptivo, no normativo, y su único doc de diseño
+  # —docs/Cortex_ContratosEntrantes.md— CITA normas ajenas y se declara sin autoridad:
+  # no acuña un solo CTX-. La familia queda declarada para que su Block la use al abrirse.
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MÉTRICA DE SALUD (§7.4 · SDD-3 en Kontrol) — línea base 2026-07-16.
@@ -2028,3 +2031,30 @@ deuda:
       cazarlos.
       Queda para el 2.º COMPLETO: correrlo. Va en sesión fresca aparte con su propio
       PROMPT (AUD-3, Opus 4.8), y editar el .js invalida el caché de resume — esperable.
+  D-14:
+    titulo: "VOTO ABIERTO del autor (2026-07-20): ¿COR-12 —el contrato de ítems— es infraestructura demostrablemente compartida y pertenece al framework, o es dominio infiltrado en el framework delgado y su sede es Cargo?"
+    detalle: >
+      Hallazgo más caro del acta 2026-07-20 (Hueco 2). NO tiene árbitro de código
+      (§7.1, corolario): ambas lecturas son implementables, y el árbol no dirime cuál
+      es la correcta. Por eso NO es triage A y NO se parcha sin el autor.
+      A FAVOR DE QUE SE QUEDE en el framework: COR-12 gobierna a CUATRO consumidores
+      (Coagulant, Craving, corpus-stalker y el propio Cargo), y su nota acá mismo se
+      autodeclara "la ÚNICA sede que enuncia las dos mitades con su razón". Moverla a
+      Cargo la convierte en norma de un módulo sobre otros módulos, que es exactamente
+      lo que COR-11 evita.
+      A FAVOR DE QUE BAJE a Cargo: COR-1 y COR-10 son explícitos en que NI SIQUIERA lo
+      compartido por dos módulos sube. Un contrato de ítems ES dominio. Cargo es el
+      dueño de Items.Register y el que impone el gate isfunction(def.onUse).
+      D-1 está CERRADA y NO cubre esta pregunta: cerró que Cargo CITARA COR-12, no
+      dónde vive.
+    propuesta: >
+      RECOMENDACIÓN, para que el autor la acepte o la tumbe — no reemplaza su voto:
+      que COR-12 SE QUEDE en el framework, con la justificación reencuadrada. COR-12 no
+      gobierna *ítems*: gobierna el PROTOCOLO DE REGISTRO entre módulos (defs en shared,
+      onUse invocable client-side), del mismo linaje que COR-3 (persistencia namespaced)
+      y COR-4 (net namespaced), que también nacieron para evitar colisión entre
+      consumidores y nadie llama dominio.
+      EL PRECIO A PAGAR, y conviene escribirlo en el voto: COR-12 debe enunciar solo la
+      FORMA del contrato, nunca la SEMÁNTICA del ítem. Si algún día menciona stacks, peso
+      o slots, ahí sí bajó dominio al framework y este voto se reabre.
+      NO SE CIERRA SIN EL AUTOR.

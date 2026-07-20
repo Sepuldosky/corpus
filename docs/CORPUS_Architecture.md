@@ -171,11 +171,11 @@ end)
 
 - **Cargo owns**: cómo se define un ítem, cómo pesa, cómo se guarda, cómo se renderiza en la grilla.
 - **Coagulant/Craving owns**: qué hace su ítem cuando se usa.
-- **Realm: la def y el `onUse` se registran en AMBOS realms (shared).** El snapshot de Cargo solo transporta las defs `autogen`/`icon_override`, así que una def registrada solo en server no existe en el cliente y el grid no la renderiza; y la UI exige `isfunction(def.onUse)` client-side para habilitar «Use» y el quick bind — un `onUse` solo-server deja el ítem visible pero inusable. El `onUse` solo *corre* en server. Lección pagada en juego el 2026-07-13, por Craving y por Coagulant.
-- **El retorno de `onUse` gobierna el consumo:** Cargo descuenta una unidad solo si devuelve `true`. Devolver `false` habilita el consumo diferido (Coagulant descuenta al completar el tratamiento) y el rechazo (Craving no consume si la barra ya está llena).
+- **COR-12 — Realm: la def y el `onUse` se registran en AMBOS realms (shared).** El snapshot de Cargo solo transporta las defs `autogen`/`icon_override`, así que una def registrada solo en server no existe en el cliente y el grid no la renderiza; y la UI exige `isfunction(def.onUse)` client-side para habilitar «Use» y el quick bind — un `onUse` solo-server deja el ítem visible pero inusable. El `onUse` solo *corre* en server. Lección pagada en juego el 2026-07-13, por Craving y por Coagulant.
+- **COR-13 — El retorno de `onUse` gobierna el consumo:** Cargo descuenta una unidad solo si devuelve `true`. Devolver `false` habilita el consumo diferido (Coagulant descuenta al completar el tratamiento) y el rechazo (Craving no consume si la barra ya está llena).
 - **Sin Cargo presente**: el módulo cae a interacción con world-entity — esa *es* la vía de uso mínima propia sin inventario real. Craving ship su propia entity (`corpus_craving_food`, una sola clase; el def concreto viaja en el keyvalue `craving_item`): con Cargo, `E` (WALK+USE) la manda al inventario; sin Cargo, `E` la consume in situ. Lo que cae a candidatos CS:S/HL2 son los *modelos y sonidos* cuando el addon de assets de la Zona no está montado, no la entity.
 
-Ningún módulo de dominio **necesita** Cargo para funcionar — solo lo aprovecha si está.
+**COR-14 —** Ningún módulo de dominio **necesita** Cargo para funcionar: solo lo aprovecha si está.
 
 ---
 

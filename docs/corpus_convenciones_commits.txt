@@ -117,7 +117,7 @@ Para corpus/ (el framework), los alcances definidos son:
     - fix(net): corrige colisión de nombre en Corpus.Net.Register
 
   4.2 Estructura y docs:
-    - chore(workspace): crea las seis raíces del multi-root workspace
+    - chore(workspace): crea las raíces del multi-root workspace
     - docs(docs): cierra Block 1 en CORPUS_Architecture.md
     - docs(docs): porta metodología de ADS/Kontrol a corpus_flujo_trabajo.txt
 

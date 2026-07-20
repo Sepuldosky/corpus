@@ -806,3 +806,128 @@ un harness es capa offline, no planilla.
 
 > **Editar el `.js` invalida el caché de resume** de las corridas anteriores del gate. Es
 > esperable: el 2.º COMPLETO arranca de cero.
+
+---
+
+## PARCHES DE sesión Reparación post-gate SCOPED — 2026-07-20
+
+Aplica los parches que el acta [`auditorias/2026-07-20_coherencia_docs_PILOTO.md`](auditorias/2026-07-20_coherencia_docs_PILOTO.md)
+dejó **PROPUESTOS** y que AUD-4 le prohíbe aplicar a sí misma: el gate propone, el autor
+dispone. Tanda **partida en dos sesiones** por contexto; se registra como una sola, que es
+lo que es.
+
+**Los cinco parches A1-A5 tienen la misma forma, y por eso agrupan:** el doc enuncia un
+universal («seis raíces», «sin docs», «única excepción», «la sede de la familia es acá») y
+el árbol lo desmiente en una rama. **En los cinco el Lua tiene razón y el doc está corto** —
+ninguno es un bug de código, y ni una línea de Lua cambió. El stool de Caliber y el `print`
+del selftest están **bien como están**.
+
+- PARCHE 1 — **A5 · `CORPUS_Architecture.md` §5: COR-12, COR-13 y COR-14 anclados por
+  etiqueta.** La sede era correcta en CONTENIDO y no llevaba el ID escrito: la cadena
+  `COR-12`/`COR-13`/`COR-14` **no aparecía literalmente en el archivo**. Por eso el checker
+  no la cazaba y por eso el silencio del `CLAUDE.md` no tenía nada que lo detectara. Las tres
+  normas ganan su etiqueta en sitio, sin cambiar el largo del doc. **[APLICADO 2026-07-20]**
+
+- PARCHE 2 — **A5 · `CLAUDE.md` §Contratos, párrafo de cierre.** El doc que se autodeclara
+  **sede de la familia `COR-nn`** enumeraba las excepciones (COR-7/COR-8 en §3; COR-10/COR-11
+  en §1-4 y §2/§6) y **omitía tres invariantes VIGENTES**. Ahora enumera COR-12/13/14 con su
+  sede en §5. Era el Hueco 2 del acta, su hallazgo más caro: no es una contradicción entre dos
+  frases, es **una frase y un silencio**. **[APLICADO 2026-07-20]**
+
+- PARCHE 3 — **A1 · `corpus_convenciones_commits.txt:120`: se quita la cifra.**
+  `chore(workspace): crea las ~~seis~~ raíces del multi-root workspace`. El ejemplo existe
+  para ilustrar el FORMATO (GIT-1/GIT-2), **no para enumerar el árbol**, y este valor ya
+  derivó dos veces. Sin cifra deja de ser superficie que el barrido por valor tenga que
+  perseguir cada vez que el workspace crezca. **NO se tocó `:9`** (GIT-6, «las seis raíces
+  consumidoras») — es **otro referente** y es correcto: 5 módulos + stalker.
+  **[APLICADO 2026-07-20]**
+
+- PARCHE 4 — **A2 · el eco de «Cortex no tiene docs», en TRES sedes y no en dos.**
+  `corpus_roadmap.txt:81` decía que el repo es semilla «sin código **ni docs**». Falso:
+  `corpus-cortex/docs/Cortex_ContratosEntrantes.md` existe (129 líneas, derivadas). El
+  roadmap lo reconoce ahora como **el primer doc de diseño de Cortex** — hasta hoy no
+  figuraba en ninguna lista del framework. El PROMPT madre anunciaba un eco en `ids.yaml`;
+  **el barrido por VALOR encontró dos** (`:48`, comentario de `pendiente: true`, y `:1747`,
+  encabezado de la familia CTX). En ambos **lo falso es el paréntesis**; la afirmación que
+  lo envuelve —que la sede CTX (el `CLAUDE.md` de Cortex) todavía no existe— es **verdadera
+  y no se tocó**. **NO se tocó `CLAUDE.md:88`**, que dice «sin código» a secas y es cierto:
+  Cortex no tiene Lua. **[APLICADO 2026-07-20]**
+
+- PARCHE 5 — **A3 · contrato 8 / COR-15: los stools quedan fuera de la norma.**
+  `corpus-caliber/lua/weapons/gmod_tool/stools/corpus_caliber_config.lua:4` declara
+  `TOOL.Category="Caliber"` — una **segunda superficie en el spawnmenu** que la letra del
+  contrato no contemplaba. La ruta principal CUMPLE y está **enforceada**, no solo prometida
+  (`corpus_ui.lua:26-29`, `:33`), y el grep de `AddToolCategory` sobre los seis consumidores
+  da **cero** llamadas directas. Se amplía la cláusula de excepción; el `titulo` de COR-15 en
+  `ids.yaml` acompaña, porque el gate cruza exactamente eso. **[APLICADO 2026-07-20]**
+
+- PARCHE 6 — **A4 · contrato 9 / COR-16: «Única excepción» pasa a DOS.**
+  `corpus_selftest.lua:56, 59-60, 63, 65` emite `print` crudo con prefijo `[Corpus]` **a
+  secas**. Formalmente **no hay violación de conducta** —el sujeto de COR-16 es «un módulo» y
+  el selftest no lo es—: lo que el árbol desmiente es la palabra **«Única»**, un
+  universal-negativo. Y el parche **nombra el medio** del fallback de boot: es **`MsgN`**, no
+  `print` (los cuatro inits de módulo, p.ej. `corpus_cargo_init.lua:144`) — sin nombrarlo,
+  alguien lo iba a «corregir». `titulo` de COR-16 acompañado. **[APLICADO 2026-07-20]**
+
+- PARCHE 7 — **`D-14`: el voto abierto del autor, COR-12 vs COR-1/COR-10.** **NO se parcha**
+  y **no se cierra sin el autor**: es un hecho **sin árbitro de código** (§7.1, corolario) —
+  ambas lecturas son implementables y el árbol no dirime. La pregunta: *¿el contrato de ítems
+  es infraestructura demostrablemente compartida, o dominio infiltrado en el framework
+  delgado?* Queda registrado con **las dos posiciones** y una recomendación explícitamente
+  tumbable. **`D-1` está CERRADA y NO cubre esto**: cerró que Cargo CITARA COR-12, no dónde
+  vive. **[APLICADO 2026-07-20]** *(el registro, no la decisión)*
+
+- PARCHE 8 — **El defecto del gate que bloqueaba el 2.º COMPLETO, y su CLASE.** La columna
+  `total` de `CORPUS_COMPLETO` se había desincronizado otra vez: `corpus_flujo_trabajo.txt`
+  **720 → 737**. Causa: dentro de la MISMA tanda D-13, el PARCHE 9 reescribió §7.8 **después**
+  de que el PARCHE 10 derivara los conteos — **las últimas 17 líneas del doc más normativo del
+  ecosistema quedaron fuera del rango de tramos, y §7.8 se auditó a sí mismo con la cola
+  cortada.** Re-derivadas las 32 filas con `@(Get-Content).Count`; las otras 31 cerraban
+  exactas. **[APLICADO 2026-07-20]**
+
+- PARCHE 9 — **FASE 0 «Conteo»: `total` deja de ser una constante y pasa a ser un CHECKSUM.**
+  Arreglar la instancia no arregla nada: mientras el número se escriba a mano se vuelve a
+  desincronizar en la próxima tanda que edite un doc. El runtime de los scripts de Workflow
+  **no tiene filesystem ni APIs de Node** (no hay `readFileSync`), así que derivar dentro del
+  `.js` era imposible — se delega en un agente con Bash que devuelve los 32 largos por schema.
+  Desde ahora **los TRAMOS se arman con el valor DERIVADO**; si discrepan **gana el árbol** y
+  el desfase **viaja hasta el acta**. No se aborta —abortar dejaría al autor sin gate justo
+  después de editar un doc— y si la fase 0 muere, cae a la constante **declarándolo**, nunca
+  en silencio. **[APLICADO 2026-07-20]**
+
+- PARCHE 10 — **Huecos 4 y 5 del acta: que el próximo «limpio» no vuelva a mentir.**
+  (a) Los 18 TEMAS ganan campo `sedes` y una tabla `TEMAS_ESTADO` con **cinco** estados
+  (`limpio` / `N/A por alcance` / `sin normas que cruzar` / `NO CRUZADO` / N hallazgos);
+  el acta gana una sección **4.ter obligatoria** y queda **prohibido colapsarlos en un cero**
+  — un cero vacío por construcción hoy era indistinguible de un cero ganado. (b) `DOCS_SIN_IDS`
+  se deriva del glosario y se reporta **`N/A - sin IDs propios`** en vez de `limpio`, y recibe
+  un **PASE DE VALOR** contra el árbol. El Hueco 3 probó el costo: la etiqueta
+  «NO-AUDITABLE POR DISEÑO» se leyó como permiso para **no mirar el doc**, y adentro había un
+  hecho falso. **[APLICADO 2026-07-20]**
+
+- PARCHE 11 — **Espejo `desktop-sync/` regenerado.** El acta (Hueco 8) pide que la reparación
+  **no se dé por cerrada hasta que el espejo se regenere**: `Corpus_convenciones_commits.txt:120`
+  replicaba la misma cifra caduca. Es downstream y lo produce `sync.ps1`, pero es un **segundo
+  consumidor de estos docs que ningún gate audita**, y donde el drift se materializa como
+  respuestas de un asistente. Al regenerarlo entra por primera vez `Cortex_ContratosEntrantes.md`:
+  Cortex deja de ser el repo «sin docs» también para el RAG de Desktop. **[APLICADO 2026-07-20]**
+
+**Registro:** `D-14` ABIERTA (voto del autor). Sin IDs nuevos: **207**. Dos `titulo` de
+`ids.yaml` actualizados (COR-15, COR-16) para que sigan coincidiendo con su sede — el gate
+cruza exactamente eso.
+
+**Lo que esta tanda NO hizo, y por qué:** no se editó el acta del 2026-07-20 (**AUD-4**), ni
+siquiera para corregir su erratum conocido —§4.bis PARCIAL 2 cita `corpus_selftest.lua:55` y
+el `print` real arranca en la **56**; la 55 es `local fallas = 0`—. Un acta es la foto al
+momento de auditar: **si algo cambia, lo dice el acta siguiente**, y esta entrada lo deja
+dicho. Tampoco se corrió el 2.º COMPLETO (lo dispara **AUD-2** al cerrar el Block 3 de
+Coagulant, en sesión fresca) ni se tocaron los Huecos 1, 6, 7 y 8, que son de esa tanda.
+
+Verificación: checker en verde sobre **207 IDs / 10 familias** + suite **12/12** +
+`node --check` del `.js` del gate. **Sin superficie de runtime: ni una línea de Lua cambió**,
+y **ningún check de planilla nace de esta tanda** (FLU-37) — su verificación es el checker,
+no una ronda en juego.
+
+> **La primera corrida del gate después de esta tanda estrena la fase 0, los cinco estados
+> por bucket y el pase de VALOR.** Si algo de eso se rompe, es de acá: mirá en el `.js` antes
+> que en el corpus.

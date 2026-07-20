@@ -7,7 +7,7 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-19 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: D-12 y D-13 CERRADAS** — el harness de Coagulant existe y el gate quedó afilado; **el ecosistema está listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
+**Última actualización:** 2026-07-20 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
 
 ---
 
@@ -38,10 +38,13 @@
   rigen hacia adelante; quedan sedes en `.lua`/CHANGELOG por mover). El **checker** (§7.7)
   corre en `pre-commit` sobre las siete raíces (12/12 tests) y valida yaml, prefijos,
   duplicados, sedes, evidencia y huérfanos — **presencial, no semántico**. El **§8**
-  formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió tres pilotos
-  ([actas](auditorias/)); **las actas están triadas**: los tres bucket A de la v3 se
-  repararon (el ejemplo encadenado de §6, el §0 del roadmap, el titular de §11) y GIT-1..7
-  quedaron etiquetados en su sede.
+  formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió un COMPLETO y cuatro
+  SCOPED ([actas](auditorias/)); **las actas están triadas**: el último SCOPED (2026-07-20)
+  salió ÍNTEGRO y su reparación ya está aplicada — COR-12/13/14 anclados por etiqueta en su
+  sede y reconocidos por el `CLAUDE.md`, y cuatro universales corregidos donde el árbol los
+  desmentía (las «seis raíces» del ejemplo de commit, «Cortex sin docs» en tres sedes, los
+  stools fuera de COR-15, la «única excepción» de COR-16 que eran dos). **El gate propone y
+  jamás aplica (AUD-4): las actas son inmutables y los parches los aplica una tanda aparte.**
 - **Los siete repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos, MIT). Dos
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
@@ -109,10 +112,16 @@
      la cola de cada doc quedaba sin leer).
    Registro: **207 IDs**, 27 % INTENCION. **D-3** quedó recortada a **once sedes en `.lua`**
    —cero en CHANGELOG, estado o roadmap—, y varias de esas once son legítimas.
+   El **SCOPED del 2026-07-20** (AUD-1, por escribir normas) cerró el ciclo: su tanda está
+   aplicada y el gate estrena **fase 0 «Conteo»** —la columna `total` pasó de constante a
+   **checksum derivado del árbol**, que era el defecto que bloqueaba el COMPLETO— más cinco
+   estados por bucket y un pase de VALOR sobre los docs sin IDs propios.
    **Lo que sigue: correr el 2.º COMPLETO** (sesión fresca, Opus 4.8, su propio PROMPT —
-   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). Deudas de verificación
-   **en juego, del autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y la
-   ronda 7 de Coagulant.
+   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). **Voto abierto del
+   autor: `D-14`** — ¿COR-12 (contrato de ítems) es infraestructura compartida y se queda en
+   el framework, o es dominio y baja a Cargo? Sin árbitro de código: no se cierra sin él.
+   Deudas de verificación **en juego, del autor**: la entry #27 de Cargo (`[PENDIENTE]` con
+   código en árbol) y la ronda 7 de Coagulant.
 
 ---
 

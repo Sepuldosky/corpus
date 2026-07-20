@@ -79,9 +79,12 @@ construir contra un peer que aún no cerró. De los cinco módulos, falta UNO:
 
   [5] Cortex — táctica de combate NPC + afecto (dolor, miedo). Era el otro medio del
       Block 2 (junto a Caliber) y sigue sin empezar: el repo es semilla (README +
-      LICENSE, sin código ni docs). Gated por la superficie de eventos daño/limb de
-      Caliber: arranca cuando el Block 3 de Caliber la exponga. Cargo ya construyó
-      contra él mock-first (cortex.GetFactionInfo, hoy sin implementar del otro lado).
+      LICENSE, sin código). Su único doc de diseño es docs/Cortex_ContratosEntrantes.md
+      — los contratos que Cortex recibirá de sus peers; no acuña IDs y su sede CTX
+      (el CLAUDE.md de Cortex) todavía no existe. Gated por la superficie de eventos
+      daño/limb de Caliber: arranca cuando el Block 3 de Caliber la exponga. Cargo ya
+      construyó contra él mock-first (cortex.GetFactionInfo, hoy sin implementar del
+      otro lado).
 
 
 3. AL CERRAR CADA BLOQUE DE MÓDULO

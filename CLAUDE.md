@@ -63,14 +63,17 @@ redefine. El registro [`docs/ids.yaml`](docs/ids.yaml) los indexa.
 5. **COR-5 — Detección, nunca asunción.** Ningún módulo asume que Corpus u otro módulo ya cargó — orden de mount no garantizado en Gmod (ver §6 de la arquitectura). Lazy check (`Corpus.GetModule`) o `Corpus.OnReady` para wiring que corre una vez.
 6. **COR-6 — Prefijo de archivo por addon:** los **seis addons consumidores** (los cinco módulos + `corpus-stalker`) prefijan sus archivos Lua `corpus_<addon>_*.lua` — tanto el entry point en `lua/autorun/` como el árbol propio bajo `lua/corpus_<addon>/`, `lua/entities/`, `lua/weapons/`. El **framework se reserva el prefijo `corpus_` desnudo** y nombra sus primitivas `corpus_<primitiva>.lua` en su propia `lua/autorun/`. El objetivo es evitar colisión de nombres cuando los siete addons están montados simultáneamente; el framework no colisiona consigo mismo. **El nombre `corpus_registry.lua` no se renombra por convención**, no por dependencia: su posición en el merge alfabético (después de los `corpus_<addon>_init.lua`) es el HECHO que **obliga** al patrón de sonda + boot diferido de §6 de la arquitectura — el boot es **inmune** a esa posición por construcción (COR-5, COR-9): si el registro ordena antes dispara la fast-path, si ordena después la rama diferida. Lo que sí depende del nombre es la **prosa**: la arquitectura, el CHANGELOG y los inits lo citan por escrito, y los harness offline arman el frame por ese nombre.
 7. **COR-9 — Cada archivo del framework es autosuficiente.** `Corpus = Corpus or {}` al tope; ninguno asume orden de carga dentro de `lua/autorun/` — no repitas acá la fragilidad de orden alfabético que Caliber elimina con su manifest.
-8. **COR-15 — UI shell vía la primitiva.** Una sola entrada por módulo en el menú Q: `Corpus.UI.RegisterTab(<module>, <label>, fn)`, bajo la categoría única "Corpus" (Utilities). Ningún módulo abre un menú propio en el spawnmenu; las ventanas adicionales (p.ej. el browser de Caliber) se abren por botón/concommand desde su tab.
-9. **COR-16 — Log vía la primitiva.** Toda salida de consola de un módulo va por `Corpus.Log(<module>, ...)` → prefijo `[Corpus:<module>]`; nada de `print` crudo. Única excepción: el fallback ruidoso del boot cuando el framework mismo falta (no hay `Corpus.Log` que usar).
+8. **COR-15 — UI shell vía la primitiva.** Una sola entrada por módulo en el menú Q: `Corpus.UI.RegisterTab(<module>, <label>, fn)`, bajo la categoría única "Corpus" (Utilities). Ningún módulo abre un menú propio en el spawnmenu; las ventanas adicionales (p.ej. el browser de Caliber) se abren por botón/concommand desde su tab, **y los modos de toolgun (stools) quedan fuera de esta norma: viven en la pestaña Tools bajo la categoría del módulo, no en el menú Q.**
+9. **COR-16 — Log vía la primitiva.** Toda salida de consola de un módulo va por `Corpus.Log(<module>, ...)` → prefijo `[Corpus:<module>]`; nada de `print` crudo. **Dos excepciones, ambas del framework y ninguna de un módulo:** (a) el fallback ruidoso del boot cuando el framework mismo falta —no hay `Corpus.Log` que usar; **se emite con `MsgN`**—, y (b) el bloque de reporte de `corpus_selftest.lua`, que imprime con prefijo `[Corpus]` a secas porque reporta sobre el framework entero, no sobre un módulo.
 
 Las normas duras restantes del framework tienen su sede en la arquitectura, no acá:
 **COR-7** (invariante by-ref del registro) y **COR-8** (`Corpus.Data` sí normaliza en el
 round-trip JSON — contrato **distinto** a COR-7, no confundirlos) viven en §3 de
 [`CORPUS_Architecture.md`](docs/CORPUS_Architecture.md); **COR-10** (la regla cardinal
-del framework delgado) y **COR-11** (Corpus es la única hard-dep) en §1-4 y §2/§6.
+del framework delgado) y **COR-11** (Corpus es la única hard-dep) en §1-4 y §2/§6;
+y **COR-12** (def y `onUse` en ambos realms), **COR-13** (el retorno de `onUse` gobierna
+el consumo) y **COR-14** (ningún módulo de dominio necesita Cargo) en §5, el contrato de
+ítems generalizado.
 
 ## Verificación
 
