@@ -3,6 +3,7 @@ export const meta = {
   description: 'Auditoria doc-vs-doc del ecosistema Corpus, adjudicada contra el Lua / estado.md / CHANGELOG',
   whenToUse: 'Cuando haya que verificar que los docs de diseno de las siete raices no se contradicen entre si ni contra la realidad del arbol. args: { fecha: "2026-07-16", piloto: true|false, destino: "ruta" }',
   phases: [
+    { title: 'Conteo', detail: 'Deriva del arbol el largo real de cada doc: la columna `total` es un checksum, no la fuente' },
     { title: 'Glosario', detail: 'Lee docs/ids.yaml: el indice ya existe y el checker lo valida. No se reconstruye por grep.' },
     { title: 'Lectura', detail: 'Un lector por tramo: extrae afirmaciones normativas con archivo:linea, tema, fuerza y ALCANCE' },
     { title: 'Cruce', detail: 'Un agente por tema: busca contradicciones entre docs dentro de su tema' },
@@ -91,31 +92,36 @@ ${READ_ONLY}
 // Taxonomia fija - los buckets del cruce. Un doc puede tocar varios.
 // Derivada del dominio real del ecosistema, no de la de Kontrol.
 // ─────────────────────────────────────────────────────────────────────────────
+// El campo `sedes` NO es decorativo: es lo que distingue un CERO GANADO de un CERO
+// VACIO. [Agregado 2026-07-20, Hueco 5 del acta SCOPED.] Antes, un tema cuyas sedes
+// viven todas fuera del corpus auditado reportaba "0 contradicciones" igual que un
+// tema que se cruzo entero y salio limpio -- indistinguibles en el reporte. Con esto,
+// el gate puede decir `N/A por alcance` en vez de mentir por omision.
 const TEMAS = [
-  { key: 'framework-delgado', desc: 'COR-10/COR-1: que sube a Corpus y que no. Logica de dominio en el framework, primitivas candidatas' },
-  { key: 'soft-deps',         desc: 'COR-11/COR-5: hard-dep unica, deteccion en runtime, lazy-check, degradacion honesta, direccion de las soft-deps' },
-  { key: 'realms',            desc: 'server/client/shared: defs en ambos realms (COR-12), prediccion de Move, autoridad del server, espejo NW2' },
-  { key: 'namespacing',       desc: 'COR-2/3/4/6/9: namespace unico, persistencia y net namespaced, prefijo de archivo, autosuficiencia' },
-  { key: 'contrato-items',    desc: 'COR-12/13/14 y CRG-*: defs, clases stackable/unique, onUse y su retorno, blob de instancia, footprint' },
-  { key: 'boot-carga',        desc: 'CAL-1..9: boot diferido, sonda, manifest explicito, orden de include, nunca invocar hacia adelante' },
-  { key: 'dano-limbs',        desc: 'Caliber: pipeline escudo/armadura/limbs, hitgroups, zonas, la frontera con Coagulant y Cortex' },
-  { key: 'dominio-medico',    desc: 'Coagulant: heridas, sangrado, tratamiento, debuffs zonales, la frontera con Caliber y Cargo' },
-  { key: 'inventario',        desc: 'Cargo: grid, peso, munition, cinturon, comercio, contenedores, la frontera con los modulos duenos' },
-  { key: 'ui-vgui',           desc: 'Menu Q, HUD, pcall en HUDPaint, trampas de VGUI, theme, quien pinta que' },
-  { key: 'persistencia',      desc: 'COR-3/COR-8: rutas namespaced, round-trip JSON y normalizacion de claves, que persiste y que no' },
-  { key: 'evidencia',         desc: 'FLU-05..12: la planilla, sus IDs de check, el harness, el selftest, que cuenta como verificado' },
-  { key: 'proceso',           desc: 'FLU-*: orden de ejecucion, jerarquia, barrido de ratificacion, el PROMPT, el registro, commits' },
-  { key: 'assets-licencias',  desc: 'STK-*: consumidor puro, assets fuera de git, rutas verbatim, RECICLAR vs COMPAT-RUNTIME' },
+  { key: 'framework-delgado', sedes: ['corpus'], desc: 'COR-10/COR-1: que sube a Corpus y que no. Logica de dominio en el framework, primitivas candidatas' },
+  { key: 'soft-deps',         sedes: ['corpus'], desc: 'COR-11/COR-5: hard-dep unica, deteccion en runtime, lazy-check, degradacion honesta, direccion de las soft-deps' },
+  { key: 'realms',            sedes: ['corpus', 'corpus-cargo', 'corpus-coagulant', 'corpus-craving'], desc: 'server/client/shared: defs en ambos realms (COR-12), prediccion de Move, autoridad del server, espejo NW2' },
+  { key: 'namespacing',       sedes: ['corpus'], desc: 'COR-2/3/4/6/9: namespace unico, persistencia y net namespaced, prefijo de archivo, autosuficiencia' },
+  { key: 'contrato-items',    sedes: ['corpus', 'corpus-cargo'], desc: 'COR-12/13/14 y CRG-*: defs, clases stackable/unique, onUse y su retorno, blob de instancia, footprint' },
+  { key: 'boot-carga',        sedes: ['corpus', 'corpus-caliber'], desc: 'CAL-1..9: boot diferido, sonda, manifest explicito, orden de include, nunca invocar hacia adelante' },
+  { key: 'dano-limbs',        sedes: ['corpus-caliber', 'corpus-coagulant'], desc: 'Caliber: pipeline escudo/armadura/limbs, hitgroups, zonas, la frontera con Coagulant y Cortex' },
+  { key: 'dominio-medico',    sedes: ['corpus-coagulant'], desc: 'Coagulant: heridas, sangrado, tratamiento, debuffs zonales, la frontera con Caliber y Cargo' },
+  { key: 'inventario',        sedes: ['corpus-cargo'], desc: 'Cargo: grid, peso, munition, cinturon, comercio, contenedores, la frontera con los modulos duenos' },
+  { key: 'ui-vgui',           sedes: ['corpus', 'corpus-cargo', 'corpus-caliber', 'corpus-coagulant', 'corpus-craving'], desc: 'Menu Q, HUD, pcall en HUDPaint, trampas de VGUI, theme, quien pinta que' },
+  { key: 'persistencia',      sedes: ['corpus', 'corpus-cargo'], desc: 'COR-3/COR-8: rutas namespaced, round-trip JSON y normalizacion de claves, que persiste y que no' },
+  { key: 'evidencia',         sedes: ['corpus'], desc: 'FLU-05..12: la planilla, sus IDs de check, el harness, el selftest, que cuenta como verificado' },
+  { key: 'proceso',           sedes: ['corpus'], desc: 'FLU-*: orden de ejecucion, jerarquia, barrido de ratificacion, el PROMPT, el registro, commits' },
+  { key: 'assets-licencias',  sedes: ['corpus-stalker'], desc: 'STK-*: consumidor puro, assets fuera de git, rutas verbatim, RECICLAR vs COMPAT-RUNTIME' },
 
   // ── Los cuatro de la v2 (sumados 2026-07-19, hueco H6 del COMPLETO) ────────
   // Ninguno tenia bucket, asi que sus contradicciones NUNCA SE BUSCARON. Van
   // primero los dos que son FRONTERA ENTRE REPOS, que es donde este gate rinde.
   // El hallazgo de H4 (Coagulant describiendo mal el mecanismo interno de Cargo)
   // es exactamente un hallazgo de `compat-terceros`, y salio de casualidad.
-  { key: 'compat-terceros',   desc: 'EL MAS GRANDE: ARC9 / VJ Base / better movement v2 / DarkRP aparecen en 25 archivos. NO es el eje de LICENCIA (eso es assets-licencias) sino el de CONTRATO DE INTEGRACION RUNTIME: que API se lee, quien es dueno del hook, quien gana cuando dos mods escriben la misma propiedad. CRG-23, CRG-24, el puente ARC9, el movecompat, la deuda Front-4 de Caliber. INCLUYE el eje que H4 destapo: COMO UN MODULO DESCRIBE EL MECANISMO INTERNO DE OTRO -- si el doc de A explica que hace B, verificalo contra el Lua de B, no contra el doc de B' },
-  { key: 'ciclo-de-vida-del-jugador', desc: 'muerte / respawn / disconnect / PlayerSpawn / PlayerInitialSpawn: 12 archivos. Hoy se repartia entre persistencia, dominio-medico e inventario, y POR ESO NADIE LO CRUZABA ENTERO. El triangulo a mirar: la decision F de Coagulant (spawn = cuerpo nuevo, sin persistencia) contra la persistencia de stats de Craving contra el inventario persistido de Cargo. Tres politicas distintas sobre el mismo evento' },
-  { key: 'config-y-balance',  desc: 'convars, tunables, DONDE VIVEN LOS NUMEROS: 24 archivos. CRV-12 (balance = data) y COA-35 (un check jamas hardcodea un numero tunable) son normas duras sin bucket. Ojo al numero que vive en dos lados: el propio yaml anota en CRG-38 que el 2.0 solo vive en el codigo y en un estado.md' },
-  { key: 'rendimiento',       desc: 'Think / timers / presupuesto de red: 7 archivos. CRV-6 (un solo timer) y COA-15 (timer unico de 1s, nunca Think) son normativos y no tenian con que cruzarse. Incluye el costo de replicacion: COA-17 (un NW2 se replica a TODOS los clientes en cada escritura) y COA-16 (snapshot on-change, no por tick)' },
+  { key: 'compat-terceros',   sedes: ['corpus-cargo', 'corpus-caliber', 'corpus-coagulant', 'corpus-craving', 'corpus-stalker'], desc: 'EL MAS GRANDE: ARC9 / VJ Base / better movement v2 / DarkRP aparecen en 25 archivos. NO es el eje de LICENCIA (eso es assets-licencias) sino el de CONTRATO DE INTEGRACION RUNTIME: que API se lee, quien es dueno del hook, quien gana cuando dos mods escriben la misma propiedad. CRG-23, CRG-24, el puente ARC9, el movecompat, la deuda Front-4 de Caliber. INCLUYE el eje que H4 destapo: COMO UN MODULO DESCRIBE EL MECANISMO INTERNO DE OTRO -- si el doc de A explica que hace B, verificalo contra el Lua de B, no contra el doc de B' },
+  { key: 'ciclo-de-vida-del-jugador', sedes: ['corpus-cargo', 'corpus-coagulant', 'corpus-craving'], desc: 'muerte / respawn / disconnect / PlayerSpawn / PlayerInitialSpawn: 12 archivos. Hoy se repartia entre persistencia, dominio-medico e inventario, y POR ESO NADIE LO CRUZABA ENTERO. El triangulo a mirar: la decision F de Coagulant (spawn = cuerpo nuevo, sin persistencia) contra la persistencia de stats de Craving contra el inventario persistido de Cargo. Tres politicas distintas sobre el mismo evento' },
+  { key: 'config-y-balance',  sedes: ['corpus-cargo', 'corpus-caliber', 'corpus-coagulant', 'corpus-craving'], desc: 'convars, tunables, DONDE VIVEN LOS NUMEROS: 24 archivos. CRV-12 (balance = data) y COA-35 (un check jamas hardcodea un numero tunable) son normas duras sin bucket. Ojo al numero que vive en dos lados: el propio yaml anota en CRG-38 que el 2.0 solo vive en el codigo y en un estado.md' },
+  { key: 'rendimiento',       sedes: ['corpus-coagulant', 'corpus-craving'], desc: 'Think / timers / presupuesto de red: 7 archivos. CRV-6 (un solo timer) y COA-15 (timer unico de 1s, nunca Think) son normativos y no tenian con que cruzarse. Incluye el costo de replicacion: COA-17 (un NW2 se replica a TODOS los clientes en cada escritura) y COA-16 (snapshot on-change, no por tick)' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,6 +158,20 @@ const TEMAS = [
 // leido y nadie lo notaba. Es el modo de falla de la seccion 10.8 (limpio por
 // omision) escondido en una constante.
 //
+// RE-DERIVADO 2026-07-20 (tercera vez, seccion 3.C del PROMPT de reparacion post-gate).
+// Desincronizada de nuevo, y en UNA sola fila: corpus_flujo_trabajo.txt decia 720 y el
+// arbol tenia 737. Causa: dentro de la MISMA tanda D-13, el PARCHE 9 reescribio la
+// seccion 7.8 DESPUES de que el PARCHE 10 derivara los conteos. Las ultimas 17 lineas
+// del doc mas normativo del ecosistema quedaron fuera del rango de tramos, y entre ellas
+// la seccion 7.8 -- el gate se auditó a si mismo con la cola cortada.
+//
+// TRES VECES ES UNA CLASE, NO UNA INSTANCIA. Por eso esta columna YA NO ES LA FUENTE:
+// la fase 0 (Conteo) deriva el largo real del arbol en cada corrida y los TRAMOS se
+// arman con ESE valor. Lo que queda aca es un CHECKSUM -- util para ver el desfase de un
+// vistazo y para que la corrida lo reporte, pero ya no puede cortar la cola de nadie.
+// Mantenela al dia igual: un desfase grande es señal de que un doc crecio y quizas
+// necesita mas `chunks`.
+//
 // El comando que la deriva (PowerShell), y el detalle que lo hace correcto:
 //   @(Get-Content $f).Count      <- SI cuenta las lineas vacias
 //   NO: Get-Content $f | Measure-Object -Line   <- las SALTEA, y por eso mentia
@@ -165,11 +185,11 @@ const TEMAS = [
 // donde las firmas que otros repos le congelaron se pueden cruzar entre si.
 const CORPUS_COMPLETO = [
   // Framework
-  { file: 'corpus/CLAUDE.md',                                           total:  87, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/corpus_flujo_trabajo.txt',                       total: 720, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/CLAUDE.md',                                           total:  90, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/corpus_flujo_trabajo.txt',                       total: 737, chunks: 1, repo: 'corpus' },
   { file: 'corpus/docs/CORPUS_Architecture.md',                         total: 356, chunks: 1, repo: 'corpus' },
   { file: 'corpus/docs/corpus_convenciones_commits.txt',                total: 140, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/corpus_roadmap.txt',                             total: 109, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/corpus_roadmap.txt',                             total: 112, chunks: 1, repo: 'corpus' },
   // Modulos - el CLAUDE.md primero: es la sede de sus contratos
   { file: 'corpus-cargo/CLAUDE.md',                                     total: 140, chunks: 1, repo: 'corpus-cargo' },
   { file: 'corpus-caliber/CLAUDE.md',                                   total:  86, chunks: 1, repo: 'corpus-caliber' },
@@ -214,6 +234,101 @@ const CORPUS_COMPLETO = [
 const CORPUS_PILOTO = CORPUS_COMPLETO.filter(d => d.repo === 'corpus')
 
 const CORPUS = PILOTO ? CORPUS_PILOTO : CORPUS_COMPLETO
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FASE 0 - CONTEO. La reparacion de CLASE del defecto que el gate SCOPED del
+// 2026-07-20 encontro en si mismo (seccion 3.C del PROMPT de reparacion).
+//
+// EL DEFECTO, dos veces en dos tandas: `total` es una constante escrita a mano y
+// los TRAMOS se calculan con ella, asi que un `total` corto deja la COLA del doc
+// fuera del rango leido y NADIE LO NOTA. El 2026-07-20 el doc afectado era
+// corpus_flujo_trabajo.txt (script 720, real 737): las ultimas 17 lineas del doc
+// MAS NORMATIVO del ecosistema quedaron sin auditar, y entre ellas su propia
+// seccion 7.8 -- el gate se auditó a si mismo con la cola cortada. Un limpio con
+// la cola cortada es un FALSO-LIMPIO, el unico modo de falla que este gate no
+// puede permitirse (seccion 10.8 de Kontrol, escondida en una constante).
+//
+// POR QUE NO SE DERIVA EN JS: el runtime de estos scripts NO tiene filesystem ni
+// APIs de Node. No hay readFileSync. Se delega en un agente, que si tiene Bash.
+//
+// LA INVERSION DE AUTORIDAD: a partir de aca la fuente del largo es EL ARBOL, y
+// la columna `total` es un CHECKSUM. Si discrepan, gana el arbol (no se aborta:
+// abortar dejaria al autor sin gate justo despues de editar un doc, que es
+// exactamente cuando mas lo necesita) y el desfase VIAJA HASTA EL ACTA. Ruidoso,
+// no silencioso: FLU-27 pide que todo numero se derive del arbol, y ahora se
+// deriva en cada corrida en vez de a mano cada tantas tandas.
+// ─────────────────────────────────────────────────────────────────────────────
+phase('Conteo')
+
+const CONTEO_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['conteos'],
+  properties: {
+    conteos: {
+      type: 'array',
+      description: 'Una entrada por archivo pedido, en el mismo orden. Ninguno salteado.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['file', 'lineas'],
+        properties: {
+          file:   { type: 'string', description: 'La ruta EXACTA tal como se te dio' },
+          lineas: { type: 'number', description: 'Largo real en lineas, contando las VACIAS' },
+        },
+      },
+    },
+  },
+}
+
+const conteo = await agent(
+  `Deriva del arbol el largo REAL, en lineas, de cada uno de estos ${CORPUS.length} archivos.
+
+${CORPUS.map(d => d.file).join('\n')}
+
+Las rutas son relativas a la raiz del workspace (la carpeta que contiene corpus/, corpus-cargo/,
+corpus-caliber/, corpus-coagulant/, corpus-craving/, corpus-stalker/ y corpus-cortex/).
+
+EL DETALLE QUE HACE O ROMPE ESTA FASE -- las lineas VACIAS CUENTAN:
+  · PowerShell:  @(Get-Content $f).Count          <- SI las cuenta
+    NO uses:     Get-Content $f | Measure-Object -Line   <- las SALTEA, y ya corrompio
+                 esta misma tabla una vez (H8 del COMPLETO 2026-07-19)
+  · Bash:        wc -l < "$f"                     <- sirve
+
+Corre UN SOLO comando que los recorra todos; no abras los archivos con Read (son miles de
+lineas y no necesitas su contenido, solo su largo).
+
+Devolve una entrada por archivo, con la ruta EXACTA tal como te la di. Si alguno no existe,
+devolvelo igual con lineas=0: que un doc del corpus haya desaparecido es informacion, no un
+error que debas resolver por tu cuenta.`,
+  { label: 'conteo:32-docs', phase: 'Conteo', schema: CONTEO_SCHEMA }
+)
+
+// Si la fase 0 muere, el gate NO cae de vuelta a la constante en silencio: eso seria
+// reintroducir el defecto. Cae a la constante DECLARANDOLO, y el aviso llega al acta.
+const DERIVADO = new Map(
+  ((conteo && conteo.conteos) || []).filter(c => c && c.lineas > 0).map(c => [c.file, c.lineas])
+)
+
+const DESFASES = []
+for (const d of CORPUS) {
+  const real = DERIVADO.get(d.file)
+  if (real === undefined) {
+    DESFASES.push(`${d.file}: NO DERIVADO (la fase de conteo no lo devolvio) - se usa la constante ${d.total}, que puede estar corta`)
+    continue
+  }
+  if (real !== d.total) {
+    DESFASES.push(`${d.file}: la constante dice ${d.total} y el arbol tiene ${real} (${real > d.total ? `${real - d.total} linea(s) habrian quedado SIN AUDITAR` : 'la constante sobra'}) - se audita por el arbol`)
+  }
+  d.total = real          // el arbol manda
+}
+
+if (DESFASES.length) {
+  log(`DESFASE en la columna \`total\` (${DESFASES.length} doc(s)) - se corrigio en caliente, va al acta:`)
+  for (const d of DESFASES) log(`  · ${d}`)
+} else {
+  log(`Conteo: las ${CORPUS.length} filas de \`total\` coinciden con el arbol`)
+}
 
 const TRAMOS = []
 for (const d of CORPUS) {
@@ -374,6 +489,29 @@ const GLOSARIO = ENTRADAS
   .map(d => `${d.id} (${d.sede}): ${d.titulo}`)
   .join('\n')
   .slice(0, 14000)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOCS SIN IDS PROPIOS - Hueco 4 del acta SCOPED 2026-07-20.
+//
+// Este gate cruza IDs. Sobre un doc que no es sede de NINGUNO, es CIEGO: su
+// "limpio" significa "no auditado", no "sano". Al 2026-07-20 el caso es
+// corpus_roadmap.txt, y el Hueco 3 de esa misma acta probo el costo: su etiqueta
+// "NO-AUDITABLE POR DISEÑO" se leyo como permiso para NO MIRAR EL DOC, y adentro
+// habia un hecho falso (linea 81: Cortex "sin codigo ni docs", cuando
+// Cortex_ContratosEntrantes.md existe y tiene 129 lineas).
+//
+// Intencion pura en el nivel 6 de la jerarquia NO es lo mismo que inauditable: un
+// roadmap carga HECHOS VERIFICABLES contra el arbol. Asi que estos docs reciben
+// `N/A - sin IDs propios` en vez de `limpio`, Y un pase de VALOR contra el arbol.
+// ─────────────────────────────────────────────────────────────────────────────
+const SEDES_CON_IDS = ENTRADAS.map(e => e.sede || '')
+const DOCS_SIN_IDS = CORPUS
+  .map(d => d.file)
+  .filter(f => !SEDES_CON_IDS.some(s => s.includes(f)))
+
+if (DOCS_SIN_IDS.length) {
+  log(`${DOCS_SIN_IDS.length} doc(s) sin IDs propios - el cruce es CIEGO sobre ellos, van a pase de VALOR: ${DOCS_SIN_IDS.join(', ')}`)
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FASE 2 - Lectura: un agente por tramo.
@@ -602,6 +740,54 @@ if (TEMAS_CAIDOS.length) {
   log(`AVISO: ${TEMAS_CAIDOS.length} tema(s) NO se cruzaron (agente caido): ${TEMAS_CAIDOS.join(', ')} - no estan limpios, estan sin auditar`)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ESTADO POR BUCKET - Hueco 5 del acta SCOPED 2026-07-20.
+//
+// EL DEFECTO: un cero de contradicciones se reportaba igual viniera de donde
+// viniera. "0" en `dominio-medico` durante un PILOTO no significa que Coagulant
+// este limpio: significa que sus sedes no estaban en el corpus y NO HABIA DOS
+// TEXTOS QUE CRUZAR. Y "0" en `rendimiento` no significa limpio tampoco:
+// significa que el tema tiene superficie real y CERO NORMAS que la gobiernen --
+// un tema donde el gate no puede fallar y tampoco puede servir.
+//
+// Colapsar los tres casos en un cero es la mentira por omision que este gate
+// existe para no cometer. Ahora cada bucket declara CUAL de los cinco estados
+// tiene, y el acta los reporta sin colapsar.
+// ─────────────────────────────────────────────────────────────────────────────
+const REPOS_EN_CORPUS = new Set(CORPUS.map(d => d.repo))
+
+const TEMAS_ESTADO = TEMAS.map(t => {
+  const claims = NORMATIVAS.filter(a => a.tema === t.key).length
+  const hallazgos = CONFIRMADAS.filter(f => f.tema === t.key).length
+  const enAlcance = (t.sedes || []).filter(r => REPOS_EN_CORPUS.has(r))
+
+  let estado, porQue
+  if (TEMAS_CAIDOS.includes(t.key)) {
+    estado = 'NO CRUZADO'
+    porQue = 'el agente de cruce murio: no esta limpio, esta sin auditar'
+  } else if (!enAlcance.length) {
+    estado = 'N/A por alcance'
+    porQue = `todas las sedes de este tema (${(t.sedes || []).join(', ') || 'sin sedes declaradas'}) quedaron FUERA del corpus auditado: su cero es vacio por construccion`
+  } else if (claims === 0) {
+    estado = 'sin normas que cruzar'
+    porQue = 'el tema esta en alcance y no se extrajo ni UNA afirmacion normativa: tema con superficie y sin norma, donde el gate no puede fallar ni servir'
+  } else if (claims === 1) {
+    estado = 'sin normas que cruzar'
+    porQue = 'una sola afirmacion normativa en todo el corpus: no hay par posible'
+  } else if (hallazgos > 0) {
+    estado = `${hallazgos} hallazgo(s)`
+    porQue = `${claims} normativas cruzadas`
+  } else {
+    estado = 'limpio'
+    porQue = `${claims} normativas cruzadas entre si, ninguna contradiccion sobrevivio a la adjudicacion`
+  }
+  return { tema: t.key, estado, porQue, normativas: claims, hallazgos }
+})
+
+const N_A_ALCANCE = TEMAS_ESTADO.filter(t => t.estado === 'N/A por alcance').length
+const SIN_NORMAS = TEMAS_ESTADO.filter(t => t.estado === 'sin normas que cruzar').length
+log(`Buckets: ${TEMAS_ESTADO.filter(t => t.estado === 'limpio').length} limpio(s) - ${N_A_ALCANCE} N/A por alcance - ${SIN_NORMAS} sin normas que cruzar - ${TEMAS_CAIDOS.length} NO cruzado(s)`)
+
 // La cobertura perdida viaja al acta. Si esto queda vacio, la cobertura fue completa;
 // si no, el acta tiene que DECIRLO en su seccion de huecos, no maquillarlo.
 const COBERTURA_PERDIDA = [
@@ -712,6 +898,71 @@ if (CLAUDES_CAIDOS.length) {
 // ─────────────────────────────────────────────────────────────────────────────
 phase('Completitud')
 
+// PASE DE VALOR sobre los docs ciegos al cruce de IDs (Hueco 4). No cruza prosa
+// contra prosa: cruza cada HECHO VERIFICABLE del doc contra el arbol. Es el unico
+// eje por el que un doc sin IDs puede auditarse, y el que habria cazado el falso
+// de corpus_roadmap.txt:81 en la corrida que lo dejo pasar.
+const VALOR_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['hechos'],
+  properties: {
+    hechos: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['ref', 'afirma', 'veredicto', 'evidencia'],
+        properties: {
+          ref:       { type: 'string', description: 'archivo:linea exacto' },
+          afirma:    { type: 'string', description: 'El hecho verificable, autocontenido' },
+          veredicto: { type: 'string', enum: ['VERDADERO', 'FALSO', 'NO_VERIFICABLE'] },
+          evidencia: { type: 'string', description: 'Que hay en el arbol. OBLIGATORIO salvo NO_VERIFICABLE: ruta, comando corrido o archivo:linea.' },
+          parche:    { type: 'string', description: 'Solo si FALSO: el texto concreto que deberia decir' },
+        },
+      },
+    },
+  },
+}
+
+const valorados = DOCS_SIN_IDS.length ? await parallel(DOCS_SIN_IDS.map(f => () => agent(
+  `Audita ${f} por VALOR contra el arbol real. Este doc no es sede de NINGUN ID, asi que el
+cruce de IDs de este gate es CIEGO sobre el: un "limpio" ahi significaria "no auditado".
+Vos sos el unico eje que lo mira.
+
+${JERARQUIA}
+
+TU TRABAJO: abri ${f} y extrae cada AFIRMACION DE HECHO VERIFICABLE CONTRA EL ARBOL --
+que existe y que no, cuantos hay, que estado tiene cada cosa, que archivo contiene que.
+Despues ANDA AL ARBOL Y COMPROBALA, una por una, con Glob/Grep/Read/Bash.
+
+Ejemplos del tipo de afirmacion que buscas (son los que ya fallaron en este ecosistema):
+  · "el repo X es semilla, sin codigo ni docs"      -> lista el repo. ¿Es cierto HOY?
+  · "el workspace tiene N raices"                    -> contalas.
+  · "el slice K esta cerrado / pendiente"            -> cruzalo contra el estado.md y el CHANGELOG.
+  · "el archivo Y define Z"                          -> abrilo.
+
+LO QUE NO ES HALLAZGO, y descartarlo es parte del trabajo:
+  · La INTENCION y la PRIORIZACION. Un roadmap dice que quiere hacer; eso no se audita.
+  · "Todavia no esta implementado" JAMAS es un hallazgo: este ecosistema disena por
+    delante del codigo a proposito. Un doc que dice "esto viene despues" esta bien.
+  · Solo marcas FALSO cuando el doc afirma un HECHO SOBRE EL PRESENTE y el arbol lo
+    desmiente. Ante la duda, NO_VERIFICABLE.
+
+Para cada FALSO, proponé el texto concreto que deberia decir. No lo apliques: este gate
+es READ-ONLY y el unico archivo que se escribe es el acta.`,
+  { label: `valor:${f.split('/').pop()}`, phase: 'Completitud', schema: VALOR_SCHEMA }
+))) : []
+
+const HECHOS_FALSOS = valorados.filter(Boolean).flatMap(v => (v.hechos || []).filter(h => h.veredicto === 'FALSO'))
+const DOCS_VALOR_CAIDOS = DOCS_SIN_IDS.filter((_, i) => !valorados[i])
+if (DOCS_SIN_IDS.length) {
+  log(`Pase de VALOR: ${HECHOS_FALSOS.length} hecho(s) FALSO(s) en ${DOCS_SIN_IDS.length} doc(s) sin IDs propios`)
+}
+if (DOCS_VALOR_CAIDOS.length) {
+  COBERTURA_PERDIDA.push(...DOCS_VALOR_CAIDOS.map(f => `pase de VALOR NO corrido (agente caido): ${f}`))
+}
+
 const SIN_ALCANCE = AFIRMACIONES.filter(a => /no especificado/i.test(a.alcance || ''))
 
 const critica = await agent(
@@ -797,6 +1048,34 @@ Resumen por veredicto:
 ${JSON.stringify(['CUMPLIDO', 'INCUMPLIDO', 'PARCIAL', 'NO_VERIFICABLE'].map(v =>
   ({ veredicto: v, n: CONTRATOS_TODOS.filter(c => c.veredicto === v).length })), null, 1)}
 
+## ESTADO POR BUCKET - NUNCA colapses estos estados en un conteo de cero
+Un cero de contradicciones significa cosas DISTINTAS segun el estado del bucket, y
+reportarlos igual es mentir por omision. Los estados son: \`limpio\` (se cruzo y salio
+sano), \`N/A por alcance\` (las sedes del tema quedaron fuera del corpus: cero vacio por
+construccion), \`sin normas que cruzar\` (el tema esta en alcance y no tiene normas: tema
+con superficie y sin norma), \`NO CRUZADO\` (el agente murio: no auditado), o N hallazgos.
+${JSON.stringify(TEMAS_ESTADO, null, 1)}
+
+## DOCS SIN IDS PROPIOS (${DOCS_SIN_IDS.length}) - el cruce de IDs es CIEGO sobre ellos
+${DOCS_SIN_IDS.length ? JSON.stringify(DOCS_SIN_IDS, null, 1) : '(ninguno: los ${CORPUS.length} docs son sede de al menos un ID)'}
+Para estos docs el reporte dice \`N/A - sin IDs propios\`, JAMAS \`limpio\`. En su lugar se
+les corrio un PASE DE VALOR contra el arbol, que es el unico eje por el que se los puede
+auditar. Sus resultados:
+
+## HECHOS FALSOS hallados por el pase de VALOR (${HECHOS_FALSOS.length})
+Afirmaciones sobre el PRESENTE que el arbol desmiente. Son hallazgos de pleno derecho,
+triage A por construccion (el arbol es arbitro de nivel 1): van en la seccion 2 con su
+parche propuesto, no escondidos en los huecos.
+${HECHOS_FALSOS.length ? JSON.stringify(HECHOS_FALSOS, null, 1) : '(ninguno)'}
+
+## DESFASE DE LA COLUMNA \`total\` (${DESFASES.length}) - la fase de Conteo lo corrigio en caliente
+${DESFASES.length ? JSON.stringify(DESFASES, null, 1) : '(ninguno: las filas de `total` coincidian con el arbol)'}
+Si esta lista NO esta vacia, DECILO en la seccion de huecos: la constante del script estaba
+desincronizada con el arbol. La corrida NO quedo degradada por eso (el conteo real se derivo
+en la fase 0 y los tramos se armaron con el), pero es deuda de mantenimiento del gate y la
+tercera vez que pasa. Si algun doc dice "NO DERIVADO", ESO SI degrada: ese doc se auditó por
+una constante sin verificar.
+
 ## COBERTURA PERDIDA (${COBERTURA_PERDIDA.length}) - agentes que murieron y NO auditaron su parte
 ${COBERTURA_PERDIDA.length ? JSON.stringify(COBERTURA_PERDIDA, null, 1) : '(ninguna: la cobertura fue completa)'}
 
@@ -824,9 +1103,17 @@ ESTRUCTURA DEL ACTA:
      Un PARCIAL es el hallazgo mas util de esta fase: el contrato se cumple en la ruta
      principal y se saltea en una rama -- decila con archivo:linea. Y reporta cuantos
      volvieron NO_VERIFICABLE: son el punto ciego de la fase, no su exito.
+  4.ter ESTADO POR BUCKET: la tabla de los ${TEMAS.length} temas con su estado, tal como te
+     llego arriba. UNA FILA POR TEMA, con su estado y su por que. PROHIBIDO reportar un
+     bucket \`N/A por alcance\` o \`sin normas que cruzar\` como "0 contradicciones" o como
+     "limpio": son cosas distintas y el lector tiene que poder distinguirlas de un vistazo.
+     Y para los docs sin IDs propios, la etiqueta es \`N/A - sin IDs propios\`, nunca \`limpio\`.
   5. Huecos de esta auditoria (de la critica de completitud) - honestidad sobre lo NO cubierto.
      Si algun doc auditado no tiene IDs propios, DECILO ACA con todas las letras: sobre ese
-     doc este gate es ciego, y su "limpio" significa "no auditado", no "sano".
+     doc este gate es ciego por el eje de IDs, y su "limpio" significaria "no auditado". Deci
+     tambien que se le corrio el PASE DE VALOR y que encontro, porque eso es lo que hoy tapa
+     ese hueco parcialmente.
+     Si la lista de DESFASE DE LA COLUMNA \`total\` no esta vacia, va aca tambien.
      Y si la lista de COBERTURA PERDIDA de arriba NO esta vacia, ABRI esta seccion con eso,
      en negrita: hubo tramos o temas que ningun agente audito porque su agente murio. Ese
      resultado NO es un limpio parcial: es un no-auditado, y el acta entera debe declararse
@@ -859,4 +1146,16 @@ return {
   candidatas: TODAS.length,
   confirmadas: CONFIRMADAS.length,
   bloqueantes: CONFIRMADAS.filter(f => f.gravedad === 'BLOQUEANTE').length,
+  // Los cuatro que estrena la tanda del 2026-07-20: sin ellos, un cero de este
+  // reporte no se distingue de un no-auditado.
+  desfaseTotal: DESFASES,
+  bucketsPorEstado: {
+    limpio:                 TEMAS_ESTADO.filter(t => t.estado === 'limpio').length,
+    'N/A por alcance':      N_A_ALCANCE,
+    'sin normas que cruzar': SIN_NORMAS,
+    'NO CRUZADO':           TEMAS_CAIDOS.length,
+    'con hallazgos':        TEMAS_ESTADO.filter(t => /hallazgo/.test(t.estado)).length,
+  },
+  docsSinIdsPropios: DOCS_SIN_IDS,
+  hechosFalsosPorValor: HECHOS_FALSOS.length,
 }
