@@ -77,12 +77,18 @@ confusión costó 22 hallazgos después de declarar un doc limpio (§10.8 de su 
 | 2026-07-16 | SCOPED / piloto | 4 | **DEGRADADA** — 7 confirmadas, 0 bloqueantes. Dos temas (`namespacing`, `dano-limbs`) quedaron **sin cruzar** por una caída del clasificador: no están limpios, están **sin auditar** | [acta](2026-07-16_coherencia_docs_PILOTO.md) |
 | 2026-07-16b | SCOPED / piloto v2 | 4 | 2 confirmadas (MEDIA), 62 sin ID, 7 huecos. **La corrida pagó la trampa del caché**: `Workflow({name})` corrió el script viejo (~1,1M tokens) — de ahí la regla del `scriptPath` de arriba | [acta](2026-07-16b_coherencia_docs_PILOTO_v2.md) |
 | 2026-07-16c | PILOTO v3 (5 docs del framework) | 5 | **COMPLETA** (0 cobertura perdida) — 4 confirmadas, 0 bloqueantes, 86 sin ID, 56 sin alcance. Triadas el 2026-07-19: los 3 bucket A reparados, el 2.4 consolidado con el voto de COR-6 (votado y aplicado) | [acta](2026-07-16c_coherencia_docs_PILOTO_v3.md) |
+| 2026-07-20 | SCOPED / piloto (AUD-1, post D-12+D-13) | 5 | **ÍNTEGRA** (0 cobertura perdida: 32 agentes, 0 caídos) — **1 confirmada** (0 ALTA / 0 MEDIA / 1 BAJA / 0 bloqueantes), triage **1 A**, 0 divergencias yaml-vs-sede, 48 normativas sin ID, 1 de 5 docs sin ID propio (`corpus_roadmap.txt`). **Estreno de `ContratoArbol`**: 11 contratos verificados → 7 CUMPLIDO / 0 INCUMPLIDO / 2 PARCIAL / 2 NO_VERIFICABLE. 8 huecos, dos críticos (los docs vivos fuera del corpus; COR-12/13/14 ausentes del `CLAUDE.md` y su choque con COR-10) | [acta](2026-07-20_coherencia_docs_PILOTO.md) |
 | 2026-07-19 | **COMPLETO (AUD-2, 1.ª corrida)** | **29** | **ÍNTEGRA** (0 cobertura perdida, sin resumes: 145 agentes, 0 caídos) — **26 confirmadas** (6 ALTA / 13 MEDIA / 7 BAJA / 0 bloqueantes), triage del gate: **25 A + 1 B** (el GC del cadáver looteado, hallazgo 2.10 — voto del autor), 1 divergencia yaml-vs-sede, 844 normativas sin ID, 10 de 29 docs sin un solo ID (cobertura ciega declarada). Agentes en Opus 4.8, sesión fresca. Reparación: pendiente de su propia tanda | [acta](2026-07-19_coherencia_docs.md) |
 
 **Costo medido del COMPLETO (2026-07-19):** 145 agentes / 8,31M tokens / 1.245 tool uses /
 ~44 min para 29 docs — dentro de la estimación de 8-10M. Limpio a la primera (0 resumes);
 `agents_empty_result: 1` verificado contra `journal.jsonl` — retorno bien formado con cero
 candidatas, no un agente caído.
+
+**Costo medido del SCOPED (2026-07-20):** 32 agentes / 1,64M tokens / 250 tool uses / ~25 min
+para 5 docs. 13 de los 32 agentes devolvieron `{"candidatas":[]}` — verificado contra
+`journal.jsonl`: son **buckets sin material que cruzar en el alcance piloto**, retornos bien
+formados, **no** agentes caídos (`agents_error: 0`).
 
 **Costo medido del piloto:** 41 agentes / 1,69M tokens / ~23 min, para 4 docs y 1.188 líneas.
 Referencia de Kontrol: ~216 agentes / ~11M tokens / ~84 min para 3 docs — unas **6,5× más
