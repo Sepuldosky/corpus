@@ -39,12 +39,10 @@
   corre en `pre-commit` sobre las siete raíces (12/12 tests) y valida yaml, prefijos,
   duplicados, sedes, evidencia y huérfanos — **presencial, no semántico**. El **§8**
   formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió un COMPLETO y cuatro
-  SCOPED ([actas](auditorias/)); **las actas están triadas**: el último SCOPED (2026-07-20)
-  salió ÍNTEGRO y su reparación ya está aplicada — COR-12/13/14 anclados por etiqueta en su
-  sede y reconocidos por el `CLAUDE.md`, y cuatro universales corregidos donde el árbol los
-  desmentía (las «seis raíces» del ejemplo de commit, «Cortex sin docs» en tres sedes, los
-  stools fuera de COR-15, la «única excepción» de COR-16 que eran dos). **El gate propone y
-  jamás aplica (AUD-4): las actas son inmutables y los parches los aplica una tanda aparte.**
+  SCOPED ([actas](auditorias/)); **las actas están triadas y el último SCOPED (2026-07-20) ya
+  está reparado** — COR-12/13/14 anclados por etiqueta y reconocidos por el `CLAUDE.md`, más
+  cuatro universales que el árbol desmentía. **El gate propone y jamás aplica (AUD-4): las
+  actas son inmutables y los parches van en tanda aparte.**
 - **Los siete repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos, MIT). Dos
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
@@ -112,16 +110,14 @@
      la cola de cada doc quedaba sin leer).
    Registro: **207 IDs**, 27 % INTENCION. **D-3** quedó recortada a **once sedes en `.lua`**
    —cero en CHANGELOG, estado o roadmap—, y varias de esas once son legítimas.
-   El **SCOPED del 2026-07-20** (AUD-1, por escribir normas) cerró el ciclo: su tanda está
-   aplicada y el gate estrena **fase 0 «Conteo»** —la columna `total` pasó de constante a
-   **checksum derivado del árbol**, que era el defecto que bloqueaba el COMPLETO— más cinco
-   estados por bucket y un pase de VALOR sobre los docs sin IDs propios.
+   El **SCOPED del 2026-07-20** (AUD-1) cerró el ciclo: reparado, y el gate estrena **fase 0
+   «Conteo»** —`total` pasó de constante a **checksum derivado del árbol**, el defecto que
+   bloqueaba el COMPLETO— más cinco estados por bucket y un pase de VALOR.
    **Lo que sigue: correr el 2.º COMPLETO** (sesión fresca, Opus 4.8, su propio PROMPT —
-   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). **Voto abierto del
-   autor: `D-14`** — ¿COR-12 (contrato de ítems) es infraestructura compartida y se queda en
-   el framework, o es dominio y baja a Cargo? Sin árbitro de código: no se cierra sin él.
-   Deudas de verificación **en juego, del autor**: la entry #27 de Cargo (`[PENDIENTE]` con
-   código en árbol) y la ronda 7 de Coagulant.
+   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). **Voto abierto: `D-14`**
+   — ¿COR-12 es infraestructura compartida y se queda, o es dominio y baja a Cargo? Sin
+   árbitro de código: no se cierra sin el autor. Deudas de verificación **en juego, del
+   autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y la ronda 7 de Coagulant.
 
 ---
 
