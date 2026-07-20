@@ -114,9 +114,10 @@
    «Conteo»** —`total` pasó de constante a **checksum derivado del árbol**, el defecto que
    bloqueaba el COMPLETO— más cinco estados por bucket y un pase de VALOR.
    **Lo que sigue: correr el 2.º COMPLETO** (sesión fresca, Opus 4.8, su propio PROMPT —
-   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). **Voto abierto: `D-14`**
-   — ¿COR-12 es infraestructura compartida y se queda, o es dominio y baja a Cargo? Sin
-   árbitro de código: no se cierra sin el autor. Deudas de verificación **en juego, del
+   AUD-3; editar el `.js` invalidó el caché de resume, es esperable). **`D-14` CERRADA por
+   voto del autor: COR-12 SE QUEDA** — no gobierna ítems sino el protocolo de registro entre
+   módulos, del linaje de COR-3/COR-4; enuncia la FORMA, jamás la SEMÁNTICA, y si algún día
+   menciona stacks, peso o slots el voto se reabre. Deudas de verificación **en juego, del
    autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y la ronda 7 de Coagulant.
 
 ---

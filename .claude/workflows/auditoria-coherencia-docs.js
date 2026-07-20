@@ -187,7 +187,7 @@ const CORPUS_COMPLETO = [
   // Framework
   { file: 'corpus/CLAUDE.md',                                           total:  90, chunks: 1, repo: 'corpus' },
   { file: 'corpus/docs/corpus_flujo_trabajo.txt',                       total: 737, chunks: 1, repo: 'corpus' },
-  { file: 'corpus/docs/CORPUS_Architecture.md',                         total: 356, chunks: 1, repo: 'corpus' },
+  { file: 'corpus/docs/CORPUS_Architecture.md',                         total: 358, chunks: 1, repo: 'corpus' },
   { file: 'corpus/docs/corpus_convenciones_commits.txt',                total: 140, chunks: 1, repo: 'corpus' },
   { file: 'corpus/docs/corpus_roadmap.txt',                             total: 112, chunks: 1, repo: 'corpus' },
   // Modulos - el CLAUDE.md primero: es la sede de sus contratos

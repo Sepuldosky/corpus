@@ -931,3 +931,43 @@ no una ronda en juego.
 > **La primera corrida del gate después de esta tanda estrena la fase 0, los cinco estados
 > por bucket y el pase de VALOR.** Si algo de eso se rompe, es de acá: mirá en el `.js` antes
 > que en el corpus.
+
+---
+
+## PARCHES DE sesión Voto D-14: COR-12 se queda — 2026-07-20
+
+Cierra el voto que la tanda anterior dejó abierto. **El autor votó: COR-12 SE QUEDA en el
+framework**, aceptando la recomendación tal cual se elevó.
+
+- PARCHE 1 — **`CORPUS_Architecture.md` §5 gana la justificación, porque la sede es la que
+  manda (FLU-22).** COR-12 **no gobierna ítems**: gobierna el **protocolo de registro entre
+  módulos** —dónde se registra una def y desde qué realm es invocable su callback—, del mismo
+  linaje que **COR-3** (persistencia namespaced) y **COR-4** (net namespaced). Las tres
+  nacieron para evitar colisión entre consumidores y a ninguna se la llama dominio. Bajarla a
+  Cargo la convertiría en **norma de un módulo sobre otros módulos**, que es exactamente lo
+  que COR-11 evita. **[APLICADO 2026-07-20]**
+
+- PARCHE 2 — **La cláusula de reapertura, que es parte del voto y no una glosa.** COR-12
+  enuncia solo la **FORMA** del contrato, **jamás la SEMÁNTICA** del ítem: el día que mencione
+  stacks, peso o slots, bajó dominio al framework y **el voto se reabre**. Es lo que hace
+  **falsable** la decisión — sin esa cláusula, «es protocolo y no dominio» sería una etiqueta
+  inauditable, y el voto habría cerrado la pregunta sin resolverla. Con ella, COR-12 **no
+  contradice** a COR-1 ni a COR-10: los **delimita**. Lo que no sube es la semántica.
+  **[APLICADO 2026-07-20]**
+
+- PARCHE 3 — **`D-14` CERRADA y la nota de COR-12 en `ids.yaml` al día.** La nota decía
+  *«Vive en el framework y no en Cargo — ver deuda D-1, que es seria»*: la tensión quedaba
+  archivada como deuda en vez de resuelta. Ahora remite al voto. **Y se le quita la
+  autodeclaración** *«Ésta es la ÚNICA sede que enuncia las dos mitades con su razón»* — era
+  el drift que el Hueco 7 del acta describe (el registro **excediendo** a su sede, cuando
+  `ids.yaml` es **índice, jamás segunda definición**), y ya no es cierta: §5 las enuncia. La
+  reparación correcta de ese modo de falla es **mover el contenido a la sede, no borrar la
+  nota** — es lo que hace el PARCHE 1. **[APLICADO 2026-07-20]**
+
+**Registro:** `D-14` CERRADA. `D-1` y `D-14` cierran juntas la pregunta entera: **D-1 cerró
+que Cargo la CITARA; D-14 cierra DÓNDE VIVE.** Sin IDs nuevos: **207**.
+
+Verificación: checker verde sobre 207 IDs + suite 12/12. **Sin superficie de runtime** — el
+voto no cambia una línea de Lua: las defs de Coagulant y Craving ya cumplían COR-12 y siguen
+donde estaban. Lo que cambió es **por qué** la norma vive donde vive, y **bajo qué condición
+se reabre**.

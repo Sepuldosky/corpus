@@ -169,8 +169,12 @@ ids:
       solo-server no existe en el cliente y el grid no la renderiza (el snapshot de Cargo
       solo transporta las defs autogen/icon_override); y la UI exige isfunction(def.onUse)
       client-side para habilitar «Use» y el quick bind, así que un onUse solo-server deja
-      el ítem visible pero inusable. Ésta es la ÚNICA sede que enuncia las dos mitades con
-      su razón. Vive en el framework y no en Cargo — ver deuda D-1, que es seria.
+      el ítem visible pero inusable.
+      POR QUÉ VIVE EN EL FRAMEWORK Y NO EN CARGO (voto del autor 2026-07-20, deuda D-14):
+      porque NO gobierna ítems — gobierna el PROTOCOLO DE REGISTRO entre módulos, del
+      linaje de COR-3 y COR-4. Enuncia la FORMA del contrato, jamás la SEMÁNTICA del ítem:
+      si algún día menciona stacks, peso o slots, bajó dominio al framework y el voto se
+      reabre. D-1 (que Cargo la CITE) y D-14 (dónde vive) están ambas CERRADAS.
   COR-13:
     titulo: "El retorno de onUse gobierna el consumo: Cargo descuenta una unidad solo si devuelve true; false habilita el consumo diferido y el rechazo."
     sede: "corpus/docs/CORPUS_Architecture.md §5"
@@ -2032,7 +2036,7 @@ deuda:
       Queda para el 2.º COMPLETO: correrlo. Va en sesión fresca aparte con su propio
       PROMPT (AUD-3, Opus 4.8), y editar el .js invalida el caché de resume — esperable.
   D-14:
-    titulo: "VOTO ABIERTO del autor (2026-07-20): ¿COR-12 —el contrato de ítems— es infraestructura demostrablemente compartida y pertenece al framework, o es dominio infiltrado en el framework delgado y su sede es Cargo?"
+    titulo: "CERRADA 2026-07-20 (voto del autor): COR-12 SE QUEDA en el framework. No gobierna ítems sino el PROTOCOLO DE REGISTRO entre módulos, del linaje de COR-3 y COR-4. Enuncia la FORMA del contrato, jamás la SEMÁNTICA del ítem."
     detalle: >
       Hallazgo más caro del acta 2026-07-20 (Hueco 2). NO tiene árbitro de código
       (§7.1, corolario): ambas lecturas son implementables, y el árbol no dirime cuál
@@ -2048,13 +2052,16 @@ deuda:
       D-1 está CERRADA y NO cubre esta pregunta: cerró que Cargo CITARA COR-12, no
       dónde vive.
     propuesta: >
-      RECOMENDACIÓN, para que el autor la acepte o la tumbe — no reemplaza su voto:
-      que COR-12 SE QUEDE en el framework, con la justificación reencuadrada. COR-12 no
-      gobierna *ítems*: gobierna el PROTOCOLO DE REGISTRO entre módulos (defs en shared,
-      onUse invocable client-side), del mismo linaje que COR-3 (persistencia namespaced)
-      y COR-4 (net namespaced), que también nacieron para evitar colisión entre
-      consumidores y nadie llama dominio.
-      EL PRECIO A PAGAR, y conviene escribirlo en el voto: COR-12 debe enunciar solo la
-      FORMA del contrato, nunca la SEMÁNTICA del ítem. Si algún día menciona stacks, peso
-      o slots, ahí sí bajó dominio al framework y este voto se reabre.
-      NO SE CIERRA SIN EL AUTOR.
+      CUMPLIDA — voto del autor del 2026-07-20: COR-12 SE QUEDA, con la recomendación
+      aceptada tal cual se elevó.
+      LA RAZÓN, que es lo que se ratifica: COR-12 no gobierna *ítems*. Gobierna el
+      PROTOCOLO DE REGISTRO entre módulos —defs en shared, onUse invocable client-side—,
+      del mismo linaje que COR-3 (persistencia namespaced) y COR-4 (net namespaced), que
+      también nacieron para evitar colisión entre consumidores y a nadie se le ocurre
+      llamarlos dominio. Bajarla a Cargo la convertiría en norma de un módulo sobre otros
+      módulos, que es exactamente lo que COR-11 evita.
+      EL PRECIO, y es parte del voto, no una glosa: COR-12 enuncia solo la FORMA del
+      contrato, JAMÁS la SEMÁNTICA del ítem. El día que mencione stacks, peso o slots,
+      ahí sí bajó dominio al framework y ESTE VOTO SE REABRE. Es la cláusula que hace
+      falsable la decisión: sin ella, "es protocolo y no dominio" sería inauditable.
+      No contradice a COR-1 ni a COR-10 — los delimita: lo que no sube es la semántica.
