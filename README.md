@@ -12,7 +12,7 @@ combinación produce un sistema honesto — no una mitad rota. Analogía en el m
 |---|---|---|
 | [**Caliber**](https://github.com/Sepuldosky/corpus-caliber) | Combate: armadura zonal estilo EFT, escudos de energía, HP por extremidad, penetración balística | En código, verificado |
 | [**Cargo**](https://github.com/Sepuldosky/corpus-cargo) | Inventario estilo STALKER/GAMMA: grid, framework de ítems, equipamiento, contenedores, comercio | En código, verificado |
-| [**Coagulant**](https://github.com/Sepuldosky/corpus-coagulant) | Médico de jugador estilo ACE3: heridas por zona, sangrado, vitales, tratamiento, debuffs zonales | En código — sangrado, tratamiento y debuffs verificados; la UI espera su ronda |
+| [**Coagulant**](https://github.com/Sepuldosky/corpus-coagulant) | Médico de jugador estilo ACE3: heridas por zona, sangrado, vitales, tratamiento, debuffs zonales | En código, verificado |
 | [**Craving**](https://github.com/Sepuldosky/corpus-craving) | Supervivencia de jugador: hambre e hidratación | En código, verificado |
 | [**Cortex**](https://github.com/Sepuldosky/corpus-cortex) | IA de NPC: táctica de combate + afecto (dolor, miedo) | Sin empezar |
 

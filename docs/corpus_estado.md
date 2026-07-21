@@ -85,11 +85,11 @@
    NPC→agnóstico); Cargo está en el **slice 2 del comercio** (el dinero como entidad). El
    detalle vive en sus roadmaps/estados, no acá.
 2. **Coagulant:** Block 3 **CERRADO** y todo verificado (ronda 7, mini-ronda 8 y check
-   N1; CHANGELOG entero en `[APLICADO]`). Pendientes de su repo: la **bajada a código**
-   del tramo de zonas `chest`/`stomach` (enmienda ratificada el 2026-07-21; semilla de
-   la fase de código en `dev/HANDOFF_coagulant_zonas_codigo.md`), dos decisiones de
-   diseño del autor, y ratificar `ApplyExternalCondition` con Craving (deuda D-5 — el
-   2.º argumento es el id de condición clínica, no el stat).
+   N1; CHANGELOG entero en `[APLICADO]`). El tramo de zonas `chest`/`stomach` (COA-8/
+   COA-7) está **completo**: ratificado, bajado a código y verificado en juego el
+   2026-07-21 (ronda O, 6/6). Pendientes de su repo: dos decisiones de diseño del autor,
+   y ratificar `ApplyExternalCondition` con Craving (deuda D-5 — el 2.º argumento es el
+   id de condición clínica, no el stat).
    **Craving:** Block 4 cerrado, verificado, commiteado y pusheado.
    **Cortex** espera su Block (§9): depende de los eventos daño/limb que Caliber expondrá
    con el pipeline de jugador — mock-first si hace falta antes.

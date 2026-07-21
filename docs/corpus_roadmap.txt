@@ -55,10 +55,12 @@ en su propio repo/roadmap:
 
   [3] Coagulant — Block 3 CERRADO (ronda 7 en juego, 13/13 el 2026-07-20): sangre/
       heridas/sangrado, tratamiento con tiempo y 4 ítems contra Cargo, debuffs
-      zonales y la UI completa, incluido el modo degradado sin Cargo. Le quedan una
-      mini-ronda 8 (dos fixes menores post-cierre), dos decisiones de diseño abiertas
-      del autor, y el pendiente cross-repo: negociar ApplyExternalCondition con
-      Craving (deuda D-5). Ref: coagulant_roadmap.txt + Coagulant_Architecture.md.
+      zonales y la UI completa, incluido el modo degradado sin Cargo. Los fixes
+      post-cierre (mini-ronda 8, check N1) y el tramo de zonas chest/stomach
+      (COA-8/COA-7, ronda O 6/6 el 2026-07-21) están cerrados y verificados en juego.
+      Le quedan dos decisiones de diseño abiertas del autor, y el pendiente cross-repo:
+      negociar ApplyExternalCondition con Craving (deuda D-5). Ref: coagulant_roadmap.txt
+      + Coagulant_Architecture.md.
 
   [4] Craving — Block 4 CERRADO y verificado en juego (decay, umbrales, 6 consumibles
       contra Cargo, entity de mundo con WALK+USE, barras); los 12 entries de su CHANGELOG
