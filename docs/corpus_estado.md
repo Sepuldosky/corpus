@@ -7,7 +7,7 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-20 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Coagulant cerró sus slices 1-3 en juego (ronda 6) y tiene el slice 4 —la UI— en código, a la espera de la ronda 7, la que cierra su Block 3**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
+**Última actualización:** 2026-07-21 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8, 2/2)**; le queda un check menor del binder (N1). Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
 
 ---
 
@@ -48,11 +48,11 @@
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
   y **Cargo** (Block 1, inventario estilo STALKER — hoy el módulo más grande del ecosistema:
   UI fullscreen, munición, wheel, captura de armas y el slice 1 del comercio, todo en juego).
-  **Coagulant tiene su Block 3 diseñado y los slices 1-3 verificados en juego** (2026-07-14,
-  seis rondas de checklist: sangre/heridas/sangrado + tratamiento con tiempo y 4 ítems contra
-  Cargo + debuffs zonales —cojera, sway, visión—); su **slice 4 (UI)** —silueta, menú médico,
-  barra de tratamiento, StatusPanel y tab Q— está en código y verificado offline, pendiente de
-  la ronda 7.
+  **Coagulant cerró su Block 3 EN JUEGO** (ronda 7, 2026-07-20, 13/13: sangre/heridas/
+  sangrado + tratamiento con tiempo y 4 ítems contra Cargo + debuffs zonales + la UI
+  completa —silueta, menú médico, barra de tratamiento, StatusPanel y tab Q— y el modo
+  degradado sin Cargo). **Ya no es scaffold: es el módulo médico real del ecosistema.** Le
+  quedan un check menor (N1, guard del binder) y dos decisiones de diseño del autor.
   **Craving estrenó repo y cerró su Block 4 en dos días** (2026-07-13/14: diseño
   ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
   mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,
@@ -82,9 +82,10 @@
 1. **Módulos en curso (su propio frente):** Caliber va a su Block 3 (armadura de jugador,
    NPC→agnóstico); Cargo está en el **slice 2 del comercio** (el dinero como entidad). El
    detalle vive en sus roadmaps/estados, no acá.
-2. **Coagulant:** Block 3 diseñado y ratificado (2026-07-13, en su repo — para mods el
-   diseño ya no pasa por Desktop); slices 1-3 verificados en juego (ronda 6). El **slice 4
-   (UI)** y el sway retuneado esperan la **ronda 7**, que cierra el bloque.
+2. **Coagulant:** Block 3 **CERRADO** (ronda 7 en juego, 2026-07-20; los fixes que dejó
+   se verificaron en la mini-ronda 8). Pendientes de su repo: el check N1 (guard del
+   binder), dos decisiones de diseño del autor, y ratificar `ApplyExternalCondition`
+   con Craving (deuda D-5 — el 2.º argumento es el id de condición clínica, no el stat).
    **Craving:** Block 4 cerrado, verificado, commiteado y pusheado.
    **Cortex** espera su Block (§9): depende de los eventos daño/limb que Caliber expondrá
    con el pipeline de jugador — mock-first si hace falta antes.
@@ -118,7 +119,8 @@
    voto del autor: COR-12 SE QUEDA** — no gobierna ítems sino el protocolo de registro entre
    módulos, del linaje de COR-3/COR-4; enuncia la FORMA, jamás la SEMÁNTICA, y si algún día
    menciona stacks, peso o slots el voto se reabre. Deudas de verificación **en juego, del
-   autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y la ronda 7 de Coagulant.
+   autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y el check N1 de
+   Coagulant (la ronda 7 cerró su Block 3; la mini-ronda 8 pasó 2/2 el 2026-07-21).
 
 ---
 

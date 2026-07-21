@@ -971,3 +971,35 @@ Verificación: checker verde sobre 207 IDs + suite 12/12. **Sin superficie de ru
 voto no cambia una línea de Lua: las defs de Coagulant y Craving ya cumplían COR-12 y siguen
 donde estaban. Lo que cambió es **por qué** la norma vive donde vive, y **bajo qué condición
 se reabre**.
+
+---
+
+## PARCHES DE sesión Cierre del Block 3 — Coagulant verificado en juego — 2026-07-20
+
+La **ronda 7** de Coagulant pasó **13/13** (reporte del autor por planilla, incluida la L1
+opcional del modo degradado) y **su Block 3 CERRÓ**. Acá va solo lo que toca a ESTE repo —
+los ítems 2 y 5 de la checklist de cierre (`Coagulant_Architecture.md` §16) más el registro
+y el espejo; el detalle de la ronda, los fixes que dejó y las dos decisiones de diseño
+abiertas viven en el CHANGELOG y el estado de `corpus-coagulant/`.
+
+- PARCHE 1 — docs(docs): `CORPUS_Architecture.md` §9 — la fila del **Block 3** pasa de «En
+  bajada» a **Cerrado (2026-07-20)**, con la mini-ronda pendiente y las decisiones de
+  diseño remitidas al repo del módulo. **[APLICADO 2026-07-20]**
+
+- PARCHE 2 — docs(docs): `corpus_estado.md` — Coagulant deja de ser el bloque en curso
+  (§16 ítem 5: **tiene módulo real, ya no es scaffold**) y la deuda de verificación del
+  autor pasa a la mini-ronda 8; `corpus_roadmap.txt` — el tramo [3] pasa a CERRADO con sus
+  remanentes (mini-ronda, decisiones de diseño, D-5 con Craving). **[APLICADO 2026-07-20]**
+
+- PARCHE 3 — docs(docs): `ids.yaml` — **COA-12, COA-23 y COA-33 ganan su evidencia de
+  planilla** (J4, K2 y J3 de la ronda 7); COA-33 deja de ser INTENCION y suma además su
+  ref de harness. Primera tanda que acredita checks de planilla post-norma en la familia
+  COA — el «hacia adelante» que D-2 pedía. **[APLICADO 2026-07-20]**
+
+- PARCHE 4 — chore(workspace): espejo Code→Desktop regenerado (`sync.ps1`, 7 repos, 44
+  archivos; propósito: «cierre del Block 3»). **[APLICADO 2026-07-20]**
+
+Verificación: checker en verde sobre 207 IDs — una pasada intermedia cazó `EVIDENCIA_ROTA`
+en COA-33 (el check J3 citado en el registro no dejaba rastro citable en el repo) y se
+reparó citando J3 explícito en el CHANGELOG del módulo, que es exactamente el trabajo del
+checker. Sin superficie de runtime en este repo: ni una línea de Lua del framework cambió.

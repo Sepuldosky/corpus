@@ -857,7 +857,8 @@ ids:
     evidencia:
       - { tipo: selftest, ref: "dev.lua:139 — el centro de cada rect resuelve a SU zona" }
       - { tipo: harness, ref: "dev/harness_coagulant.py — barrido de 441 puntos de la caja: lo que se clickea cae siempre dentro de lo que se pinta" }
-    nota: "Sin ID de planilla: es del slice 4, pendiente de la ronda 7."
+      - { tipo: planilla, ref: "Coagulant J4 — ronda 7 ✓ (2026-07-20): el clic cae en la zona que se ve" }
+    nota: "Ratificada en juego en la ronda 7."
   COA-13:
     titulo: "El cliente nunca es autoridad: el menú manda intents (treat/cancel) y el server re-valida todo; habilitar un botón es puro UX."
     sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 7"
@@ -951,7 +952,8 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_coagulant.py — entrando en ADS ningún frame salta la amplitud entera; la rampa es monótona y su mitad cae entre las dos capas" }
-    nota: "En juego: PENDIENTE (ronda 7)."
+      - { tipo: planilla, ref: "Coagulant K2 — ronda 7 ✓ (2026-07-20): el paso idle→ADS ya no da tirón" }
+    nota: "Ratificada en juego en la ronda 7."
   COA-24:
     titulo: "La deriva del sway se compone de senos de períodos inconmensurables: nunca repite un patrón que se pueda aprender a compensar."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6"
@@ -1020,8 +1022,10 @@ ids:
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §9"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
-    nota: "Partido de COA-16 en la curaduría D-10 (2026-07-19). UI del slice 4: verificada offline, a ratificar en juego en la ronda 7."
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_coagulant.py — la barra a 0/50/100 % y su clamp, derivada del {endsAt, duration} del snapshot" }
+      - { tipo: planilla, ref: "Coagulant J3 — ronda 7 ✓ (2026-07-20): la barra se llena quieto y correr la cancela" }
+    nota: "Partido de COA-16 en la curaduría D-10 (2026-07-19). Ratificada en juego en la ronda 7."
   COA-34:
     titulo: "El tratamiento se cancela por daño, salto o superar velocidad de caminata — sin efecto y sin consumir."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
