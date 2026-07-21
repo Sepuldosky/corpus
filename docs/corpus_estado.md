@@ -52,9 +52,9 @@
   sangrado + tratamiento con tiempo y 4 ítems contra Cargo + debuffs zonales + la UI
   completa —silueta, menú médico, barra de tratamiento, StatusPanel y tab Q— y el modo
   degradado sin Cargo). **Ya no es scaffold: es el módulo médico real del ecosistema.** Le
-  quedan dos decisiones de diseño del autor, y su próximo tramo ya está EN CURSO:
-  partir `torso` en `chest` & `stomach` (alineación con Caliber — la enmienda de
-  COA-8/COA-7 quedó ratificada el 2026-07-21; falta la bajada a código).
+  quedan dos decisiones de diseño del autor; su tramo de zonas está COMPLETO:
+  `torso` partido en `chest` & `stomach` (COA-8/COA-7, ratificado, bajado a código y
+  verificado en juego el 2026-07-21 — ronda O: 6/6).
   **Craving estrenó repo y cerró su Block 4 en dos días** (2026-07-13/14: diseño
   ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
   mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,

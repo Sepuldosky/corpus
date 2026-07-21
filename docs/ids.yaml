@@ -817,11 +817,13 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: selftest, ref: "dev.lua:26 — mapa total sobre hitgroups" }
+      - { tipo: planilla, ref: "planilla Coagulant, check O3 — fallback chest y torso muerto" }
     nota: >
       Enmienda 2026-07-21 (torso → chest & stomach): el fallback de GENERIC/GEAR/
       desconocido se re-enuncia a chest, alineado con Caliber (GENERIC → chest en su
-      mult de zona y en el fallback de placas). Bajada a código pendiente — hasta que
-      baje, el árbol devuelve torso y el código manda (flujo §7.1).
+      mult de zona y en el fallback de placas). Bajada a código aplicada y verificada
+      en juego el mismo 2026-07-21 (ronda O, 6/6): FromHitgroup devuelve chest y el
+      selftest cubre GENERIC/GEAR/999.
   COA-8:
     titulo: "Los IDs de zona (head, chest, stomach, left_arm, right_arm, left_leg, right_leg) son contrato."
     sede: "corpus-coagulant/CLAUDE.md §Contratos que no debes romper · 4 (enmienda 2026-07-21)"
@@ -829,14 +831,16 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: selftest, ref: "consistencia de zonas y mapa total de hitgroups" }
+      - { tipo: planilla, ref: "planilla Coagulant, checks O2/O4 — chest/stomach por disparo real y por clic" }
     nota: >
       Enmienda 2026-07-21: torso partido en chest & stomach para alinear con Caliber
       (placas 2/3 de su armadura, silueta del browser). Sin alias ni migración (barrido:
       ningún repo externo consume los IDs; sin persistencia a disco, decisión F). Nace
       ZONE_BLEED_MULT neutra (todas ×1.0) — el balanceo futuro se calibra contra el
       referente ACE (Arma 3 / Arma Reforger) y ritmos reales de exanguinación (COA-27).
-      Tope de heridas 5+5 aceptado; silueta 58/42. Bajada a código pendiente al cierre
-      de la sesión de diseño (Coagulant_Architecture.md §3 tiene la enmienda completa).
+      Tope de heridas 5+5 aceptado; silueta 58/42. Bajada a código aplicada y
+      verificada en juego el mismo 2026-07-21 (ronda O, 6/6 — offline ALL GREEN previo;
+      Coagulant_Architecture.md §3 tiene la enmienda completa).
   COA-9:
     titulo: "Las heridas nacen del daño FINAL (PostEntityTakeDamage), nunca del daño entrante."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §3"
