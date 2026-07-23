@@ -938,14 +938,14 @@ ids:
       - { tipo: selftest, ref: "doble-tratamiento rechazado" }
     nota: "La mitad de cancelación es ahora COA-34 (curaduría D-10, 2026-07-19)."
   COA-20:
-    titulo: "El torniquete nunca se consume, y quitarlo no exige ni consume ítem."
+    titulo: "El torniquete no se DESTRUYE pero se OCUPA: sale del inventario mientras está puesto (un torniquete ata una sola extremidad) y vuelve al quitarlo; quitarlo no exige ítem."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: planilla, ref: "Coagulant I2 — ronda 6 ✓" }
-      - { tipo: harness, ref: "dev/harness_coagulant.py — ponerlo no descuenta la unidad, y quitarlo funciona con el inventario VACÍO" }
-    nota: "La mitad «quitarlo no exige ni consume ítem» se enunció en §7 el 2026-07-19 (voto D-10): hasta entonces solo el registro la afirmaba."
+      - { tipo: planilla, ref: "Coagulant I2 — ronda 6 ✓ (comportamiento previo)" }
+      - { tipo: harness, ref: "dev/harness_coagulant.py — ponerlo descuenta la unidad (se ocupa), una 2.ª extremidad sin torniquete libre se rechaza, y quitarlo la devuelve" }
+    nota: "«Quitarlo no exige ni consume ítem» se enunció en §7 el 2026-07-19 (voto D-10). ENMENDADA 2026-07-23 (voto del autor, pasada de la #27): el torniquete se OCUPA — TakeUnique al ponerlo, GiveItem al quitarlo — así ata UNA extremidad; consume el nuevo Cargo Inventory.TakeUnique (Cargo CHANGELOG #29). Confirmada en juego 2026-07-23 (TQ ✓)."
   COA-21:
     titulo: "La única cura de la secuela tratada es el Medkit: no hay cura pasiva por tiempo, y una herida sin vendar no se toca."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §6 (enmienda 2026-07-14)"
