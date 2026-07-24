@@ -7,7 +7,10 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-21 (framework estable desde el 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8 y check N1: CHANGELOG entero en `[APLICADO]`)**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
+**Última actualización:** 2026-07-24 (**nuevo: banco de sonidos del ecosistema** — `sound/corpus/`
+con los ports de GAMMA ordenados por consumidor y **COR-17 acuñada** (assets fuera de git, régimen
+STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. Framework Lua estable desde el
+2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8 y check N1: CHANGELOG entero en `[APLICADO]`)**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
 
 ---
 
@@ -43,6 +46,11 @@
   está reparado** — COR-12/13/14 anclados por etiqueta y reconocidos por el `CLAUDE.md`, más
   cuatro universales que el árbol desmentía. **El gate propone y jamás aplica (AUD-4): las
   actas son inmutables y los parches van en tanda aparte.**
+- **Banco de sonidos default (2026-07-24):** `sound/corpus/` — 201 ports de STALKER GAMMA
+  ordenados por consumidor (`cargo/` con gasmask como su extra, `coagulant/`, `craving/`,
+  `shared/`), `about.txt` por carpeta (mapa + renombres). Assets **fuera de git** (**COR-17**,
+  contrato 10 del CLAUDE.md); solo los about.txt se versionan. Consumo por detección
+  (`file.Exists`): Cargo (entry 35) y Craving ya cablean; Coagulant solo documentado (COA-28).
 - **Los siete repos publicados en GitHub** (`github.com/Sepuldosky/<repo>`, públicos, MIT). Dos
   módulos ya viven sobre las primitivas: **Caliber** (Block 2, migración ADS 2.0 — cerrado y
   verificado, primer consumidor real; su boot diferido a `Initialize` es el patrón template)
@@ -68,7 +76,8 @@
 
 ## Pendiente de verificar
 
-- Nada — el CHANGELOG está todo en `[APLICADO]`.
+- Nada — el banco de sonidos se **confirmó en juego el 2026-07-24** desde sus consumidores
+  (Cargo entry 35 a-e ✓, Craving ✓); el CHANGELOG está todo en `[APLICADO]`.
 
 ## Remanentes / deuda conocida
 

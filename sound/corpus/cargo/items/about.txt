@@ -1,0 +1,21 @@
+Sonidos para poblar la SELECCION de items en el inventario de CARGO (clic sobre
+la celda del grid). Los sonidos son autodescriptivos por nombre; se elige uno al
+azar dentro del set de la categoria.
+
+En Cargo: SIDEARM = inv_items_wpn_x.ogg, PRIMARY y SECONDARY = inv_items_wpnbig_x.ogg.
+
+Mapa categoria -> set (default cableado en corpus_cargo_sounds.lua):
+  weapons (slot sidearm)   inv_items_wpn_1/2
+  weapons (primary/second) inv_items_wpnbig_1/2
+  melee                    inv_items_knife_1/2
+  ammo                     inv_items_ammo_1..7
+  medical                  inv_items_pills_1/2
+  armor/helmets/backpacks  inv_items_cloth_1..6
+  attachments/optics/plates inv_items_parts_1..3
+  resto (food, misc, ...)  inv_items_generic_1..6
+  llaves/dinero            inv_items_key_1/2, inv_items_money_* (sin consumidor
+                           todavia; el dinero-entidad llega con el slice 2 del
+                           comercio)
+
+inv_items_cloth_4/5/6.ogg eran los "inv_items_cloth_x.ogg.ogg" de GAMMA
+(variantes distintas, renombradas al reorganizar 2026-07-24).

@@ -1,0 +1,12 @@
+Sonidos de interfaz de CARGO (cableados 2026-07-24 en corpus_cargo_sounds.lua):
+
+  backpack_open/close  inventario personal (la mochila, tecla I / estado solo)
+  inv_open/close       interfaz de trader, trading entre jugadores y contenedores
+                       (estados loot/trade)
+  inv_drop             dropear item al mundo
+  inv_slot             feedback de slot (sin consumidor todavia)
+  inv_belt             cinturon (variante _2 = toma distinta de item_usage)
+  inv_ruck             equipar mochila
+  pickup / hand        recoger / manipular
+  draw / hide          sacar/enfundar (variantes _2 = tomas de item_usage)
+  inv_properties_2     abrir propiedades/menu contextual

@@ -1,0 +1,24 @@
+Sonidos de consumo GENERICOS para CRAVING (comer/beber/fumar). Los consumen los
+sets de corpus_craving_assets.lua; si Craving suma props nuevos propios (p.ej.
+los comestibles de HL2: botellas, latas, bolsa de comida, comida china, sandia),
+consumen ESTOS sonidos.
+
+SEPARACION sonidos/items: los zona/stalkerrp/* que viven en corpus-stalker
+(inv_food, inv_softdrink, inv_vodka) quedan RESERVADOS para la comida propia de
+ese addon (pan, salchicha, atun, vodka de la Zona), no para estos genericos.
+
+Sets default (cableados 2026-07-24):
+  eat   -> food_use.ogg          (masticado generico)
+  drink -> drink_flask.ogg       (tragos de cantimplora/botella)
+  can   -> drink_soda_use.ogg    (lata con gas)
+  vodka -> vodka_use.ogg         (tragos + botella)
+
+El resto son variantes por tipo de comida, autodescriptivas por nombre
+(conserva, queso enlatado, MRE, plato, bolsa de papel, cerveza, cola, etc.)
+para cablear por-item cuando lleguen los props nuevos. eat_mre_2.ogg era el
+mre.ogg.bak de GAMMA (variante distinta de eat_mre.ogg).
+
+cooking/: sistema de cocina futuro (ollas, cocinilla, fosforos).
+
+El rugido de estomago NO vive aca: sigue siendo zona/stalkerrp/hunger.mp3 de
+corpus-stalker (excepcion declarada CRV-7, sin fallback).

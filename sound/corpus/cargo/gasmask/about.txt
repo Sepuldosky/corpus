@@ -1,0 +1,10 @@
+EXTRA de CARGO: mascara de gas. Pendiente de implementar (roadmap de Cargo):
+un overlay que funcione como mascara de gas cuando el jugador se equipe un
+casco CERRADO, con estos sonidos de respiracion.
+
+gas_breath_N_x.ogg: jadeos al respirar en una mascara de gas, se escuchan
+"muffled" por la mascara. Vienen en INTENSIDAD creciente por N (1..8):
+gas_breath_8_x.ogg es el sonido cuando quedas sin stamina o estas muy mal
+herido en STALKER GAMMA. La x (1..8) son variantes del mismo nivel.
+
+mask_clean.ogg / inv_mask_clean_3.ogg: limpiar la mascara (dos tomas distintas).

@@ -1,0 +1,45 @@
+BANCO DE SONIDOS DEFAULT DEL ECOSISTEMA CORPUS
+==============================================
+Sonidos de STALKER GAMMA (GSC Game World + autores del modpack) que pueblan los
+modulos por DEFAULT. Son reemplazables: la gente vera como los cambia. Cada
+modulo consume su carpeta; hay SEPARACION entre sonidos e items — los items del
+addon de contenido (corpus-stalker) usan sus propios sonidos zona/*, no estos.
+
+NO SE VERSIONAN EN GIT (COR-17, mismo regimen que STK-2 en corpus-stalker): la
+MIT del repo cubre el codigo, no assets de terceros. Ver corpus/.gitignore.
+
+Mapa de carpetas (reorganizado 2026-07-24; el arbol viejo era sound/interface/):
+
+  cargo/ui/          abrir/cerrar interfaces + feedback de inventario.
+                     inv_open/inv_close = interfaz de trader, trading entre
+                     jugadores y contenedores; backpack_open/backpack_close =
+                     inventario personal (la mochila). draw/hide, drop, slot,
+                     belt, ruck (equipar mochila), pickup, hand, properties.
+  cargo/items/       seleccion de items por categoria en el grid (ver su about).
+  cargo/containers/  variantes de abrir/cerrar cajas especiales (aac/aam/iam/
+                     lead — contenedores de artefactos y caja de plomo en GAMMA).
+  cargo/attachments/ instalar/quitar attachments de arma (puente ARC9).
+  cargo/equipment/   equipo de cuerpo: NVG (loop/on/off), linterna, antorcha,
+                     bateria.
+  cargo/gasmask/     EXTRA de Cargo: respiracion con mascara de gas para el
+                     overlay de casco cerrado (pendiente de implementar; ver su
+                     about) + limpieza de mascara.
+  cargo/workbench/   reparar/desarmar (bloque futuro Workbench de Cargo).
+  coagulant/         uso de items medicos (venda, botiquin, pastillas, jeringas,
+                     inyector, antirad). Cableo pendiente de decision del autor
+                     (COA-28: su arquitectura aun no especifica sonidos).
+  craving/           comer/beber/fumar (consumibles genericos) + cooking/ para
+                     el futuro sistema de cocina.
+  shared/            sin dueno claro todavia: notify de horror, harvest y loot
+                     de mutantes.
+
+Renombres respecto de GAMMA (variantes, no duplicados — hashes distintos):
+  items/inv_items_cloth_{1,2,3}.ogg.ogg  -> inv_items_cloth_{4,5,6}.ogg
+  item_usage/draw|hide|inv_belt.ogg      -> cargo/ui/draw_2|hide_2|inv_belt_2.ogg
+  item_usage/inv_disassemble_cloth_fast_{1,2,3}.ogg -> workbench/..._{4,5,6}.ogg
+  item_usage/inv_repair_*.ogg            -> workbench/inv_repair_*_2.ogg
+  item_usage/injector_using_OLD.ogg      -> coagulant/injector_using_old.ogg
+  item_usage/mre.ogg.bak                 -> craving/eat_mre_2.ogg
+  Inv_slot.ogg                           -> cargo/ui/inv_slot.ogg (minusculas)
+
+NOTA: los sonidos de USO (los que venian de item_usage/) son MALE-ORIENTED.

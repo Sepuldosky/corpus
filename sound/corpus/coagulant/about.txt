@@ -1,0 +1,13 @@
+Sonidos de uso de items medicos para COAGULANT (male-oriented, de GAMMA).
+NO cableados todavia: la arquitectura de Coagulant no especifica sonidos y
+COA-28 exige decision del autor antes de implementar. Mapa sugerido:
+
+  Bandage    -> bandage_use.ogg
+  Tourniquet -> bandage_use.ogg (o cloth del workbench)
+  Medkit     -> medkit_use.ogg
+  Blood Bag  -> injector_using.ogg (o syringe1/2)
+  (futuros)  pills_use / drug_tabletos_use (pastillas), antirad_use (antirad),
+             syringe1/2 (inyecciones rapidas)
+
+injector_using_old.ogg = version vieja del inyector en GAMMA (renombrada de
+injector_using_OLD.ogg), conservada como alternativa.

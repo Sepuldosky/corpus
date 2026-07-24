@@ -1003,3 +1003,36 @@ Verificación: checker en verde sobre 207 IDs — una pasada intermedia cazó `E
 en COA-33 (el check J3 citado en el registro no dejaba rastro citable en el repo) y se
 reparó citando J3 explícito en el CHANGELOG del módulo, que es exactamente el trabajo del
 checker. Sin superficie de runtime en este repo: ni una línea de Lua del framework cambió.
+
+---
+
+## PARCHES DE sesión Banco de sonidos del ecosistema — 2026-07-24
+
+Decisión del autor: los sonidos GENERALES (ports de STALKER GAMMA) viven en Corpus y cada
+módulo consume los suyos; los sonidos del addon de contenido quedan para sus propios ítems
+(separación sonidos/ítems). Hospedar el banco NO viola COR-10: es infraestructura de assets
+compartida por tres módulos, sin una línea de lógica de dominio.
+
+- PARCHE 1 — chore(workspace): **nace el banco de sonidos default** `sound/corpus/` — los 201 .ogg
+  de GAMMA que trajo el autor (árbol plano `sound/interface/`), reorganizados por consumidor:
+  `cargo/{ui,items,containers,attachments,equipment,gasmask,workbench}`, `coagulant/`,
+  `craving/{,cooking}` y `shared/`, con `about.txt` por carpeta que preserva las notas del
+  autor (mapa de la selección por categoría, intensidades del gasmask, la nota male-oriented).
+  **Gasmask queda como EXTRA de Cargo** (los sonidos del futuro overlay de casco cerrado —
+  roadmap #44 de Cargo). Ningún "duplicado" se borró: los tres `.ogg.ogg`, los `_OLD`/`.bak` y
+  los homónimos de `item_usage/` eran variantes con hash distinto — se renombraron
+  (`cloth_4-6`, sufijo `_2`, `injector_using_old`, `eat_mre_2`; mapa completo en
+  `sound/corpus/about.txt`). Consumidores cableados en esta misma tanda: Cargo (entry 35) y
+  Craving (su sesión de hoy); Coagulant solo DOCUMENTADO (COA-28: sin decisión del autor no se
+  implementa — mapa sugerido en `sound/corpus/coagulant/about.txt`). **[APLICADO 2026-07-24]**
+  (verificado en juego por el autor desde los consumidores: Cargo entry 35 y la sesión de Craving)
+- PARCHE 2 — docs(docs): **COR-17 acuñada** — los assets de terceros no se versionan en el
+  framework: `.gitignore` excluye `sound/**` y re-incluye los `about.txt` (documentación
+  propia, MIT-safe). Mismo régimen que STK-2; sede el contrato 10 del CLAUDE.md, entrada en
+  `ids.yaml` en el mismo parche (§7.4). Verificado: `git check-ignore` ignora los .ogg y deja
+  pasar los about.txt. **[APLICADO 2026-07-24]**
+
+Verificación: sin superficie de runtime en este repo (ni una línea de Lua del framework
+cambió — el banco es data). Los consumidores se verificaron en juego desde sus repos
+(Cargo entry 35 a-e ✓, Craving ✓; confirmado por el autor el 2026-07-24). Commiteado y
+pusheado con autorización del autor.

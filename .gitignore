@@ -8,6 +8,19 @@ data/
 !.claude/desktop-sync/README.md
 !.claude/desktop-sync/sync.ps1
 
+# === Assets: NO se versionan (COR-17, mismo régimen que STK-2 en corpus-stalker) ===
+#
+# El banco de sonidos default del ecosistema (sound/corpus/) son ports de
+# STALKER GAMMA (GSC Game World + autores del modpack). La licencia MIT de este
+# repo cubre SOLO el código y los docs — nunca los assets. Subirlos a un repo
+# público sería redistribuirlos, y git guarda binarios de pena. Los about.txt
+# de sound/ SÍ se versionan: son documentación propia (el mapa del banco vive en
+# sound/corpus/about.txt) y permiten reconstruir el árbol desde GAMMA.
+
+sound/**
+!sound/**/
+!sound/**/about.txt
+
 # Editor / OS
 .vscode/
 *.swp
