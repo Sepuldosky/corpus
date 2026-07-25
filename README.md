@@ -1,3 +1,30 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/corpus_lockup_dark.svg">
+    <img src="assets/corpus_lockup_light.svg" width="220" alt="Corpus">
+  </picture>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Sepuldosky/corpus-caliber"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/caliber_logo_dark.svg"><img src="assets/caliber_logo_light.svg" width="60" alt="Caliber"></picture></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Sepuldosky/corpus-cargo"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/cargo_logo_dark.svg"><img src="assets/cargo_logo_light.svg" width="60" alt="Cargo"></picture></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Sepuldosky/corpus-coagulant"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/coagulant_logo_dark.svg"><img src="assets/coagulant_logo_light.svg" width="60" alt="Coagulant"></picture></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Sepuldosky/corpus-craving"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/craving_logo_dark.svg"><img src="assets/craving_logo_light.svg" width="60" alt="Craving"></picture></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Sepuldosky/corpus-cortex"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/cortex_logo_dark.svg"><img src="assets/cortex_logo_light.svg" width="60" alt="Cortex"></picture></a>
+</p>
+
+<p align="center"><sub>C A L I B E R &nbsp;·&nbsp; C A R G O &nbsp;·&nbsp; C O A G U L A N T &nbsp;·&nbsp; C R A V I N G &nbsp;·&nbsp; C O R T E X</sub></p>
+
+<p align="center">
+  <a href="https://github.com/Sepuldosky/corpus-stalker"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/stalker_logo_dark.svg"><img src="assets/stalker_logo_light.svg" width="52" alt="Corpus S.T.A.L.K.E.R."></picture></a>
+</p>
+
+<p align="center"><sub>y el addon de contenido — <b>S T A L K E R</b></sub></p>
+
 # Corpus
 
 Framework **delgado** para **Garry's Mod** que aloja un ecosistema de módulos de gameplay
@@ -62,4 +89,5 @@ el realm donde corre (en listen server, realm server: `lua_run Corpus._SelfTest(
 - [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md) — diseño del framework, grafo de dependencias, workspace.
 - [`docs/corpus_estado.md`](docs/corpus_estado.md) · [`docs/corpus_roadmap.txt`](docs/corpus_roadmap.txt) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md) — docs vivos.
 - [`docs/corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) — metodología de trabajo, canónica para los siete repos del ecosistema.
+- [`docs/Corpus_Identidad.md`](docs/Corpus_Identidad.md) — identidad visual: marca madre, familia de glifos, paleta de acento, uso de los assets.
 - [`CLAUDE.md`](CLAUDE.md) — guía para asistencia con Claude Code.
