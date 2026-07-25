@@ -274,14 +274,31 @@ Anchos vigentes (los lockups son 4:5, así que el alto sale ×1.25):
 |---|---|
 | Lockup de módulo / addon (header de su README) | `200` |
 | Lockup de Corpus (header de `corpus/`) | `220` |
-| Glifo de módulo en la fila de familia de `corpus/` | `60` |
-| Lockup del addon bajo el rótulo `ADDONS` de `corpus/` | `120` |
+| Glifo de módulo o de addon en el escaparate de `corpus/` | `60` — el mismo para los dos niveles |
 
-Para el README de `corpus/` (escaparate del ecosistema), debajo del lockup va una
-fila de los cinco glifos de módulo enlazando a su repo, con sus nombres al pie; y
-debajo, bajo el rótulo `ADDONS`, el **lockup** del addon. Los dos niveles se
-distinguen por **forma**, no por tamaño: los módulos son glifos pelados en fila —
-son familia, se leen juntos—, el addon es un lockup suelto con su propio wordmark.
+Para el README de `corpus/` (escaparate del ecosistema), debajo del lockup van los
+niveles del sistema, cada uno con la **misma estructura de tres partes**: rótulo
+del nivel en versalitas espaciadas, fila de glifos pelados enlazando a su repo, y
+los nombres al pie en el mismo tratamiento.
+
+```
+M Ó D U L O S
+[glifo] [glifo] [glifo] [glifo] [glifo]
+C A L I B E R · C A R G O · C O A G U L A N T · C R A V I N G · C O R T E X
+
+A D D O N S
+[glifo]
+S T A L K E R
+```
+
+Los niveles **no se distinguen por tamaño ni por forma** — todos los glifos son de
+`60` y todos van pelados. La jerarquía la carga el **rótulo**, y sólo el rótulo.
+Es lo que hace que el escaparate escale: el día que haya un segundo addon, o un
+tercer nivel, entra como otro bloque de tres partes sin renegociar tamaños ni
+pedir una regla nueva. El lockup queda reservado para los headers de README (una
+marca por página, con su wordmark); acá abajo, donde conviven varias marcas, el
+glifo pelado es el que deja leer la familia de un vistazo.
+
 Cada imagen va **envuelta en su propio `<a>`**, no un único SVG combinado: un logo
 embebido vía `<img>`/`<picture>` se aplana a imagen estática y cualquier link
 interno del SVG deja de ser clickeable.
