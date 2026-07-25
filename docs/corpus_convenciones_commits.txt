@@ -12,6 +12,13 @@ REPO: cada raíz define su propia tabla en su docs/<modulo>_convenciones_commits
 cuando su Block de diseño cierra y empieza a recibir código; mientras ese doc no
 exista, su tabla vive en su CLAUDE.md. En NINGÚN caso un repo hermano hereda la §3
 de este doc — es el mapa de archivos del framework.
+
+GIT-7 — Única excepción a GIT-6: el alcance "assets" (identidad visual) es del
+ECOSISTEMA y vale en las siete raíces. No es el mapa de archivos de nadie — la
+carpeta assets/ aterrizó idéntica en los siete repos en el mismo bloque, con las
+mismas cuatro piezas por marca. Cada raíz con §3 propia lo tiene escrito ahí
+igual; las que todavía no tienen §3 (corpus-cortex, sin código) lo usan por esta
+regla, no por herencia de la tabla.
 =====================================================
 
 
@@ -103,6 +110,15 @@ Para corpus/ (el framework), los alcances definidos son:
     Estructura del workspace multi-root (.code-workspace, carpetas raíz, dev/) —
     alcance propio de este repo, sin equivalente en ADS.
 
+  assets:
+    Identidad visual: los SVG de marca en assets/ (glifo pelado y lockup, en
+    variante light y dark) y el header del README que los embebe. En corpus/ el
+    alcance cubre además la copia de los glifos de módulo y del addon para la
+    fila de familia del README. Fuente de verdad del diseño:
+    docs/Corpus_Identidad.md.
+    No confundir con los assets de juego (sound/, models/, materials/): esos son
+    ports de terceros, no se versionan (COR-17) y su alcance es workspace.
+
   docs:
     Cambios a la arquitectura, metodología o convenciones cuando el commit es
     puramente documental y no encaja en ninguno de los alcances de arriba.
@@ -120,6 +136,11 @@ Para corpus/ (el framework), los alcances definidos son:
     - chore(workspace): crea las raíces del multi-root workspace
     - docs(docs): cierra Block 1 en CORPUS_Architecture.md
     - docs(docs): porta metodología de ADS/Kontrol a corpus_flujo_trabajo.txt
+
+  4.3 Identidad visual:
+    - chore(assets): agrega la identidad visual y el lockup al README
+    - fix(assets): regenera las variantes light de la marca madre en ink
+    - docs(docs): cierra la marca madre en el Vitruvio en Corpus_Identidad.md
 
 
 5. AUTOMATIZACIÓN EN VSCODE
