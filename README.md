@@ -19,11 +19,11 @@
 
 <p align="center"><sub>C A L I B E R &nbsp;·&nbsp; C A R G O &nbsp;·&nbsp; C O A G U L A N T &nbsp;·&nbsp; C R A V I N G &nbsp;·&nbsp; C O R T E X</sub></p>
 
-<p align="center">
-  <a href="https://github.com/Sepuldosky/corpus-stalker"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/stalker_logo_dark.svg"><img src="assets/stalker_logo_light.svg" width="52" alt="Corpus S.T.A.L.K.E.R."></picture></a>
-</p>
+<p align="center"><sub><b>A D D O N S</b></sub></p>
 
-<p align="center"><sub>y el addon de contenido — <b>S T A L K E R</b></sub></p>
+<p align="center">
+  <a href="https://github.com/Sepuldosky/corpus-stalker"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/stalker_lockup_dark.svg"><img src="assets/stalker_lockup_light.svg" width="120" alt="Corpus S.T.A.L.K.E.R."></picture></a>
+</p>
 
 # Corpus
 

@@ -275,12 +275,15 @@ Anchos vigentes (los lockups son 4:5, así que el alto sale ×1.25):
 | Lockup de módulo / addon (header de su README) | `200` |
 | Lockup de Corpus (header de `corpus/`) | `220` |
 | Glifo de módulo en la fila de familia de `corpus/` | `60` |
-| Glifo del addon en la fila de familia de `corpus/` | `52` — un escalón menor, la jerarquía se lee sola |
+| Lockup del addon bajo el rótulo `ADDONS` de `corpus/` | `120` |
 
 Para el README de `corpus/` (escaparate del ecosistema), debajo del lockup va una
-fila de los cinco glifos de módulo enlazando a su repo, y debajo el glifo del
-addon — **cada imagen envuelta en su propio `<a>`**, no un único SVG combinado: un
-logo embebido vía `<img>`/`<picture>` se aplana a imagen estática y cualquier link
+fila de los cinco glifos de módulo enlazando a su repo, con sus nombres al pie; y
+debajo, bajo el rótulo `ADDONS`, el **lockup** del addon. Los dos niveles se
+distinguen por **forma**, no por tamaño: los módulos son glifos pelados en fila —
+son familia, se leen juntos—, el addon es un lockup suelto con su propio wordmark.
+Cada imagen va **envuelta en su propio `<a>`**, no un único SVG combinado: un logo
+embebido vía `<img>`/`<picture>` se aplana a imagen estática y cualquier link
 interno del SVG deja de ser clickeable.
 
 ```html
