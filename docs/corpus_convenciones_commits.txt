@@ -16,9 +16,10 @@ de este doc — es el mapa de archivos del framework.
 GIT-7 — Única excepción a GIT-6: el alcance "assets" (identidad visual) es del
 ECOSISTEMA y vale en las siete raíces. No es el mapa de archivos de nadie — la
 carpeta assets/ aterrizó idéntica en los siete repos en el mismo bloque, con las
-mismas cuatro piezas por marca. Cada raíz con §3 propia lo tiene escrito ahí
-igual; las que todavía no tienen §3 (corpus-cortex, sin código) lo usan por esta
-regla, no por herencia de la tabla.
+mismas cuatro piezas por marca. Las siete raíces lo tienen escrito en su §3
+igual; GIT-7 no las exime de declararlo, fija que las siete lo declaran con el
+MISMO significado. Si una raíz futura nace sin §3, usa "assets" por esta regla
+mientras tanto.
 =====================================================
 
 
