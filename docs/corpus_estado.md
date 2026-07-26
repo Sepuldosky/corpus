@@ -16,7 +16,7 @@ consumidor real es el comando de purga de `inst_*` legacy de Cargo. **Verificado
 alias `corpus_selftest_cl`. Harness 393 verdes. Contexto previo: banco de sonidos del ecosistema — `sound/corpus/`
 con los ports de GAMMA ordenados por consumidor y **COR-17 acuñada** (assets fuera de git, régimen
 STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. Framework Lua estable desde el
-2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8 y check N1: CHANGELOG entero en `[APLICADO]`)**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
+2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8 y check N1: CHANGELOG entero en `[APLICADO]`)**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; **D-14 quedó CERRADA** por voto del autor el 2026-07-21 (COR-12 se queda: gobierna el protocolo de registro, no la semántica de los ítems); el **2.º COMPLETO ya corrió el 2026-07-22** —2 contradicciones y 9 hechos falsos, los 11 reparados el mismo día—. **Deuda de cadencia declarada:** desde entonces las tandas B1-B4 de la persistencia de Cargo escribieron normas (COR-18, COR-19, CRG-56 a CRG-60) y **ninguna disparó su SCOPED de AUD-1**)
 
 ---
 
@@ -52,9 +52,9 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   rigen hacia adelante; quedan sedes en `.lua`/CHANGELOG por mover). El **checker** (§7.7)
   corre en `pre-commit` sobre las siete raíces (12/12 tests) y valida yaml, prefijos,
   duplicados, sedes, evidencia y huérfanos — **presencial, no semántico**. El **§8**
-  formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió un COMPLETO y cuatro
-  SCOPED ([actas](auditorias/)); **las actas están triadas y el último SCOPED (2026-07-20) ya
-  está reparado** — COR-12/13/14 anclados por etiqueta y reconocidos por el `CLAUDE.md`, más
+  formaliza la tanda como spec ejecutable. El **gate LLM** (§7.8) corrió **dos COMPLETO y cinco
+  SCOPED** ([actas](auditorias/)); **las actas están triadas y las dos últimas —SCOPED 2026-07-21 y
+  COMPLETO 2026-07-22— ya están reparadas** — COR-12/13/14 anclados por etiqueta y reconocidos por el `CLAUDE.md`, más
   cuatro universales que el árbol desmentía. **El gate propone y jamás aplica (AUD-4): las
   actas son inmutables y los parches van en tanda aparte.**
 - **Banco de sonidos default (2026-07-24):** `sound/corpus/` — 201 ports de STALKER GAMMA

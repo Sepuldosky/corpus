@@ -56,13 +56,20 @@ las cuatro recetas que su propia acta dejó en §5):
 > **Editar el `.js` invalida el caché de resume** de cualquier corrida anterior. Es esperable
 > y no es un error: la próxima corrida arranca de cero.
 
-**Deuda de mantenimiento de la columna `total` — medida el 2026-07-26, y ya es crónica.** Las actas
-del 21-07 y del 22-07 volvieron a reportarla (1 y 3 docs desfasados); hoy son **20 de los 32**, y el
-peor es `cargo_roadmap.txt`: constante **573**, árbol **739** — **166 líneas** fuera del rango de su
-tramo. **No degrada una corrida**: la fase 0 «Conteo» deriva el número del árbol y arma los tramos
-con el real, no con la constante. Pero cada corrida paga la corrección en caliente, y una tabla que
-enumera lo que el árbol ya dice es el modo de falla que **FLU-27** existe para matar. Arreglo de
-raíz: que la tabla **no lleve `total`** y lo derive siempre.
+**La columna `total` es un CHECKSUM, no la fuente — y medido el 2026-07-26 discrepa en 20 de los 32
+docs.** Eso NO es deuda: es el checksum haciendo su trabajo. La fase 0 «Conteo» deriva el largo real
+del árbol en cada corrida y los tramos se arman con ése; si discrepan gana el árbol, la corrida no
+se aborta y **el desfase viaja hasta el acta** (esa inversión de autoridad la aplicó la reparación
+del SCOPED 2026-07-20, y el `.js` la documenta en su fase 0). La constante se queda porque tiene dos
+usos que derivarla no cubre: es el **fallback declarado** si la fase 0 muere —caer en silencio sería
+reintroducir el defecto— y hace que un `lineas = 0` (un doc del corpus que desapareció) se lea como
+anomalía en vez de pasar liso.
+
+Lo que sí conviene saber: el peor desfase de hoy es `cargo_roadmap.txt` (constante **573**, árbol
+**739**). Con 20 de 32 divergiendo, el checksum pierde poder de señal — todo discrepa, así que nada
+llama la atención. Re-derivar la tabla cada tantas tandas es barato y le devuelve el sentido;
+**borrar la columna, no** (las corridas del 16-07 al 20-07 fallaron justamente por confiar en un
+número sin segunda opinión).
 
 **Cadencia:** AUD-1 (SCOPED al cerrar cualquier sesión que escribió normas), AUD-2 (COMPLETO
 al cerrar un Block de módulo), AUD-3 (ningún gate corre con poco contexto: se difiere).
