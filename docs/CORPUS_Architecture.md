@@ -84,7 +84,7 @@ Seis primitivas. Nada de lógica de dominio.
 | Primitiva | Contrato | Por qué vive en Corpus |
 |---|---|---|
 | **Registro** | `Corpus.RegisterModule(name, iface)` · `Corpus.HasModule(name) → bool` · `Corpus.GetModule(name) → iface \| nil` | Es el linchpin: sin esto no hay soft-deps ni namespacing |
-| **Persistencia** | `Corpus.Data.Save(module, key, tbl)` · `Corpus.Data.Load(module, key) → tbl \| nil` | Los cinco módulos persisten estado; una sola convención de ruta evita colisiones |
+| **Persistencia** | `Corpus.Data.Save(module, key, tbl, opts)` · `Load(module, key, opts) → tbl \| nil` · `List(module, opts) → { key… }` · `Delete(module, key, opts) → bool` | Los cinco módulos persisten estado; una sola convención de ruta evita colisiones, y una sola primitiva evita que cada uno invente su propio `file.*` (COR-18) |
 | **Net** | `Corpus.Net.Register(module, msgName) → fullName` | El namespace de `net.Receive` es global en Gmod; cinco módulos sin convención chocan nombres |
 | **UI shell** | `Corpus.UI.RegisterTab(module, label, buildFn)` | Reusa el patrón de layout manual (`DPanel`+`DLabel`+`DSlider`+`DTextEntry`) ya validado en ADS; una sección "Corpus" en vez de cinco menús Q sueltos |
 | **Ready barrier** | `Corpus.OnReady(fn)` | Dispara tras `InitPostEntity` con todos los módulos presentes ya registrados — punto seguro para wiring de soft-deps |
@@ -98,9 +98,12 @@ function Corpus.RegisterModule(name, iface)   -- iface: tabla de funciones públ
 function Corpus.HasModule(name)               -- bool
 function Corpus.GetModule(name)               -- iface o nil
 
--- Persistencia — ruta resultante: data/corpus/<module>/<key>.json
-function Corpus.Data.Save(module, key, tbl)
-function Corpus.Data.Load(module, key)        -- tbl o nil si no existe
+-- Persistencia — opts = { scope = "config" | "save" }, opcional; ausente = "save".
+-- Ruta que resuelve HOY, para los dos scopes: data/corpus/<module>/<key>.json
+function Corpus.Data.Save(module, key, tbl, opts)
+function Corpus.Data.Load(module, key, opts)  -- tbl o nil si no existe
+function Corpus.Data.List(module, opts)       -- array de keys ordenado; {} si no hay, nunca nil
+function Corpus.Data.Delete(module, key, opts)-- true si el archivo existía, false si no
 
 -- Net — evita colisión de nombres entre AddNetworkString de distintos módulos
 function Corpus.Net.Register(module, msgName) -- retorna "corpus_<module>_<msgName>"
@@ -116,6 +119,19 @@ function Corpus.Log(module, ...)              -- print("[Corpus:"..module.."] ",
 ```
 
 > **COR-7 — Invariante del registro (contrato duro; ésta es su sede):** `Corpus.RegisterModule(name, iface)` y `Corpus.GetModule(name)` guardan y devuelven la **misma tabla por referencia** — sin deep-copy, sin normalización de ningún tipo. El patrón "tabla única poblada por side-effect" con el que los módulos construyen su namespace (ver `Caliber_Architecture.md` §3 y §11) depende de que sea así; un copy defensivo acá lo rompe en silencio. Es un contrato **distinto** al de **COR-8** (`Corpus.Data.Save/Load` sí normaliza en el round-trip JSON: `util.JSONToTable` puede devolver claves numéricas donde se guardaron strings) — no confundir ambos invariantes.
+
+> **COR-19 — El scope de `Corpus.Data` (ésta es su sede):** `opts.scope` distingue **config de servidor** —lo que sobrevive a borrar una partida: catálogos, overrides, tablas de balance— de **estado de partida**, que muere con ella. Ausente significa `"save"`, y un scope desconocido es un `error()`, no un silencio. **HOY los dos scopes resuelven a la misma carpeta a propósito**, y eso es el contrato, no un pendiente: el gancho existe para que cada dueño declare su scope sin que se mueva un solo archivo — blast radius cero sobre los módulos que no se enteraron. El layout de perfiles que separa las rutas es un bloque posterior y toca **solo** el resolver de `corpus_data.lua`.
+>
+> El reparto de HOY, **derivado del árbol** (grep de `Corpus.Data.` sobre las siete raíces, 2026-07-25 — no de esta prosa; una norma que enumera sale del código, FLU-27):
+>
+> | Módulo | Claves | Scope |
+> |---|---|---|
+> | Cargo | `autogen_defs` · `icon_overrides` | **`config` declarado** — catálogo de lo que los packs montados resultaron ser |
+> | Cargo | `inv_<steamid64>` · `cont_<key>` · `trader_<key>` | `save` por default: es estado de partida y ya está del lado correcto |
+> | Craving | `<steamid64>` (hambre/hidratación) | `save` por default — correcto sin tocar una línea |
+> | Caliber | `config` · `scav_weights` | `save` por default **y son config de servidor**: le corresponde declararlo a su dueño, cuando quiera. Mientras tanto no rompe nada, porque las dos rutas coinciden |
+> | Coagulant | — | no persiste nada |
+> | Corpus | `selftest/prueba` | la escritura de prueba del `corpus_selftest`, que la borra al terminar |
 
 > **COR-8 — Normalización en el round-trip de `Corpus.Data` (ésta es su sede):** lo que sale de `Corpus.Data.Load` **no** es garantizadamente idéntico a lo que entró en `Save`: el viaje por JSON puede cambiar el tipo de las claves. Un módulo que persiste una tabla con claves string no debe asumir que las recupera como string. Es el contrario exacto de COR-7, y por eso conviven: el registro **no** toca la tabla; la persistencia **sí**.
 

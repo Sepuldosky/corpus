@@ -43,12 +43,12 @@ Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada a
 | Archivo | Realm | Rol |
 |---|---|---|
 | [`lua/autorun/corpus_registry.lua`](lua/autorun/corpus_registry.lua) | shared | Registro: `RegisterModule`/`HasModule`/`GetModule` — **invariante by-ref** (misma tabla por referencia, ver nota en §3 de la arquitectura) |
-| [`lua/autorun/corpus_data.lua`](lua/autorun/corpus_data.lua) | shared | Persistencia: `Corpus.Data.Save/Load` → `data/corpus/<module>/<key>.json` |
+| [`lua/autorun/corpus_data.lua`](lua/autorun/corpus_data.lua) | shared | Persistencia: `Corpus.Data.Save/Load/List/Delete` + el `scope` de **COR-19**; hoy resuelve a `data/corpus/<module>/<key>.json` |
 | [`lua/autorun/corpus_net.lua`](lua/autorun/corpus_net.lua) | shared | Net: `Corpus.Net.Register` → `"corpus_<module>_<msgName>"` (`AddNetworkString` solo en server) |
 | [`lua/autorun/corpus_ready.lua`](lua/autorun/corpus_ready.lua) | shared | Ready barrier: `Corpus.OnReady`, dispara una vez tras `InitPostEntity` |
 | [`lua/autorun/corpus_log.lua`](lua/autorun/corpus_log.lua) | shared | Log: `Corpus.Log` con prefijo `[Corpus:<module>]` |
 | [`lua/autorun/client/corpus_ui.lua`](lua/autorun/client/corpus_ui.lua) | client | UI shell: `Corpus.UI.RegisterTab` — categoría única "Corpus" en el menú Q (Utilities) |
-| [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo) |
+| [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo). En **listen server** ese nombre corre el realm SERVER; para el CLIENT está el alias `corpus_selftest_cl` |
 
 ## Contratos que no debes romper
 
@@ -58,7 +58,8 @@ redefine. El registro [`docs/ids.yaml`](docs/ids.yaml) los indexa.
 
 1. **COR-1 — Nada de lógica de dominio en Corpus.** Solo registro, persistencia, net, UI shell, ready barrier, log — ver la lista explícita de "lo que Corpus NO contiene" en §3 de la arquitectura (armor math, hitgroups, curvas de sangrado/hambre, grid de inventario).
 2. **COR-2 — Namespace único.** Todo cuelga del global `Corpus`; los módulos se acceden vía `Corpus.GetModule(name)`, nunca como globals sueltos adicionales.
-3. **COR-3 — Persistencia namespaced.** `Corpus.Data.Save/Load(module, key, tbl)` → ruta `data/corpus/<module>/<key>.json`. Un módulo no escribe fuera de su propio namespace.
+3. **COR-3 — Persistencia namespaced.** `Corpus.Data.Save(module, key, tbl, opts)` · `Load(module, key, opts)` · `List(module, opts)` · `Delete(module, key, opts)`. Un módulo no escribe fuera de su propio namespace. La **ruta** ya no es una constante: la resuelve el `scope` de **COR-19** (`opts = { scope = "config" | "save" }`, ausente ⇒ `"save"`), y hoy los dos resuelven a `data/corpus/<module>/<key>.json` a propósito. `List` devuelve las claves ordenadas y `{}` —jamás `nil`— cuando no hay nada; `Delete` devuelve `true` si el archivo existía. Ojo con **COR-8**: el round-trip JSON no preserva tipos de clave.
+   **COR-18 — Nada de `file.*` para estado propio (ésta es su sede, es la otra mitad de COR-3).** Toda **tabla** de estado de un módulo pasa por `Corpus.Data`. Quedan fuera **por construcción** los artefactos que la primitiva no sabe guardar —dumps de texto plano y binarios como el caché de PNG de íconos— y la **detección** de assets con `file.Exists(..., "GAME")` (COR-5/COR-17), que nunca fue persistencia. La deuda declarada (los dos sidecars JSON del caché de íconos de Cargo) vive en la nota de COR-18 en [`docs/ids.yaml`](docs/ids.yaml), con su motivo.
 4. **COR-4 — Net namespaced.** `Corpus.Net.Register(module, msgName)` devuelve `"corpus_<module>_<msgName>"` — evita colisión global de `net.Receive` entre los cinco módulos.
 5. **COR-5 — Detección, nunca asunción.** Ningún módulo asume que Corpus u otro módulo ya cargó — orden de mount no garantizado en Gmod (ver §6 de la arquitectura). Lazy check (`Corpus.GetModule`) o `Corpus.OnReady` para wiring que corre una vez.
 6. **COR-6 — Prefijo de archivo por addon:** los **seis addons consumidores** (los cinco módulos + `corpus-stalker`) prefijan sus archivos Lua `corpus_<addon>_*.lua` — tanto el entry point en `lua/autorun/` como el árbol propio bajo `lua/corpus_<addon>/`, `lua/entities/`, `lua/weapons/`. El **framework se reserva el prefijo `corpus_` desnudo** y nombra sus primitivas `corpus_<primitiva>.lua` en su propia `lua/autorun/`. El objetivo es evitar colisión de nombres cuando los siete addons están montados simultáneamente; el framework no colisiona consigo mismo. **El nombre `corpus_registry.lua` no se renombra por convención**, no por dependencia: su posición en el merge alfabético (después de los `corpus_<addon>_init.lua`) es el HECHO que **obliga** al patrón de sonda + boot diferido de §6 de la arquitectura — el boot es **inmune** a esa posición por construcción (COR-5, COR-9): si el registro ordena antes dispara la fast-path, si ordena después la rama diferida. Lo que sí depende del nombre es la **prosa**: la arquitectura, el CHANGELOG y los inits lo citan por escrito, y los harness offline arman el frame por ese nombre.
@@ -78,7 +79,9 @@ el consumo) y **COR-14** (ningún módulo de dominio necesita Cargo) en §5, el 
 
 ## Verificación
 
-No hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4). El comando de consola `corpus_selftest` valida las primitivas del framework en el realm donde corre (en listen server, realm server: `lua_run Corpus._SelfTest()`); el tab de UI se confirma visual en el menú Q.
+No hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4). El comando de consola `corpus_selftest` valida las primitivas del framework en el realm donde corre; el tab de UI se confirma visual en el menú Q.
+
+**Cómo llegar a cada realm en un listen server** (pagado en juego el 2026-07-25, planilla T4, dos rondas): el archivo del selftest es shared, así que `corpus_selftest` queda registrado en los dos realms y **gana el del SERVER** — tipearlo en la consola del host nunca llega al cliente. `lua_run_cl` tampoco sirve: lo gatea `sv_allowcslua`, que viene en 0 y no se cambia por correr un test. Por eso hay dos nombres: **`corpus_selftest`** (o `lua_run Corpus._SelfTest()`) para SERVER, y **`corpus_selftest_cl`** para CLIENT.
 
 Al cerrar un cambio con superficie de runtime: refresca [`docs/corpus_estado.md`](docs/corpus_estado.md) en sitio y actualiza [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[PENDIENTE]` → `[APLICADO YYYY-MM-DD]`, sin borrar ni renumerar).
 

@@ -93,7 +93,8 @@ Para corpus/ (el framework), los alcances definidos son:
     Registro de módulos: Corpus.RegisterModule, Corpus.HasModule, Corpus.GetModule.
 
   data:
-    Persistencia: Corpus.Data.Save/Load, esquema de rutas data/corpus/<module>/<key>.json.
+    Persistencia: Corpus.Data.Save/Load/List/Delete y el scope (COR-19); el
+    esquema de rutas lo resuelve la primitiva, hoy data/corpus/<module>/<key>.json.
 
   net:
     Namespacing de mensajes de red: Corpus.Net.Register.

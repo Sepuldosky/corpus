@@ -7,7 +7,13 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-24 (**nuevo: banco de sonidos del ecosistema** — `sound/corpus/`
+**Última actualización:** 2026-07-26 (**nuevo: el framework recibe código por primera vez desde el
+2026-07-09** — `Corpus.Data` gana `List`, `Delete` y el **scope** de COR-19, más **COR-18** acuñada
+y COR-3 enmendada; el gancho de perfil queda puesto **sin mover un solo archivo**, y su primer
+consumidor real es el comando de purga de `inst_*` legacy de Cargo. **Verificado en juego el
+2026-07-26 — planilla T, la primera del framework: 9 de 9**. Hicieron falta tres rondas, y el
+único ✗ destapó que el realm CLIENT del framework era **inverificable en juego**: le sumó el
+alias `corpus_selftest_cl`. Harness 393 verdes. Contexto previo: banco de sonidos del ecosistema — `sound/corpus/`
 con los ports de GAMMA ordenados por consumidor y **COR-17 acuñada** (assets fuera de git, régimen
 STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. Framework Lua estable desde el
 2026-07-09; **Block 4 cerrado**: Craving verificó su v1 en juego, sumándose a Cargo; **Block 3 CERRADO: Coagulant pasó la ronda 7 en juego 13/13 —la UI, el sway retuneado y el modo degradado— y sus fixes post-cierre ya se verificaron (mini-ronda 8 y check N1: CHANGELOG entero en `[APLICADO]`)**. Cortex sigue sin código, pero ya no está vacío: estrenó su doc de contratos entrantes. **Nuevo: el gate SCOPED post-D13 corrió ÍNTEGRO y su tanda de reparación está APLICADA** — cinco universales que el árbol desmentía, más la fase 0 del gate; queda **D-14 abierta**, un voto del autor; **el ecosistema sigue listo para el 2.º COMPLETO**, que se corre en sesión fresca aparte)
@@ -25,6 +31,11 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK) + check visual de
   UI cerrado el mismo día con el primer tab real (Caliber en menú Q → Utilities →
   Corpus). **Las 6 primitivas verificadas de punta a punta por un consumidor real.**
+  **Persistencia ampliada el 2026-07-25** (siguen siendo **6** primitivas: Data es UNA, con
+  más superficie): `Corpus.Data.Save/Load/List/Delete` + `opts.scope` — **COR-19** separa
+  config de servidor de estado de partida y **COR-18** cierra la puerta a `file.*` para
+  estado propio. Los dos scopes resuelven a la misma carpeta **a propósito**: el gancho
+  está puesto, no activado.
 - **Workspace multi-root + metodología:** **siete raíces** (`corpus/` + cinco módulos +
   `corpus-stalker/`, el addon de **contenido** de la Zona — consumidor puro, no un módulo)
   + `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
@@ -33,7 +44,7 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 - **Anti-drift (2026-07-16, portado del SDD de Kontrol):** §7 del flujo es la
   **constitución** — jerarquía de autoridad (el código Lua manda sobre el doc), toda norma
   define o cita un ID, barrido de ratificación en el PASO 5, conducta `DETENTE`. El
-  registro [`ids.yaml`](ids.yaml) indexa **207 IDs** de las siete raíces (10 familias; 27%
+  registro [`ids.yaml`](ids.yaml) indexa **213 IDs** de las siete raíces (10 familias; 26%
   INTENCION — subió porque la familia Workbench, acuñada el 2026-07-19, es intención pura
   por construcción: su bloque no está implementado). **Los votos del autor (2026-07-19) cerraron seis deudas** (D-1, D-4, D-6,
   D-9, D-10, D-11 — incluye acuñar COR-15/COR-16 para UI shell y log, y unificar la
@@ -76,8 +87,11 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 
 ## Pendiente de verificar
 
-- Nada — el banco de sonidos se **confirmó en juego el 2026-07-24** desde sus consumidores
-  (Cargo entry 35 a-e ✓, Craving ✓); el CHANGELOG está todo en `[APLICADO]`.
+- Nada — la tanda de `Corpus.Data` cerró con la **planilla T en 9/9** (2026-07-26) y sus seis
+  parches en `[APLICADO]`. Planilla:
+  https://claude.ai/code/artifact/fc204b66-e751-42a2-af8a-0c02429934bd
+- El banco de sonidos se **confirmó en juego el 2026-07-24** desde sus consumidores
+  (Cargo entry 35 a-e ✓, Craving ✓); ese CHANGELOG está todo en `[APLICADO]`.
 
 ## Remanentes / deuda conocida
 
@@ -102,9 +116,14 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
    **Craving:** Block 4 cerrado, verificado, commiteado y pusheado.
    **Cortex** espera su Block (§9): depende de los eventos daño/limb que Caliber expondrá
    con el pipeline de jugador — mock-first si hace falta antes.
-3. **Framework:** sin trabajo propio pendiente. Vigilar primitivas candidatas que asoman
-   desde los módulos (`Corpus.Data.Delete` y un gate de admin reutilizable que pide Cargo);
-   suben solo cuando el consumo lo justifique — framework delgado (§1).
+3. **Framework:** `Corpus.Data.Delete` **ya no es candidata: existe**, junto con `List` y el
+   scope (2026-07-25), y subió cuando el consumo lo justificó — framework delgado (§1). Lo que
+   **sigue** abierto de esa lista es el **gate de admin reutilizable que pide Cargo** (CRG-45,
+   su sesión de diseño propia): mientras no exista, el comando de purga de Cargo va con
+   dry-run por default. Deudas que dejó la tanda: los dos sidecars JSON del caché de íconos de
+   Cargo (nota de COR-18 en `ids.yaml`, con su motivo) y un `dev/harness_corpus.py` propio —
+   hoy la primitiva se acredita contra `harness_cargo.py`, que ya carga el framework real, y
+   los "46 checks" que este doc cita más arriba no tienen archivo que los respalde.
 4. **Anti-drift: LISTO PARA EL 2.º COMPLETO (2026-07-19).** El 1.er COMPLETO corrió ÍNTEGRO
    (29/29 docs, Opus 4.8, 8,3M tokens; acta:
    [`auditorias/2026-07-19_coherencia_docs.md`](auditorias/2026-07-19_coherencia_docs.md)),
@@ -122,7 +141,7 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
      por ID en vez de duplicada, y la columna `total` re-derivada — **estaba mal en las 29
      filas, no en 5** (se había contado sin las líneas vacías, y los TRAMOS salen de ahí:
      la cola de cada doc quedaba sin leer).
-   Registro: **207 IDs**, 27 % INTENCION. **D-3** quedó recortada a **once sedes en `.lua`**
+   Registro: **213 IDs**, 26 % INTENCION (corrida del checker 2026-07-25). **D-3** quedó recortada a **once sedes en `.lua`**
    —cero en CHANGELOG, estado o roadmap—, y varias de esas once son legítimas.
    El **SCOPED del 2026-07-20** (AUD-1) cerró el ciclo: reparado, y el gate estrena **fase 0
    «Conteo»** —`total` pasó de constante a **checksum derivado del árbol**, el defecto que

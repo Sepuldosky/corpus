@@ -32,9 +32,11 @@ repos del ecosistema (corpus + los cinco módulos + corpus-stalker).
 1. INMEDIATO
 --------------
 
-Block 1 (framework Corpus) cerrado y verificado (ver corpus_estado.md); el framework no
-tiene trabajo propio pendiente. Lo inmediato vive en los módulos ya estrenados, cada uno
-en su propio repo/roadmap:
+Block 1 (framework Corpus) cerrado y verificado (ver corpus_estado.md). La persistencia
+ampliada (Corpus.Data gana List, Delete y el scope de COR-19) cerró el 2026-07-26 con la
+planilla T en 9/9 — la primera del framework. El framework no tiene trabajo propio pendiente
+salvo el gate de admin que pide Cargo (CRG-45), que tiene sesión de diseño propia. Lo
+inmediato vive en los módulos ya estrenados, cada uno en su propio repo/roadmap:
 
   [1] Caliber — próximo grande: Block 3, pipeline de armadura de JUGADOR (alcance nuevo,
       no cubierto por ADS; vuelve la Limbs API agnóstica de NPC). Expondrá la superficie

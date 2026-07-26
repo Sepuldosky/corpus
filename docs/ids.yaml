@@ -63,7 +63,10 @@ familias_excluidas:
   H: "ídem A — sección de planilla (H1-H8, rondas 5-6)"
   I: "ídem A — sección de planilla (I1-I4, ronda 6)"
   D: "'Block N' y las decisiones de diseño rotuladas (D1, D2… en las semillas y roadmaps) — provenance, no normas"
+  N: "ídem A — check suelto de Coagulant post-cierre (N1, mini-ronda 8). Registrado a posteriori en el barrido del 2026-07-25: se había usado sin pasar por FLU-30"
+  O: "ídem A — sección de planilla de Coagulant (O1-O6, ronda del tramo chest/stomach). Mismo caso que N: registrado a posteriori"
   P: "IDs de check de planilla de Cargo (P1-P5) — primera sección del módulo, tanda B1 de persistencia"
+  T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
 # ningún repo. Es exactamente el error que FLU-27 nombra — enumerar desde un doc en
@@ -92,12 +95,19 @@ ids:
     evidencia:
       - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua" }
   COR-3:
-    titulo: "Persistencia namespaced: Corpus.Data.Save/Load(module, key, tbl) → data/corpus/<module>/<key>.json; un módulo no escribe fuera de su namespace."
+    titulo: "Persistencia namespaced: un módulo no escribe fuera de su propio namespace de Corpus.Data; la RUTA la resuelve el scope (COR-19), no una constante."
     sede: "corpus/CLAUDE.md §Contratos que no debes romper · 3"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
       - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua" }
+    nota: >
+      ENMENDADA 2026-07-25 al entrar el scope. Lo que NO cambió: el namespace por
+      módulo, que es el invariante. Lo que cambió: la ruta dejó de ser el literal
+      data/corpus/<module>/<key>.json PARA SIEMPRE — hoy resuelve ahí para los dos
+      scopes a propósito (COR-19), y el resolver es el único lugar que la conoce.
+      Sede y fuerza intactas; la superficie de la primitiva creció a
+      Save/Load/List/Delete y la otra mitad del contrato es COR-18.
   COR-4:
     titulo: "Net namespaced: Corpus.Net.Register(module, msgName) → \"corpus_<module>_<msgName>\", para evitar colisión global de net.Receive."
     sede: "corpus/CLAUDE.md §Contratos que no debes romper · 4"
@@ -222,6 +232,62 @@ ids:
       rige corpus-stalker, COR-17 rige acá — misma política, dos sedes porque son dos
       repos con .gitignore propio. No viola COR-10: assets compartidos no son lógica
       de dominio, y el consumo es por detección (COR-5).
+  COR-18:
+    titulo: "Toda persistencia de ESTADO propio de un módulo pasa por Corpus.Data; file.* no se usa para eso."
+    sede: "corpus/CLAUDE.md §Contratos que no debes romper · 3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_capture.lua — el catálogo autogen pasa entero por la primitiva; ningún módulo escribe una tabla de estado con file.Write" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_icons.lua — ídem icon_overrides" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque «B2: Corpus.Data gana List, Delete y scope» + la purga de inst_* legacy (16 checks)" }
+      - { tipo: planilla, ref: "Corpus T8 — en juego (2026-07-25): la purga borra POR LA PRIMITIVA y deja en pie inv_/cont_/trader_ y el catálogo; 2 de 2 claves inst_* legacy" }
+      - { tipo: planilla, ref: "Corpus T7 — el dry run lista por List y no borra: la primitiva de lectura y la de borrado son actos separados" }
+      - { tipo: planilla, ref: "Corpus T3 — el selftest borra por la primitiva lo que escribió: el namespace queda limpio en disco" }
+    nota: >
+      QUÉ RIGE, decidido ABRIENDO EL ÁRBOL y no la prosa (2026-07-25): la norma
+      gobierna TABLAS de estado propio. Quedan fuera POR CONSTRUCCIÓN los artefactos
+      que Corpus.Data no sabe guardar — serializa una tabla a JSON y nada más:
+        · el dump de diagnóstico en TEXTO PLANO (weapon_dump.txt, corpus_cargo_dev.lua);
+        · los PNG del caché de íconos (corpus_cargo_icons.lua client), que son binarios.
+      Y file.Exists(..., "GAME") NUNCA fue candidato: es DETECCIÓN de assets montados
+      (COR-5, COR-17, STK-2), no persistencia. Se dice acá en vez de fingir que esos
+      call sites no existen — una norma que el árbol desmiente el día 1 es lo que §7.1
+      del flujo prohíbe.
+      DEUDA DECLARADA, no omisión (voto del autor, 2026-07-25): los dos sidecars JSON
+      del caché de íconos —mesh_bounds.json e icons_meta.json, corpus_cargo_icons.lua
+      client— SÍ son tablas de estado propio y SÍ caen adentro de la norma, y hoy no
+      pasan por la primitiva. El motivo es del árbol: viven en data/corpus/cargo/icons/
+      junto a los PNG que indexan, y el saneo de `key` bloquea el separador, así que
+      Corpus.Data no puede direccionar una subcarpeta. Migrarlos hoy partiría el caché
+      en dos lugares y MOVERÍA archivos, que es justo lo que la tanda que acuñó esta
+      norma no hace. Se salda cuando la primitiva sepa direccionar el sub-namespace, o
+      cuando el caché de íconos se rediseñe.
+  COR-19:
+    titulo: "El scope distingue config de servidor (sobrevive a borrar una partida) de estado de partida (muere con ella)."
+    sede: "corpus/docs/CORPUS_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_capture.lua (autogen_defs) y corpus_cargo_icons.lua (icon_overrides) declaran scope = config; el resto de Cargo se queda en el default save" }
+      - { tipo: selftest, ref: "corpus/lua/autorun/corpus_selftest.lua — bloque 2c: round-trip declarando config, los dos scopes resolviendo igual, y el scope desconocido que tira error" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — la purga con 'confirm' deja en pie el catálogo scope=config" }
+      - { tipo: planilla, ref: "Corpus T2 — en juego (2026-07-25): el selftest del realm SERVER confirma el round-trip con scope config y que los dos scopes resuelven igual" }
+      - { tipo: planilla, ref: "Corpus T6 — el catálogo scope=config sobrevive el reinicio del mapa" }
+      - { tipo: planilla, ref: "Corpus T4 — el mismo bloque en verde en el realm CLIENT: el scope y las primitivas nuevas son shared de verdad, no solo de nombre" }
+    nota: >
+      SU EFECTO ES FUTURO Y SE DECLARA ASÍ, no se disfraza de efecto presente. HOY los
+      dos scopes resuelven a la MISMA carpeta a propósito (el resolver de
+      corpus/lua/autorun/corpus_data.lua): el gancho existe para que el ecosistema
+      declare su scope sin que se mueva un solo archivo — blast radius cero sobre
+      Caliber, Craving y el resto de Cargo. El layout de perfiles es un bloque
+      posterior y solo toca esa función.
+      POR QUÉ EL DEFAULT ES "save" y no "config": el estado de partida es la mayoría de
+      los call sites y es el que se MUEVE el día que las rutas se separen; que el
+      default sea el que se mueve deja del lado correcto, solo, al módulo que nunca se
+      enteró de este parámetro. Un scope desconocido es un error() y no un silencio:
+      es la clase de typo que hoy no se nota —las dos rutas coinciden— y que mañana
+      manda un archivo a la carpeta equivocada.
 
   # ── FLU — el proceso (sede: corpus/docs/corpus_flujo_trabajo.txt) ───────────
 
@@ -1826,15 +1892,18 @@ ids:
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-07-16
+  fecha: 2026-07-25
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 189
-  intencion: 51          # 27% — la métrica que hay que bajar (§7.4)
+  total: 213
+  intencion: 56          # 26% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-07-25 (la tanda de Corpus.Data).
+  # El bloque venía de la línea base del 2026-07-16 (189/51) y no se había vuelto a
+  # copiar desde entonces, que es justo lo que su propio comentario prohíbe.
   referencia_kontrol: "159 INTENCION de 214 (74%) al backfillear"
   nota: >
     Línea base del barrido inicial: 27% de INTENCION contra el 74% con que arrancó

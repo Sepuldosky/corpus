@@ -1036,3 +1036,147 @@ Verificación: sin superficie de runtime en este repo (ni una línea de Lua del 
 cambió — el banco es data). Los consumidores se verificaron en juego desde sus repos
 (Cargo entry 35 a-e ✓, Craving ✓; confirmado por el autor el 2026-07-24). Commiteado y
 pusheado con autorización del autor.
+
+---
+
+## PARCHES DE sesión Corpus.Data gana List, Delete y scope — 2026-07-25
+
+Primera vez que el framework recibe código desde el 2026-07-09. El disparador vino de
+Cargo: la medición de su persistencia dio **354 instancias huérfanas sobre 370 archivos**
+(CHANGELOG de Cargo #41), y al arreglarlo quedaron dos huecos que son del framework, no
+del módulo — no había forma de ENUMERAR ni de BORRAR una clave por la primitiva, y nada
+distinguía el catálogo del servidor del estado de una partida. La superficie de `Corpus.Data`
+crece; **el número de primitivas NO**: Data sigue siendo UNA de las seis (COR-10).
+
+- PARCHE 1 — feat(data): **`corpus_data.lua` gana `List`, `Delete` y el parámetro `opts`.**
+  `List(module, opts)` devuelve las claves sin extensión, ordenadas, y `{}` —jamás `nil`—
+  cuando no hay carpeta o no hay archivos: quien la llama va a iterarla. `Delete(module,
+  key, opts)` borra y devuelve `true` si el archivo existía, `false` si no, saneando
+  `module` y `key` con el **mismo** `sanear` que ya usaban `Save` y `Load` — una primitiva
+  de borrado sin ese saneo es un agujero de path traversal, no una comodidad.
+  La pieza central es un **resolver de ruta interno** (`RutaDe`) que hoy devuelve **lo
+  mismo para los dos scopes a propósito**: es el gancho, no el efecto. **[APLICADO 2026-07-25]**
+- PARCHE 2 — feat(data): **COR-19 acuñada — el scope.** `opts = { scope = "config" |
+  "save" }`, opcional; ausente significa `"save"`. "config" es config de SERVIDOR
+  (sobrevive a borrar una partida); "save" es ESTADO DE PARTIDA (muere con ella).
+  El default es `"save"` porque es la mayoría de los call sites y el que se MUEVE el día
+  que las rutas se separen: un módulo que nunca se enteró de este parámetro queda del lado
+  correcto **solo**. Un scope desconocido es un `error()` y no un silencio — es la clase de
+  typo que hoy no se nota (las dos rutas coinciden) y que mañana manda un archivo a la
+  carpeta equivocada. Sede: §3 de la arquitectura, con la tabla de quién es config y quién
+  estado **derivada de un grep del árbol**, no de la prosa (FLU-27). **[APLICADO 2026-07-25]**
+- PARCHE 3 — feat(data): **`corpus_selftest` extendido, no reescrito.** El bloque de Data
+  suma siete checks: que `List` encuentre la clave recién escrita, que `Delete` devuelva
+  `true` la primera vez y `false` la segunda, que `Load` post-`Delete` devuelva `nil`, el
+  round-trip declarando `config`, la constatación de que los dos scopes resuelven igual, y
+  el `error()` del scope desconocido. **Deja el namespace `selftest` limpio al terminar**:
+  un selftest que ensucia el disco del autor es un defecto. **[APLICADO 2026-07-25]**
+- PARCHE 4 — docs(docs): **COR-18 acuñada y COR-3 enmendada.** COR-18 (sede: contrato 3 del
+  CLAUDE.md, del que es la otra mitad) dice que toda persistencia de estado propio pasa por
+  la primitiva. Su redacción se decidió ABRIENDO EL ÁRBOL: rige **tablas**, y los artefactos
+  que `Corpus.Data` no sabe guardar quedan fuera **por construcción** (el dump de texto
+  plano `weapon_dump.txt`, los PNG del caché de íconos), igual que `file.Exists(..., "GAME")`,
+  que es detección de assets (COR-5/COR-17) y nunca fue persistencia. Se dice así en la nota
+  en vez de acuñar una norma que el código desmiente el día 1. **La deuda queda declarada
+  con su motivo**, no omitida — ver abajo. COR-3 conserva sede, fuerza y su invariante
+  (nadie escribe fuera de su namespace), pero su ruta deja de ser un literal para siempre:
+  la resuelve el scope. **[APLICADO 2026-07-25]**
+- PARCHE 5 — docs(docs): **barrido de ratificación** (§7.3, barriendo **por el valor**): el
+  mapa de archivos y el contrato 3 del `CLAUDE.md`, §3 de la arquitectura (tabla de
+  primitivas + firmas ilustrativas), el alcance `data` de las convenciones de commit, la
+  cadena del slice vertical y la checklist de §4 del flujo, y la foto de HOY, donde
+  `Corpus.Data.Delete` figuraba como "primitiva candidata que asoma desde los módulos" —
+  ya no es candidata, existe (el gate de admin, que compartía ese párrafo, **sigue vigente**
+  y por eso el párrafo se reescribe en vez de borrarse). En el registro se anotaron además
+  **N y O**, dos secciones de planilla de Coagulant que se habían usado sin pasar por FLU-30,
+  y **T**, la letra de la primera planilla del framework, registrada ANTES de usarse.
+  **[APLICADO 2026-07-25]**
+
+- PARCHE 6 — feat(data): **`corpus_selftest_cl`, alias CLIENT-only del selftest.** Lo pidió la
+  verificación, no el diseño: el realm CLIENT del framework era **inverificable en juego**.
+  `corpus_selftest.lua` es shared, así que su concommand queda registrado en los dos realms y
+  en un listen server gana el del SERVER —tipearlo en la consola del host devuelve el bloque
+  `(SERVER)` y nunca llega al cliente—, y `lua_run_cl` no es salida porque lo gatea
+  `sv_allowcslua`, que viene en 0 y no se cambia por correr un test. Un nombre propio,
+  registrado solo `if CLIENT`, es lo único que no colisiona ni le toca la config al autor.
+  Sin gate de superadmin: corre en la máquina del que lo tipea, escribe en SU `data/` y limpia
+  lo que escribió. **[APLICADO 2026-07-26]** (fecha distinta a la de los otros cinco a
+  propósito: este parche nació de la ronda 2 y se confirmó al día siguiente)
+
+**Lo que esta tanda NO hace, a propósito:** no mueve un solo archivo (el layout de perfiles
+es un bloque posterior y toca solo el resolver), no migra a Caliber, Craving ni Coagulant
+(cada dueño lo decide cuando quiera, y el default los deja correctos mientras tanto — el
+`config`/`scav_weights` de Caliber es config de servidor sin declarar, y no rompe nada
+porque las dos rutas coinciden), y no inventa un gate de admin para el comando de purga:
+CRG-45 sigue esperando la primitiva de permisos, y por eso el dry-run es el default.
+
+**Deuda declarada por COR-18** (voto del autor, 2026-07-25): los dos sidecars JSON del
+caché de íconos de Cargo (`mesh_bounds.json`, `icons_meta.json`) SÍ son tablas de estado
+propio y SÍ caen adentro de la norma, y hoy no pasan por la primitiva. El motivo es del
+árbol y no de la comodidad: viven en `data/corpus/cargo/icons/` junto a los PNG que
+indexan, y el saneo de `key` bloquea el separador, así que `Corpus.Data` **no puede
+direccionar una subcarpeta**. Migrarlos hoy partiría el caché en dos lugares y movería
+archivos — justo lo que esta tanda no hace. El detalle vive en la nota de COR-18 en
+`ids.yaml`.
+
+Verificación offline: `dev/harness_cargo.py` **ALL GREEN en ambos realms, 389 checks**
+(eran 373); 16 nuevos ejercen la primitiva del framework desde el harness que ya lo carga
+—no existe `dev/harness_corpus.py`, y el precedente de acreditar una norma COR contra el
+harness de un módulo es COR-12 contra `harness_coagulant.py`—. Se corrigió de paso el stub
+de `file.Find`, donde `*` cruzaba carpetas y el engine no lo hace: sin ese arreglo, un
+`List` del harness veía archivos de subcarpetas que en juego no vería.
+Deuda anotada, no saldada: crear `dev/harness_corpus.py` propio y probar dónde quedaron
+los 46 checks históricos del framework que la foto de HOY sigue citando.
+EN JUEGO: planilla **T** — sección nueva y **primera planilla del framework** (decisión del
+autor: corpus estrena la suya; la de Cargo, con P/Q/R/S, es otra y vive en su propia URL).
+La letra T quedó registrada en `familias_excluidas` ANTES de usarse (FLU-30), y no se tomó
+Q/R/S porque están presupuestadas para Cargo.
+Planilla: https://claude.ai/code/artifact/fc204b66-e751-42a2-af8a-0c02429934bd
+T1 arranque limpio · T2 selftest server (las 7 líneas nuevas de data) · T3 el selftest deja el
+disco limpio · T4 selftest client · T5 **verificación negativa**: nada de lo viejo cambió ·
+T6 el catálogo `scope=config` sobrevive el reinicio · T7 la purga en dry run no borra nada ·
+T8 `confirm` borra solo los `inst_*` · T9 el inventario sobrevive a la purga.
+
+**RONDA 1 (2026-07-25) — el autor reportó los nueve en PASA, y se adjudicaron SIETE.** T1, T2,
+T3, T5, T6, T8 y T9 vuelven con evidencia que los respalda; los parches de arriba pasan a
+`[APLICADO]` por eso. **T4 y T7 quedan ABIERTOS**, y no por un defecto del código sino porque
+la corrida no ejerció lo que el check pide — lo dijeron sus propias notas, aplicando §7.3 (b):
+una cita se adjudica ABRIENDO la evidencia.
+  · **T4** — el bloque pegado dice `===== selftest (SERVER) =====` por segunda vez y le falta la
+    línea `[--] ui: check visual`, que solo se imprime `if CLIENT`. En un LISTEN SERVER el
+    concommand tipeado en la consola del host corre el realm SERVER. **La culpa es del header de
+    `corpus_selftest.lua`**, que afirmaba "consola del cliente: `corpus_selftest` (corre el realm
+    CLIENT)" — de ahí lo copió la planilla. El header queda corregido con lo observado y el check
+    pasa a `lua_run_cl Corpus._SelfTest()`. Es drift de un comentario de Lua bajando a un
+    artefacto de verificación: exactamente el vector de §7.2.
+  · **T7** — la consola devolvió `no quedan claves inst_* legacy`, que es el atajo de salida:
+    la carpeta todavía no tenía los `inst_*` (el autor los trajo de la papelera después, para
+    T8). La rama que hay que ver —listar sin borrar— no corrió. La preparación de la planilla
+    ahora dice que los archivos van PRIMERO, y qué salida significa que no estaban.
+**Ninguno de los dos deja el código en duda:** los dos caminos están verdes en el harness
+(`el DRY RUN no borra nada`, y la pasada CLIENT completa en ambos realms). Lo que falta es la
+evidencia EN JUEGO, y por eso la planilla los marca «re-correr» en vez de darlos por buenos.
+
+**RONDA 2 (2026-07-25) — T7 cerrado, T4 en ✗ y el ✗ tenía razón.** T7 volvió PASA. T4 devolvió
+"no veo nada en consola" con `lua_run_cl`, y ahí se vio que el problema no era la vía sino que
+**no había ninguna**: entre el registro shared que gana el server y `sv_allowcslua` en 0, el
+realm CLIENT del framework no se podía ejercer en juego de ninguna forma. Por eso el arreglo
+fue al CÓDIGO (PARCHE 6) y no a la planilla otra vez. Es el hallazgo más útil de la tanda, y no
+lo produjo un check verde: lo produjo insistir con el único que no lo estaba.
+Harness: **393 checks** (eran 389); los 4 nuevos fijan la asimetría —`corpus_selftest_cl`
+existe en CLIENT y NO en SERVER, que es justo lo que lo hace alcanzable—.
+
+**RONDA 3 (2026-07-26) — T4 en verde y la sección T cerrada 9/9.** El bloque que devolvió el
+autor trae el encabezado `===== selftest (CLIENT) =====` y la línea `[--] ui: check visual`,
+que en el realm SERVER no se imprime: esta vez la evidencia respalda al check. **Los seis
+parches quedan `[APLICADO]` y la tanda cierra.**
+
+**Lo que deja como método, y es lo más reusable de la tanda:** de los tres reportes, dos
+volvieron con checks marcados PASA que no habían corrido, y las dos veces los delató el CAMPO
+DE NOTAS —no el estado—. Si la planilla aceptara solo ✓/✗, como pedía el formato anterior al
+2026-07-14, T4 habría cerrado como verificado en la primera ronda y el realm CLIENT del
+framework seguiría siendo inverificable sin que nadie lo supiera. §1 PASO 4 (c) del flujo dice
+que un formulario de dos estados "tira a la basura justo lo más valioso"; acá se cobró la
+apuesta. El corolario operativo es §7.3 (b): un ✓ se adjudica ABRIENDO su evidencia, y el
+hallazgo más caro de esta tanda no salió de ningún check verde — salió de insistir con el
+único que no lo estaba.
