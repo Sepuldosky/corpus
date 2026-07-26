@@ -66,6 +66,7 @@ familias_excluidas:
   N: "ídem A — check suelto de Coagulant post-cierre (N1, mini-ronda 8). Registrado a posteriori en el barrido del 2026-07-25: se había usado sin pasar por FLU-30"
   O: "ídem A — sección de planilla de Coagulant (O1-O6, ronda del tramo chest/stomach). Mismo caso que N: registrado a posteriori"
   P: "IDs de check de planilla de Cargo (P1-P5) — primera sección del módulo, tanda B1 de persistencia"
+  Q: "ídem P — segunda sección de planilla de Cargo (Q1-Q5), tanda B3: el serializador único de dueño y el saneo de la entidad. Registrada ANTES de usarse (FLU-30); R y S siguen presupuestadas para B4 y B5"
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
@@ -1802,8 +1803,20 @@ ids:
     sede: "corpus-cargo/docs/Cargo_Architecture.md §12"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
-    nota: "Acuñada el 2026-07-25 (B1). Hoy hay un solo tipo de archivo de dueño (inv_<steamid64>), así que nada la ejerce todavía; el segundo —cont_<key> como archivo de dueño— llega en B3 y ahí consigue call site. El orden destino-antes-que-origen elige duplicar sobre perder: duplicar es el modo de falla seguro."
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — cont_<key> lleva sus blobs adentro y el unique sobrevive un reinicio completo del runtime con su condición (bloque B3)" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_containers.lua — Attach hidrata y Containers.Save renderiza, la misma rutina que corre el record" }
+    nota: "Acuñada el 2026-07-25 (B1) con evidencia INTENCION: había un solo tipo de archivo de dueño (inv_<steamid64>) y nada la ejercía. B3 (2026-07-26) le dio el segundo —cont_<key>— y con eso deja de ser intención: los dos dueños serializan por la misma rutina (Instances.RenderOwner/HydrateOwner). El orden destino-antes-que-origen elige duplicar sobre perder: duplicar es el modo de falla seguro."
+  CRG-59:
+    titulo: "El estado del mundo no va a disco salvo dueño persistente declarado (`persistKey`)."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_containers.lua — el `if not istable(cont) or not isstring(cont.persistKey) then return end` de Containers.Save; y las instancias de sesión, que solo viven en _live" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — un contenedor sin persistKey no escribe un solo archivo (bloque B3)" }
+      - { tipo: planilla, ref: "planilla Cargo, checks Q1 y Q2 — la crate con persistKey sobrevive el reinicio; el trader sin persistKey re-siembra en un mapa nuevo" }
+    nota: "Acuñada el 2026-07-26 (B3). La entry 42 se abstuvo de acuñarla a propósito para no fabricar una norma sin call site: B1 ya lo hacía de HECHO, pero su cláusula de excepción solo tiene sentido desde que el dueño persistente declarado guarda algo DISTINTO del efímero — antes los dos guardaban entradas sin blobs. Ratifica la decisión D1 del plan: el trader re-siembra stock en mapas nuevos; mantener inventario del mundo es propio de un savegame."
 
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
