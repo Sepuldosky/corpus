@@ -63,6 +63,7 @@ familias_excluidas:
   H: "ídem A — sección de planilla (H1-H8, rondas 5-6)"
   I: "ídem A — sección de planilla (I1-I4, ronda 6)"
   D: "'Block N' y las decisiones de diseño rotuladas (D1, D2… en las semillas y roadmaps) — provenance, no normas"
+  P: "IDs de check de planilla de Cargo (P1-P5) — primera sección del módulo, tanda B1 de persistencia"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
 # ningún repo. Es exactamente el error que FLU-27 nombra — enumerar desde un doc en
@@ -1579,7 +1580,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_cargo.py — round-trip JSON de quick slots en ambos realms" }
-    nota: "Es COR-8 con su remedio: Cargo es el único módulo que declara explícitamente cómo sobrevive a la normalización del round-trip."
+    nota: "Es COR-8 con su remedio: Cargo es el único módulo que declara explícitamente cómo sobrevive a la normalización del round-trip. Las claves del namespace son inv_<steamid64> y cont_<key> más el catálogo (autogen_defs, icon_overrides): inst_<uid> salió de la lista el 2026-07-25 (B1) porque el blob de instancia dejó de tener archivo propio — ver CRG-56."
   CRG-44:
     titulo: "Si el módulo dueño de una stat-bar no está montado, la barra simplemente no se registra: Cargo no conoce el contenido de cada barra, solo la renderiza."
     sede: "corpus-cargo/docs/Cargo_Architecture.md §11"
@@ -1707,6 +1708,36 @@ ids:
       selectivo (CRG-51). El banco repara zonas ROTAS; las placas (mecánica de campo,
       Cargo_Architecture §4) solo restauran zonas placables y no reparan una rota:
       dos dominios de reparación sin solapamiento.
+
+  # ── CRG-56..58 — Persistencia por dueño (tanda B1, 2026-07-25) ──────────────
+  # Acuñadas al rehacer §12: la medición sobre la data real del autor dio 354 huérfanas
+  # sobre 370 archivos. La causa no era la falta de un barredor sino que Instances.Create
+  # escribía sin saber de quién era la instancia. Plan madre: dev/PLAN_cargo_persistencia_gc.md
+
+  CRG-56:
+    titulo: "No existen archivos de instancia: el blob viaja embebido en el archivo de su dueño, bajo el campo `instances = { [uid] = blob }`."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — round-trip de record con unique en grid, equipado y sub-slot anidado" }
+      - { tipo: planilla, ref: "planilla Cargo, checks P2 y P5 — cero inst_* en el ciclo de vida de un ítem; el mundo no deja rastro (PASA 2026-07-25)" }
+    nota: "Acuñada el 2026-07-25 (B1). Deroga la forma 'un archivo por instancia' que §12 sostuvo hasta esa fecha: la medición sobre la data real dio 354 huérfanas sobre 370 archivos, todas estado de mundo que nunca debió persistirse. Cierra de paso roadmap #13 — Instances.Delete deja de hacer file.Delete y con eso desaparece la violación declarada de COR-3."
+  CRG-57:
+    titulo: "Instances._live es la única fuente de verdad en runtime; el campo `instances` del archivo es un render POR REFERENCIA, jamás una copia paralela."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — identidad por referencia rec.instances[uid] == Instances._live[uid] tras cargar" }
+    nota: "Acuñada el 2026-07-25 (B1). Es del tipo que un refactor 'defensivo' rompe en silencio — mismo riesgo que COR-7. Por eso lleva ID propio en vez de vivir dentro de CRG-56."
+  CRG-58:
+    titulo: "Una instancia nunca se referencia desde fuera del archivo de su dueño; el cambio de dueño MUDA el blob, escribiendo destino primero y origen después."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: "Acuñada el 2026-07-25 (B1). Hoy hay un solo tipo de archivo de dueño (inv_<steamid64>), así que nada la ejerce todavía; el segundo —cont_<key> como archivo de dueño— llega en B3 y ahí consigue call site. El orden destino-antes-que-origen elige duplicar sobre perder: duplicar es el modo de falla seguro."
 
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
