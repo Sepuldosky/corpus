@@ -56,6 +56,14 @@ las cuatro recetas que su propia acta dejó en §5):
 > **Editar el `.js` invalida el caché de resume** de cualquier corrida anterior. Es esperable
 > y no es un error: la próxima corrida arranca de cero.
 
+**Deuda de mantenimiento de la columna `total` — medida el 2026-07-26, y ya es crónica.** Las actas
+del 21-07 y del 22-07 volvieron a reportarla (1 y 3 docs desfasados); hoy son **20 de los 32**, y el
+peor es `cargo_roadmap.txt`: constante **573**, árbol **739** — **166 líneas** fuera del rango de su
+tramo. **No degrada una corrida**: la fase 0 «Conteo» deriva el número del árbol y arma los tramos
+con el real, no con la constante. Pero cada corrida paga la corrección en caliente, y una tabla que
+enumera lo que el árbol ya dice es el modo de falla que **FLU-27** existe para matar. Arreglo de
+raíz: que la tabla **no lleve `total`** y lo derive siempre.
+
 **Cadencia:** AUD-1 (SCOPED al cerrar cualquier sesión que escribió normas), AUD-2 (COMPLETO
 al cerrar un Block de módulo), AUD-3 (ningún gate corre con poco contexto: se difiere).
 
@@ -78,7 +86,9 @@ confusión costó 22 hallazgos después de declarar un doc limpio (§10.8 de su 
 | 2026-07-16b | SCOPED / piloto v2 | 4 | 2 confirmadas (MEDIA), 62 sin ID, 7 huecos. **La corrida pagó la trampa del caché**: `Workflow({name})` corrió el script viejo (~1,1M tokens) — de ahí la regla del `scriptPath` de arriba | [acta](2026-07-16b_coherencia_docs_PILOTO_v2.md) |
 | 2026-07-16c | PILOTO v3 (5 docs del framework) | 5 | **COMPLETA** (0 cobertura perdida) — 4 confirmadas, 0 bloqueantes, 86 sin ID, 56 sin alcance. Triadas el 2026-07-19: los 3 bucket A reparados, el 2.4 consolidado con el voto de COR-6 (votado y aplicado) | [acta](2026-07-16c_coherencia_docs_PILOTO_v3.md) |
 | 2026-07-20 | SCOPED / piloto (AUD-1, post D-12+D-13) | 5 | **ÍNTEGRA** (0 cobertura perdida: 32 agentes, 0 caídos) — **1 confirmada** (0 ALTA / 0 MEDIA / 1 BAJA / 0 bloqueantes), triage **1 A**, 0 divergencias yaml-vs-sede, 48 normativas sin ID, 1 de 5 docs sin ID propio (`corpus_roadmap.txt`). **Estreno de `ContratoArbol`**: 11 contratos verificados → 7 CUMPLIDO / 0 INCUMPLIDO / 2 PARCIAL / 2 NO_VERIFICABLE. 8 huecos, dos críticos (los docs vivos fuera del corpus; COR-12/13/14 ausentes del `CLAUDE.md` y su choque con COR-10) | [acta](2026-07-20_coherencia_docs_PILOTO.md) |
+| 2026-07-21 | SCOPED / piloto (AUD-1, post D-14) | 5 | **ÍNTEGRA** (0 cobertura perdida) — **0 confirmadas** (0 / 0 / 0 / 0), triage 0, 0 divergencias yaml-vs-sede, **38** normativas sin ID (bajaron de 48), 41 afirmaciones sin alcance, 1 de 5 docs sin ID propio (`corpus_roadmap.txt`). **`ContratoArbol`: 9 contratos → 8 CUMPLIDO / 0 INCUMPLIDO / 0 PARCIAL / 1 NO_VERIFICABLE** — los 2 PARCIAL del 07-20 quedaron reparados. 7 huecos, y el crítico es el mismo de siempre: **esta corrida DEMOSTRÓ el Hueco 1** — el hecho que cerró su única recomendación viva (D-14: COR-12 se queda) vivía en `corpus_estado.md`, editado ese mismo día y **fuera del corpus auditado**; lo trajo la adjudicación contra el árbitro, no el gate. Auditar los 5 docs estables y saltear el que muta cada sesión invierte el riesgo | [acta](2026-07-21_coherencia_docs_PILOTO.md) |
 | 2026-07-19 | **COMPLETO (AUD-2, 1.ª corrida)** | **29** | **ÍNTEGRA** (0 cobertura perdida, sin resumes: 145 agentes, 0 caídos) — **26 confirmadas** (6 ALTA / 13 MEDIA / 7 BAJA / 0 bloqueantes), triage del gate: **25 A + 1 B** (el GC del cadáver looteado, hallazgo 2.10 — voto del autor), 1 divergencia yaml-vs-sede, 844 normativas sin ID, 10 de 29 docs sin un solo ID (cobertura ciega declarada). Agentes en Opus 4.8, sesión fresca. Reparación: pendiente de su propia tanda | [acta](2026-07-19_coherencia_docs.md) |
+| 2026-07-22 | **COMPLETO (AUD-2, 2.ª corrida)** | **32** | **ÍNTEGRA** (0 cobertura perdida) — **2 confirmadas** (1 ALTA / 1 MEDIA / 0 BLOQUEANTE / 0 BAJA) **más 9 hechos falsos** del **pase de VALOR**, los 11 en **triage A** (0 B / 0 C / 0 CADUCO), 0 divergencias yaml-vs-sede, 268 normativas sin ID, 270 afirmaciones sin alcance, 8 docs sin un solo ID propio. Contrato-vs-árbol: **47 CUMPLIDO / 0 INCUMPLIDO / 2 PARCIAL / 5 NO_VERIFICABLE**. La ALTA: la Semilla del Block 3 de Coagulant presentaba `torso` como zona vigente cuando el árbol la había derogado el 21-07 — y su bullet hermano SÍ llevaba nota «DEROGADO», probando que dentro de un mismo doc un contrato congelado sin anotar se lee como vigente. **El pase de valor es la noticia de método**: 6 de sus 9 hechos falsos caen en los docs sin IDs, o sea justo donde el cruce de IDs es ciego. **Reparada el mismo día**: los 11 parches aplicados, con su tanda documentada en el CHANGELOG de cada repo tocado | [acta](2026-07-22_coherencia_docs.md) |
 
 **Costo medido del COMPLETO (2026-07-19):** 145 agentes / 8,31M tokens / 1.245 tool uses /
 ~44 min para 29 docs — dentro de la estimación de 8-10M. Limpio a la primera (0 resumes);
