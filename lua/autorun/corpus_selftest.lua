@@ -2,8 +2,16 @@
 -- Comando de validación estilo auto-test de ADS (ads_armor.lua): cubre el PASO 4
 -- del flujo de trabajo sin armar el escenario a mano. Uso:
 --   consola del server dedicado (o rcon):  corpus_selftest
---   consola del cliente:                   corpus_selftest   (corre el realm CLIENT)
---   listen server, realm SERVER:           lua_run Corpus._SelfTest()
+--   listen server, realm SERVER:           corpus_selftest, o lua_run Corpus._SelfTest()
+--   listen server, realm CLIENT:           corpus_selftest_cl
+-- POR QUÉ HAY DOS NOMBRES, y no es cosmético (pagado en juego el 2026-07-25,
+-- planilla T4, dos rondas): este archivo es shared, así que `corpus_selftest`
+-- queda registrado en los DOS realms y en un listen server gana el del SERVER —
+-- tipearlo en la consola del host devuelve el bloque (SERVER) y jamás llega al
+-- cliente. `lua_run_cl` tampoco es salida: lo gatea `sv_allowcslua`, que viene
+-- en 0 y no se cambia por correr un test. Sin un nombre propio, el realm CLIENT
+-- del framework era INVERIFICABLE en juego, que es como un check verde terminó
+-- reportando dos veces el mismo realm.
 -- El tab de UI (primitiva 4) se verifica visual: menú Q → Utilities → Corpus.
 
 Corpus = Corpus or {}
@@ -36,6 +44,34 @@ function Corpus._SelfTest()
         istable(cargado) and cargado.hola == "mundo" and cargado.n == 42)
     check(r, "data: ruta", file.Exists("corpus/selftest/prueba.json", "DATA"),
         "data/corpus/selftest/prueba.json")
+
+    -- 2b) List y Delete. El bloque deja el namespace `selftest` LIMPIO al
+    -- terminar: un selftest que ensucia el disco del autor es un defecto.
+    local claves = Corpus.Data.List("selftest")
+    local vista = false
+    for _, k in ipairs(claves) do
+        if k == "prueba" then vista = true end
+    end
+    check(r, "data: List encuentra la clave escrita", vista,
+        "claves: " .. table.concat(claves, ", "))
+    check(r, "data: Delete devuelve true si existía",
+        Corpus.Data.Delete("selftest", "prueba") == true)
+    check(r, "data: Delete devuelve false si no existía",
+        Corpus.Data.Delete("selftest", "prueba") == false)
+    check(r, "data: Load post-Delete devuelve nil",
+        Corpus.Data.Load("selftest", "prueba") == nil)
+
+    -- 2c) Scope (COR-19): round-trip declarando config, y la constatación de que
+    -- HOY los dos scopes resuelven a la misma ruta a propósito — el gancho de
+    -- perfil está puesto, no activado.
+    Corpus.Data.Save("selftest", "scoped", { s = 1 }, { scope = "config" })
+    check(r, "data: scope config round-trip",
+        istable(Corpus.Data.Load("selftest", "scoped", { scope = "config" })))
+    check(r, "data: los dos scopes resuelven igual por ahora",
+        istable(Corpus.Data.Load("selftest", "scoped")))
+    check(r, "data: scope desconocido tira error",
+        pcall(Corpus.Data.Load, "selftest", "scoped", { scope = "partida" }) == false)
+    Corpus.Data.Delete("selftest", "scoped", { scope = "config" })
 
     -- 3) Net: nombre namespaced; se registra DOS veces para confirmar que
     -- repetir el registro no tira error de red duplicada
@@ -70,3 +106,13 @@ concommand.Add("corpus_selftest", function(ply)
     if SERVER and IsValid(ply) and not ply:IsSuperAdmin() then return end
     Corpus._SelfTest()
 end)
+
+-- Alias CLIENT-only. Nombre propio a propósito: es lo único que no colisiona con
+-- el registro del server en un listen server (ver el header). Sin gate de
+-- superadmin porque no hay a quién proteger — corre en la máquina del que lo
+-- tipea, escribe en SU data/ y limpia lo que escribió.
+if CLIENT then
+    concommand.Add("corpus_selftest_cl", function()
+        Corpus._SelfTest()
+    end)
+end
