@@ -1580,7 +1580,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_cargo.py — round-trip JSON de quick slots en ambos realms" }
-    nota: "Es COR-8 con su remedio: Cargo es el único módulo que declara explícitamente cómo sobrevive a la normalización del round-trip. Las claves del namespace son inv_<steamid64> y cont_<key> más el catálogo (autogen_defs, icon_overrides): inst_<uid> salió de la lista el 2026-07-25 (B1) porque el blob de instancia dejó de tener archivo propio — ver CRG-56."
+    nota: "Es COR-8 con su remedio: Cargo es el único módulo que declara explícitamente cómo sobrevive a la normalización del round-trip. Las claves del namespace, derivadas del árbol y no de la prosa (§7.2): inv_<steamid64>, cont_<key> y trader_<key> como estado de partida, más el catálogo (autogen_defs, icon_overrides). inst_<uid> salió de la lista el 2026-07-25 (B1) porque el blob de instancia dejó de tener archivo propio — ver CRG-56; trader_<key> faltaba desde antes, y es el caso de manual de FLU-27: la lista se venía copiando entre docs en vez de derivarse de un grep."
   CRG-44:
     titulo: "Si el módulo dueño de una stat-bar no está montado, la barra simplemente no se registra: Cargo no conoce el contenido de cada barra, solo la renderiza."
     sede: "corpus-cargo/docs/Cargo_Architecture.md §11"
