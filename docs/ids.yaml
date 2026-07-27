@@ -70,6 +70,7 @@ familias_excluidas:
   R: "ídem P — tercera sección de planilla de Cargo (R1-R5), tanda B4: el savegame de GMod. Registrada ANTES de usarse (FLU-30); S sigue presupuestada para B5"
   S: "ídem P — cuarta sección de planilla de Cargo (S1-S5), tanda B5: el export/import LAN. Registrada ANTES de usarse (FLU-30). Con ella el plan de persistencia agota su presupuesto de planilla (P=B1, Q=B3, R=B4, S=B5); B6 quedó diferido a Cortex y no reserva letra"
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
+  U: "ídem P — quinta sección de planilla de Cargo (U1-U6, cerrada 6/6 el 2026-07-27), roadmap #47: las NVG de Neosun como ítems (la señal genérica de equipamiento, los defs derivados y la captura de la entidad de mundo). Registrada ANTES de usarse (FLU-30); nació con cinco checks y la 2.ª pasada le sumó el U6, sin reciclar números (FLU-07). Es la primera de Cargo que NO es del plan de persistencia — ése agotó su presupuesto en P/Q/R/S. La T no se recicla: es de corpus y es otra planilla"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
 # ningún repo. Es exactamente el error que FLU-27 nombra — enumerar desde un doc en
@@ -1864,6 +1865,54 @@ ids:
       y nombrada, no una segunda ruta—; la fila de §13 que declaraba la espera del respawn como
       frontera aceptable desapareció porque el juego mostró que no lo era.
 
+  CRG-62:
+    titulo: "Cargo difunde que un slot de equipamiento cambió; la semántica de ese cambio vive en el consumidor, nunca en el inventario."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua — Corpus_Cargo_EquipChanged en Equip/Unequip/DropEquipped/RegiveEquipped y Corpus_Cargo_SubSlotChanged en SubSlotAttach/SubSlotDetach; el único oyente vive en server/corpus_cargo_nvg.lua" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque #47: un oyente registrado recibe el slot y el def por CADA puerta, y la reversión de cada hook.Run pone en rojo el check que la nombra" }
+      - { tipo: planilla, ref: "planilla Cargo, checks U2 y U3 en PASA (2026-07-27) — las gafas se ven al montarlas en el sub-slot del casco y al ocupar Head directo, que son las dos señales; y U6, que ejerce las mismas dos puertas desde el arrastre" }
+    nota: >
+      Acuñada el 2026-07-26 (roadmap #47). Es CRG-1 aplicado al equipamiento: hasta hoy
+      Equip/Unequip solo daban y quitaban weapon_class y la única difusión era
+      Corpus_Cargo_BodyChanged, exclusiva del slot body; los sub-slots no difundían nada.
+      Sin esa señal no había dónde colgar una integración de equipamiento, y por eso el
+      hueco era de Cargo y no del mod que lo destapó. Corpus_Cargo_BodyChanged sigue vivo
+      y SIN CAMBIOS —su firma es contrato vivo del lector de disfraz del roadmap #10—: la
+      señal genérica se dispara ADEMÁS, nunca en su lugar. Descartado con su razón escrita:
+      def.onEquip/onUnequip en el contrato de ítem, que es más potente pero mete una closure
+      por def en un contrato que hoy tiene exactamente una (onUse) y obliga a que 61 defs
+      derivados carguen la misma función. Las PUERTAS son CINCO y no cuatro: el diseño contaba
+      Equip/Unequip/SubSlotAttach/SubSlotDetach, y el árbol mostró que DropEquipped no pasa
+      por Unequip —manipula rec.equip y difunde por su cuenta, como el BodyChanged existente
+      ya hacía en sus dos salidas—; se suma también el reconciliador de WeaponDrop de
+      capture.lua, que es donde se vacía el slot al soltar el arma en la mano. Y RegiveEquipped
+      difunde con slotId nil, que significa "se re-aplicó todo": es la puerta del respawn, y
+      existe para que un oyente con estado de jugador no tenga que enganchar PlayerLoadout y
+      apostar al orden de hooks — el bug que Quick Loadouts ya le costó a este repo.
+  CRG-63:
+    titulo: "Un identificador de un tercero que sea POSICIONAL (un ordinal de su tabla) no se persiste jamás: se persiste su clave estable y el ordinal se resuelve en el momento de usarlo."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_nvg.lua — el def lleva nvg_shortname y NVG.OrdinalOf resuelve contra ArcticNVGs_ShortNameToID en cada llamada; nada del ordinal llega a Items.Register" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque #47: insertar una variante en el medio de la tabla stub CORRE el ordinal y el jugador sigue con las MISMAS gafas; y lo que llega a disco es el def id, no el número" }
+      - { tipo: planilla, ref: "planilla Cargo, check U4 en PASA (2026-07-27) — tras cambiar de mapa las gafas equipadas siguen puestas y son la MISMA variante, no otra" }
+    nota: >
+      Acuñada el 2026-07-26 (roadmap #47). Mismo espíritu que CRG-42 (SWEP.Slot no es la
+      señal): no persistir un dato que el tercero puede reordenar. El hecho que la origina
+      está medido contra el código vivo del mod (CRG-24): ply:GetNWInt("nvg") guarda el ÍNDICE
+      de ArcticNVGs, no un nombre, y el propio mod construye su índice inverso con `pairs`
+      sobre un array (sh_arctic_nvg.lua:2583-2587) — dos razones para no tratar el ordinal
+      como contrato. Un parche que inserte una variante en el medio corre todos los índices
+      posteriores, así que un ordinal persistido es un ítem que un día amanece siendo otras
+      gafas. Corolario que el mismo call site paga: el ordinal se VALIDA antes de escribirse,
+      porque el mod no lo hace y un nombre inexistente baja a SetNWInt("nvg", nil), que es un
+      error de argumento.
+
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
   STK-1:
@@ -1958,12 +2007,14 @@ salud:
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 216
+  total: 218
   intencion: 55          # 25% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-07-26 (la tanda B5, export/import LAN).
-  # El bloque venía de la corrida del 2026-07-25 (213/56) y B4 no lo refrescó al acuñar
-  # CRG-60, que es justo lo que su propio comentario prohíbe: se copia en CADA tanda que
-  # toque el registro, no cuando alguien se acuerda.
+  # Copiado de la corrida del checker del 2026-07-26 (roadmap #47, las NVG de Neosun como
+  # ítems: CRG-62 y CRG-63, ninguna INTENCION — las dos nacen con código, harness y
+  # planilla presupuestada). Antes venía de la corrida del mismo día para B5 (216/55), y
+  # antes de la del 2026-07-25 (213/56), que B4 no refrescó al acuñar CRG-60 — justo lo que
+  # este comentario prohíbe: se copia en CADA tanda que toque el registro, no cuando alguien
+  # se acuerda.
   referencia_kontrol: "159 INTENCION de 214 (74%) al backfillear"
   nota: >
     Línea base del barrido inicial: 27% de INTENCION contra el 74% con que arrancó
