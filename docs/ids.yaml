@@ -68,6 +68,7 @@ familias_excluidas:
   P: "IDs de check de planilla de Cargo (P1-P5) — primera sección del módulo, tanda B1 de persistencia"
   Q: "ídem P — segunda sección de planilla de Cargo (Q1-Q5), tanda B3: el serializador único de dueño y el saneo de la entidad. Registrada ANTES de usarse (FLU-30); R y S siguen presupuestadas para B4 y B5"
   R: "ídem P — tercera sección de planilla de Cargo (R1-R5), tanda B4: el savegame de GMod. Registrada ANTES de usarse (FLU-30); S sigue presupuestada para B5"
+  S: "ídem P — cuarta sección de planilla de Cargo (S1-S5), tanda B5: el export/import LAN. Registrada ANTES de usarse (FLU-30). Con ella el plan de persistencia agota su presupuesto de planilla (P=B1, Q=B3, R=B4, S=B5); B6 quedó diferido a Cortex y no reserva letra"
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
@@ -1830,6 +1831,39 @@ ids:
       - { tipo: planilla, ref: "planilla Cargo, checks R1-R5 en 5/5 (2026-07-26, cuatro rondas) — la crate vuelve con su loot y con el sub-slot anidado, el trader con stock mermado y wallet, el drop `corpus_cargo_item` con su blob; R3 es el contraintuitivo: la mochila NO retrocede" }
     nota: "Acuñada el 2026-07-26 (B4). Es la contrapartida declarada de CRG-43: el inventario es por SteamID64 y sin noción de mapa, así que cruza de nivel en nivel Y de partida en partida. Ninguna línea la implementa —el record no es una entidad y no viaja por la cadena del duplicator— y ése es el punto: la norma existe para que nadie lo meta ahí y para que el tester no reporte como bug que su mochila no volvió. Decisión del autor de la misma tanda: cuando un contenedor con persistKey discrepa entre su archivo y el savegame, MANDA EL SAVEGAME (cont_<key> declara scope save — COR-19). Alcance medido en las rondas 3-4: la norma rige sobre las entidades SCRIPTEADAS de Cargo (crate, trader, el drop corpus_cargo_item), que vuelven con su tabla Lua completa. En el SWEP real que deja el drop de un arma la tabla no vuelve en absoluto, así que ese caso queda declarado y ACEPTADO por el autor en la fila de §13, no cubierto acá."
 
+  CRG-61:
+    titulo: "El import de un personaje está apagado por default y todo lo que llega del cliente se sanea server-side; es la única inversión de CRG-6 del módulo y va bajo llave."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §12.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_lan.lua — la convar cargo_import_enabled nace en 0, el gate de admin, la whitelist donde vacía = nadie, el rate-limit y SanitizeRecord entrada por entrada" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque B5: un import con la convar en 0 se rechaza (y también sin admin, fuera de whitelist, con formato viejo, con origen ajeno y por encima del tope); uno con una def desconocida descarta esa entrada y conserva el resto" }
+      - { tipo: planilla, ref: "planilla Cargo, checks S1-S5 en 5/5 (2026-07-26, dos rondas) — S3 (convar en 0) y S4 (fuera de whitelist) son de RECHAZO y dejaron su línea de motivo en consola; S2 descartó una def desconocida y conservó el resto; S5 negativa" }
+    nota: >
+      Acuñada el 2026-07-26 (B5, entries 48-49 de Cargo). Es el único de los 23 net.Receive
+      de SERVIDOR del módulo que recibe ESTADO y no un intent: los otros 21 los protege
+      CRG-6 —el server posee el inventario, un intent hostil se valida contra el estado real
+      y no fabrica nada— y NET_ICON_OVERRIDE es el que espera gate y no lo tiene (CRG-45).
+      La convar, el gate y la whitelist NO son adorno: son la condición de que la inversión
+      sea aceptable, y bajar el default a 1 rompe la norma, no un valor. El receptor se
+      registra SIEMPRE aunque la convar esté en 0 y descarta en la primera línea, porque un
+      receptor que no existe no tiene dónde imprimir POR QUÉ rechazó — corolario directo del
+      hallazgo de B4, donde el dato decisivo fue una línea de log que nunca imprimió.
+      Decisiones del autor de la misma tanda: el import REEMPLAZA el record (con respaldo
+      previo, destino primero como CRG-58) y el dinero viaja sólo con el provider nativo en
+      AMBOS lados. Dos fronteras declaradas en §13: el gate de admin es LOCAL y provisional
+      —espera la primitiva de permisos de CRG-45, y lo provisional es cómo se pregunta quién
+      es admin, no la convar ni la whitelist—, y un arma equipada que llega en un import
+      vuelve a la mano en el próximo respawn. El re-uid NO es código nuevo: reusa
+      Instances.Remint (CRG-60). Y una medición reemplazó al chunking que el plan madre daba
+      por hecho: un record pesado pero realista mide 15.770 bytes, así que lo que hace falta
+      es un TOPE que rechace con motivo, no trocear. La planilla (5/5, dos rondas) agregó una
+      corrección que la tanda había declarado mal: el import deja las armas equipadas EN LA MANO
+      en el acto, corriendo Inventory.RegiveEquipped —la MISMA rutina del hook de spawn, extraída
+      y nombrada, no una segunda ruta—; la fila de §13 que declaraba la espera del respawn como
+      frontera aceptable desapareció porque el juego mostró que no lo era.
+
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
   STK-1:
@@ -1917,18 +1951,19 @@ ids:
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-07-25
+  fecha: 2026-07-26
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 213
-  intencion: 56          # 26% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-07-25 (la tanda de Corpus.Data).
-  # El bloque venía de la línea base del 2026-07-16 (189/51) y no se había vuelto a
-  # copiar desde entonces, que es justo lo que su propio comentario prohíbe.
+  total: 216
+  intencion: 55          # 25% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-07-26 (la tanda B5, export/import LAN).
+  # El bloque venía de la corrida del 2026-07-25 (213/56) y B4 no lo refrescó al acuñar
+  # CRG-60, que es justo lo que su propio comentario prohíbe: se copia en CADA tanda que
+  # toque el registro, no cuando alguien se acuerda.
   referencia_kontrol: "159 INTENCION de 214 (74%) al backfillear"
   nota: >
     Línea base del barrido inicial: 27% de INTENCION contra el 74% con que arrancó
