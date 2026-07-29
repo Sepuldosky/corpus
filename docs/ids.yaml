@@ -72,6 +72,7 @@ familias_excluidas:
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
   U: "ídem P — quinta sección de planilla de Cargo (U1-U6, cerrada 6/6 el 2026-07-27), roadmap #47: las NVG de Neosun como ítems (la señal genérica de equipamiento, los defs derivados y la captura de la entidad de mundo). Registrada ANTES de usarse (FLU-30); nació con cinco checks y la 2.ª pasada le sumó el U6, sin reciclar números (FLU-07). Es la primera de Cargo que NO es del plan de persistencia — ése agotó su presupuesto en P/Q/R/S. La T no se recicla: es de corpus y es otra planilla"
   V: "ídem P — sexta sección de planilla de Cargo (V1-V9), roadmap #46: las luces en el wheel (el tercer grupo de chips — linterna por intent propio, NVG con tránsito CRG-64, dispositivos ARC9 por ToggleStat/PostModify, el empuje de anclaje y la negativa de ausencia). Registrada ANTES de usarse (FLU-30), en el mismo parche que la acuña (entry 53); nació con seis checks y la planilla entregada le sumó V7-V9, los candidatos del USO, sin reciclar números (FLU-07 — la lección de #47: la planilla mide lo que se propuso medir, el uso mide lo que falta; V7 lleva además la medición pendiente de la diferida (h)). Es la otra mitad del frente de #47: aquella planilla midió POSEER, ésta mide ACCIONAR"
+  W: "ídem P — séptima sección de planilla de Cargo, roadmap #48: la celda ancha del grupo de luces (la diferida (g) del #46, con el bloque 06 del mock como sede) — la celda ancha con anclaje left y con right, la DEGRADACIÓN sola a 56×56 con top/bottom en el mismo build, el empuje compartiendo lado, la negativa con la convar en 0 y la superficie del #46 intacta. Registrada ANTES de usarse (FLU-30), en el mismo parche que escribe la celda. Nace con los checks del paso 1 (la celda ancha); el paso 2 de la tanda —el click, ADITIVO a CRG-31— está BLOQUEADO por su incógnita (si gui.EnableScreenClicker deja leer el estado del mouse por debajo) y, cuando se escriba, SUMA checks a esta misma sección sin reciclar números (FLU-07)"
 # Nota de método: la primera versión de esta tabla listaba J/K/L/M, copiados del
 # EJEMPLO del handoff ("planilla Caliber, check J4"). Esas letras no existen en
 # ningún repo. Es exactamente el error que FLU-27 nombra — enumerar desde un doc en
@@ -1153,6 +1154,15 @@ ids:
     evidencia:
       - { tipo: codigo, ref: "git log de corpus-coagulant — los alcances realmente usados" }
     nota: "Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6. `chore` NO es un alcance sino un tipo (§2) — el propio CLAUDE.md lo aclara porque la confusión ya se cometió."
+  COA-37:
+    titulo: "La venda aplica a toda herida ABIERTA (not treated), no solo a las que sangran; el sangrado manda sobre la severidad al elegir cuál."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §7"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_coagulant.py — el circuito completo de una contusión (venda la cierra, el medkit deja el score en 0) y el orden: balazo leve antes que moretón medio, ni una contusión en SEVERITY_MAX le gana a un sangrado" }
+      - { tipo: planilla, ref: "Coagulant — 2026-07-29, 5/5: checks 1-3 y 5 ✓ en la primera pasada (la contusión se venda y el medkit la borra); el 4 ✗ destapó el orden invertido y ✓ en la re-pasada tras corregirlo (balazo leve antes que moretón medio)" }
+    nota: "Acuñada el 2026-07-29. Con el criterio viejo ('¿sangra?') la contusión —mult 0.0— era invendable, y como el medkit solo borra lo ya TRATADO (COA-21), incurable: pesaba entera en cojera/sway/visión hasta morir, y una caída dejaba cojera permanente. Es la salida (1) de las tres que ACE3 le da al trauma cerrado; las otras dos —dolor con analgésico, fractura con férula— siguen diferidas por §1. El diferimiento a medias es la causa: la contusión quedó con ENTRADA al sistema (crea herida, suma al score) y sin ninguna salida. El ORDEN de la norma se corrigió el mismo día tras la pasada del autor (check 4 ✗): la primera redacción hacía dominar la severidad y el sangrado desempatar, y con un balazo leve más un moretón medio la venda atendía el moretón. Manda el sangrado — hemorragia primero, como en la doctrina de trauma real; un moretón nunca mata. El peso se deriva de SEVERITY_MAX (COA-35)."
 
   # ── CRV — Craving ───────────────────────────────────────────────────────────
 
