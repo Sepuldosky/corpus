@@ -73,6 +73,7 @@ familias_excluidas:
   U: "ídem P — quinta sección de planilla de Cargo (U1-U6, cerrada 6/6 el 2026-07-27), roadmap #47: las NVG de Neosun como ítems (la señal genérica de equipamiento, los defs derivados y la captura de la entidad de mundo). Registrada ANTES de usarse (FLU-30); nació con cinco checks y la 2.ª pasada le sumó el U6, sin reciclar números (FLU-07). Es la primera de Cargo que NO es del plan de persistencia — ése agotó su presupuesto en P/Q/R/S. La T no se recicla: es de corpus y es otra planilla"
   V: "ídem P — sexta sección de planilla de Cargo (V1-V9), roadmap #46: las luces en el wheel (el tercer grupo de chips — linterna por intent propio, NVG con tránsito CRG-64, dispositivos ARC9 por ToggleStat/PostModify, el empuje de anclaje y la negativa de ausencia). Registrada ANTES de usarse (FLU-30), en el mismo parche que la acuña (entry 53); nació con seis checks y la planilla entregada le sumó V7-V9, los candidatos del USO, sin reciclar números (FLU-07 — la lección de #47: la planilla mide lo que se propuso medir, el uso mide lo que falta; V7 lleva además la medición pendiente de la diferida (h)). Es la otra mitad del frente de #47: aquella planilla midió POSEER, ésta mide ACCIONAR"
   W: "ídem P — séptima sección de planilla de Cargo, roadmap #48: la celda ancha del grupo de luces (la diferida (g) del #46, con el bloque 06 del mock como sede) — la celda ancha con anclaje left y con right, la DEGRADACIÓN sola a 56×56 con top/bottom en el mismo build, el empuje compartiendo lado, la negativa con la convar en 0 y la superficie del #46 intacta. Registrada ANTES de usarse (FLU-30), en el mismo parche que escribe la celda. Cerrada **10/10 el 2026-07-29 en dos rondas**. Nació con siete (W1 la medición + W2-W7 el paso 1) y la 2.ª ronda le sumó W8-W10 para el click, **sin reciclar números** (FLU-07). W3 y W6/W10 son los de ausencia y negativa. Dos cosas quedan dichas: los seis del paso 1 pasaron **sin nota** —la regla del #46 no se ejercitó, y el hueco que dejó (la resolución de pantalla de W4) lo cerró el autor después: **16:9**, con el 4:3 declarado y sin medir—; y **W1 costó una ronda por el INSTRUMENTO y no por el motor**, porque la primera sonda contaba los clicks pero no dibujaba nada. La lección de método de la sección: el hallazgo salió de **revertir el arreglo**, no de la corrida verde — **la reversión es el único instrumento que audita al instrumento**"
+  AB: "ídem P — duodécima sección de planilla de Cargo, roadmap #53: la configuración ARC9 viaja con el arma. Registrada ANTES de usarse (FLU-30) y con DOS letras, porque el alfabeto de una se agotó en la Z y no se recicla ninguna (FLU-07). **AB1 es una MEDICIÓN y va primera**: si `wep.Attachments` es por entidad o compartida por clase, que es la precondición de la que depende la forma del bloque entero — si resulta compartida, el invariante pedido (la config pertenece a la INSTANCIA) es inalcanzable y la frontera se declara medida en §13 en vez de suponerse. Su instrumento es `cargo_dev_attshare`, y nació corrigiendo la receta del handoff: un jugador sostiene UN SWEP por clase (capture.lua ya lo pagó en juego), así que las dos armas no pueden estar las dos en el inventario — tienen que ser dos ENTIDADES vivas, una en la mano y otra en el suelo. El comando reporta la AUSENCIA como ausencia: encontrar una sola entidad, o dos peladas coincidiendo en nada, sale como NO CONCLUYENTE y no como un resultado. **CERRADA el 2026-07-31 en TRES rondas: 12 en PASA (AB1-AB7, AB9-AB13), AB8 RETIRADO por decisión y AB14 SIN CORRER** — la primera sección del módulo que cierra con un check que nunca se corrió, y se dice así a propósito. **AB8 no falló, se le retiró la premisa**: medía el peso de los atts, el autor diagnosticó que el defecto estaba en el MODELO y no en el número (su MCX de 2,9 kg lleva doce attachments) y el peso se difirió al #55 — un check cuya conducta esperada se retira no es un rojo pendiente, y confundirlos deja deuda fantasma en el registro. **AB13 cerró por la vía NEGATIVA y no por la resta que pedía su ACCIÓN**, y la diferencia es de evidencia, no de redacción: botados los repuestos, el volcado dio grid=0 y hook=0 en las siete líneas y el menú C dejó de ofrecerlos, lo que prueba que el puente contesta lo que el grid tiene y que no hay un tercer inventario — pero **esa misma acción destruyó la precondición de la resta**, y con ella la de AB14, que iba a leer el mismo gesto por la otra mitad. De ahí la lección de la sección, que es la contracara de la de la ronda 2: **un instrumento no debe afirmar lo que no puede medir** (`cargo_dev_attstock` gritaba 'duplicación' sobre una foto que no distingue una copia de un repuesto, y costó una ronda entera de diagnóstico equivocado) **y un check no se marca por la medición de otra cosa**. La frontera de la entry 64 queda declarada en el CHANGELOG en vez de disimulada"
   AA: "ídem P — undécima sección de planilla de Cargo, roadmap #52: el commit sobre una fuente tapada se rechaza y lo dice con un destello. **El espacio de una letra se agotó en la Z**, así que sigue con DOS letras (AA, AB…) — no se recicla ninguna (FLU-07), que es todo el motivo por el que hizo falta ampliar el alfabeto en vez de volver a empezar. Registrada ANTES de usarse (FLU-30). Nació de la NOTA de Z3, un check que PASÓ — séptima vez en el arco, y esta vez el hallazgo corrigió una DECISIÓN DE DISEÑO y no un defecto. **Cerrada 3/3 el 2026-07-30, y con ella el arco #48-#52 entero**: 23 checks en cinco secciones, ninguna ronda perdida por un defecto de código. **Es la primera del arco que NO abrió un bloque nuevo** — las siete anteriores terminaron con una nota que abría el siguiente, y ésta no; la cadena se detuvo sola y no por dejar de mirar, porque su check negativo recorrió las cinco tandas a propósito"
   Z: "ídem P — décima sección de planilla de Cargo, roadmap #51: la linterna del engine se pinta TAPADA cuando el arma en mano lleva un dispositivo ARC9. Registrada ANTES de usarse (FLU-30). Nació de la NOTA de Y3, un check que PASÓ — sexta vez en el arco. Mide el tramado con y sin dispositivo, que el estado NO se falsee a OFF, y que la superficie de las cuatro tandas anteriores siga intacta"
   Y: "ídem P — novena sección de planilla de Cargo, roadmap #50: el botón derecho cicla en reversa el dispositivo ARC9. Registrada ANTES de usarse (FLU-30), en el mismo parche que la escribe. Nació de la NOTA de X1, un check que PASÓ — quinta vez en el arco. Mide la reversa sobre el arma real, la AUSENCIA (una fuente sin reversa no responde y sobre todo no cae hacia adelante) y que el gesto de siempre siga intacto"
@@ -1956,9 +1957,65 @@ ids:
       EquipDelay de la variante (1,325 s en las GPNVG) ANTES de invertir nvg_on y avisar al
       server — un chip que pintara la NW mostraría el estado viejo más de un segundo. La
       duración jamás se hornea: se lee de la tabla viva del mod por variante, y es
-      direccional — ninguna variante declara UnequipDelay, así que el apagado invierte sin
-      ventana. La ventana rastrea solo el commit propio: un toggle disparado por la tecla
-      del mod es invisible para el chip y se pinta como diga la NW (CRG-32: nada se inventa).
+      direccional — las 12 variantes `shades*` (las aviators) declaran UnequipDelay = 0.25 y
+      las de tubo no, así que el apagado abre ventana o no SEGÚN LA VARIANTE. (Esta nota decía
+      "ninguna variante declara UnequipDelay"; corregido el 2026-07-30 al re-derivarlo del mod
+      — la 1.ª pasada del #46 leyó las GPNVG y generalizó de una muestra. La corrección ya
+      estaba en la sede desde la ronda 3 de la planilla V y el registro se la había perdido;
+      el código nunca compartió el error, porque siempre leyó variant.UnequipDelay con una
+      rama por dirección.) La ventana rastrea solo el commit propio: un toggle disparado por
+      la tecla del mod es invisible para el chip y se pinta como diga la NW (CRG-32: nada se
+      inventa).
+  CRG-65:
+    titulo: "\"No entra\" nunca significa \"se destruye\": si un flujo le entrega a Cargo un objeto que ya sacó de otra parte y el inventario lo rechaza, el objeto cae al mundo como ítem."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua — Inventory.GiveOrDrop es la ruta única y devuelve si cayó al piso; sus dos consumidores son el hook ARC9_PlayerGiveAtt (shared/corpus_cargo_arc9.lua) y el sobrante del espejo del pool (server/corpus_cargo_ammopool.lua)" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque CRG-65: con el grid al tope el objeto NO entra al grid y SÍ existe en el suelo, entero (el ledger); ídem para un unique, que cae con su blob acuñado; la ausencia (def desconocida no fabrica entidad); y el sitio real del pool, con las tres granadas en el piso" }
+      - { tipo: planilla, ref: "planilla Cargo, sección AB check AB7 (2026-07-31) — el sitio del puente ARC9 es el único que el harness no puede ejercer (sus hooks se cablean dentro del OnReady, donde ARC9 es nil offline), así que se midió en juego: «bote el magazine de mi asval mod4 y se cayo tanto la municion como el item»" }
+    nota: >
+      Acuñada el 2026-07-30 (roadmap #53, decisión del autor). Es CRG-9 por la otra puerta: no
+      un flujo que destruye un ítem con sub-slots ocupados, sino un flujo que destruye el ítem
+      que le entregaron. La línea que la hace aplicable: RECHAZAR una acción y avisar es
+      correcto (walk+use sobrecargado deja el arma en el suelo — de ahí no se sacó nada);
+      CONSUMIR el objeto y avisar es el defecto, y solo esa forma pasa por GiveOrDrop. El
+      aviso no es el remedio: un objeto que ya no existe no deja de no existir porque se haya
+      impreso una línea. Los DOS sitios que la acuñan la violaban con un comentario encima
+      afirmando lo contrario, lo que deja el corolario de verificación: el check que distingue
+      no es "el grid no creció" —eso pasa igual si el objeto se evaporó— sino el LEDGER, ver
+      el objeto existiendo en el suelo. Medido: revertir el sitio del pool deja en rojo
+      exactamente ese check y los otros dos del bloque siguen verdes.
+
+  CRG-66:
+    titulo: "Lo que está acoplado a un ítem pesa, y pesa recursivamente; hoy el alcance vigente es el contenido de los sub-slots, y el árbol de attachments está DIFERIDO por decisión del autor."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §5"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_instances.lua — Instances.WeightOf recorre blob.subslots recursivamente y NO suma blob.atts (el comentario que cierra la función declara por qué, con el número que lo decidió); Instances.AttsWeight es la rama recursiva escrita y sin llamar, y es donde el filtro por categoría del #55 se enchufa. No hay una segunda suma de peso en ninguna parte" }
+      - { tipo: harness, ref: "dev/harness_cargo.py — bloque #53(peso): el rifle pelado pesa 3 kg y con supresor (0,3) y mira (0,5) en el árbol SIGUE pesando 3, que es la decisión de la ronda 2; en paralelo AttsWeight suma 0,8 y baja por los hijos. O sea que lo diferido está medido COMO DIFERIDO y no como ausente — si alguien vuelve a enchufar la rama sin decidir el filtro, el primer check se pone en rojo" }
+    nota: >
+      Acuñada el 2026-07-30 (roadmap #53, decisión del autor) sobre un comportamiento que ya
+      existía para sub-slots desde el Block 1: una placa montada en el chaleco y unas gafas en
+      el casco YA pesaban. Lo que la vuelve norma es que el attachment de ARC9 le era invisible
+      por UNA razón —no estaba en el blob— y que arreglarlo obligó a enunciar cuál era la regla.
+      Corolario de forma: un tipo nuevo de cosa acoplable se suma dentro de esa recursión, no en
+      una rama de peso propia. CASO DECLARADO Y NO CUBIERTO: la munición cargada en el arma —
+      blob.clip1 es un número pelado que WeightOf no mira, así que hoy cargar un arma hace
+      DESAPARECER peso del ledger (las balas salen del cinturón y no llegan a ninguna parte).
+      Es entrada propia a propósito: aterriza en §16 (el cinturón ES el pool) y en la cadencia
+      de recálculo del peso, no en el puente de ARC9, y mezclarlo haría que una planilla midiera
+      dos cosas a la vez.
+      ENMIENDA 2026-07-31 (planilla AB, ronda 2): el arbol de attachments NO entra todavia. El
+      nominal plano de 0,3 kg por att no sobrevivio una build EFT real — el MCX 5.56 del autor
+      pesa 2,9 kg y lleva DOCE attachments, o sea que las piezas pesarian mas que el arma. No es
+      calibracion sino modelo: en EFT la mayoria de los slots llevan ESTRUCTURA (receiver, cañon,
+      guardamanos, miras de hierro), que es el arma. Se difiere a decidir que CATEGORIAS pesan
+      (roadmap #55, con la lista de STALKER GAMMA como referencia) en vez de bajarle el numero.
+      Instances.AttsWeight queda escrita y probada offline, sin llamar desde WeightOf: la decision
+      fue "todavia no", no "estaba mal".
 
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
