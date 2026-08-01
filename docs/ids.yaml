@@ -2038,9 +2038,15 @@ ids:
       Acuñada el 2026-07-31 (roadmap #56, decisión del autor). Es CRG-14 llevado al peso: si el
       cinturón ES el pool, el cargador es el tercer bolsillo, y el costo de carga no puede
       depender de en cuál de los tres está la bala. El síntoma que la abrió: las mismas 30 balas
-      pesaban 0,36 kg colgadas y 0 kg cargadas, o sea que recargar era un descuento — tres kilos
-      enteros en el caso del RPG, y con varias armas guardadas con el cargador lleno el jugador
-      ganaba capacidad gratis.
+      pesaban 0,36 kg colgadas y 0 kg cargadas, o sea que recargar era un descuento, y con varias
+      armas guardadas con el cargador lleno el jugador ganaba capacidad gratis. Medido en juego
+      sobre el loadout real (planilla AC, dump de AC3): cinco armas escondían 1,588 kg.
+      CORRECCION 2026-08-01 (check AC2 en FALLA): el ejemplo con el que esta norma nacio —"tres
+      kilos enteros en el caso del RPG"— era FALSO y queda dicho en vez de borrado. El RPG de HL2
+      NO TIENE CARGADOR: dispara de la reserva directo y su Clip1() contesta -1, asi que los
+      cohetes siempre estuvieron en el pool y el pool sigue al cinturon, que siempre peso. El
+      numero salio de multiplicar weight x max_stack del catalogo sin abrir el arma — una
+      inferencia escrita como si fuera una medicion, en la premisa de la propia tanda.
       LA MITAD QUE COSTÓ INVESTIGAR NO FUE EL PESO SINO EL TIPO. §16.2 declara que el tipo real
       de un arma sale de su ENTIDAD y jamás del def, y sigue vigente: esto contesta el caso que
       esa regla no cubre —un arma guardada en el grid no tiene entidad— y lo contesta como
