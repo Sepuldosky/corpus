@@ -79,11 +79,28 @@ function Corpus._SelfTest()
     Corpus.Net.Register("selftest", "ping")
     check(r, "net: namespacing", full == "corpus_selftest_ping", full)
 
-    -- 4) Ready: post-InitPostEntity la suscripción corre inmediata, una sola vez
+    -- 4) Ready: pasada la barrera, la suscripción corre inmediata y una sola vez
     local corridas = 0
     Corpus.OnReady(function() corridas = corridas + 1 end)
+    -- `initPostEntity=` NO es un criterio: es el dato del arco B viajando en el
+    -- detalle de un check que ya se corre. Un check propio sería o un verde que
+    -- no mide (si siempre pasa) o un rojo que reprueba a la barrera por
+    -- funcionar por su respaldo, que es exactamente lo que se diseñó. `fuente`
+    -- dice quién ganó la carrera; esto dice si el otro corredor llegó siquiera.
     check(r, "ready: dispara una vez", Corpus._readyFired == true and corridas == 1,
-        "readyFired=" .. tostring(Corpus._readyFired) .. " corridas=" .. tostring(corridas))
+        "readyFired=" .. tostring(Corpus._readyFired) .. " corridas=" .. tostring(corridas)
+            .. " fuente=" .. tostring(Corpus._readySource)
+            .. " initPostEntity=" .. (Corpus._initPostEntitySeen and "llegó" or "NO llegó")
+            .. " mundoAlCargar=" .. (Corpus._worldAtLoad and "sí" or "no"))
+
+    -- La cola colgada mide el DAÑO, no solo el hecho. El check de arriba decía
+    -- "la barrera no disparó" y nada más; el 2026-08-08 lo que había detrás eran
+    -- 4.413 defs y 3 barras que nunca se registraron en el realm que dibuja
+    -- (dev/VEREDICTO_ready_barrier_cliente.md). Disparada la barrera, OnReady
+    -- corre por el fast-path y la cola queda vacía para siempre: un número
+    -- distinto de cero acá es trabajo de módulo perdido, contado.
+    check(r, "ready: no quedan wirings colgados", #Corpus._readyQueue == 0,
+        "_readyQueue=" .. #Corpus._readyQueue)
 
     -- 5) Log: check visual del prefijo en la línea siguiente
     Corpus.Log("selftest", "línea de prueba — el prefijo [Corpus:selftest] es el contrato")

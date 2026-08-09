@@ -7,8 +7,21 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-07-26 (**nuevo: el framework recibe código por primera vez desde el
-2026-07-09** — `Corpus.Data` gana `List`, `Delete` y el **scope** de COR-19, más **COR-18** acuñada
+**Última actualización:** 2026-08-08 (**arco B CERRADO y con hallazgo MEDIDO: `InitPostEntity` no
+se dispara en el realm CLIENTE** — `initPostEntity=NO llegó mundoAlCargar=no`, dos lecturas, la
+2.ª en mapa nuevo. El `no` **mata H1**: el hook estaba puesto antes de que existiera el mundo, o
+sea a tiempo, y el evento igual nunca llegó. El respaldo CLIENT-only del bloque anterior queda
+**ascendido de parche a ruta normal** de ese realm, y `fuente=fallback` pasa a ser el resultado
+esperado. Hizo falta destapar un defecto del propio instrumento: `fuente=` sola no distinguía
+causas, o sea que el respaldo había **tapado la pregunta**. Contexto previo: **la primitiva 5, la ready barrier, NO DISPARABA
+en el realm CLIENTE** — `InitPostEntity` no llega ahí, `Initialize` sí; se perdían **4.413 defs**
+—4 médicas, 15 de comida, 4.394 de attachments ARC9— y las 3 barras del StatusPanel, **sin un solo
+error de Lua y con el log en verde**. La barrera deja de colgar de un hook único: `Fire` idempotente
++ respaldo CLIENT-only, y ahora **habla siempre** —qué ruta disparó y cuántos wirings soltó, por
+realm—. Restituye **COR-5** aplicada al propio framework. El harness **no puede** reproducirlo (su
+stub dispara `InitPostEntity` en ambos realms por construcción): **falta la pasada en juego**.
+Veredicto: `dev/VEREDICTO_ready_barrier_cliente.md`. Contexto previo: **el framework recibió código
+por primera vez desde el 2026-07-09** — `Corpus.Data` gana `List`, `Delete` y el **scope** de COR-19, más **COR-18** acuñada
 y COR-3 enmendada; el gancho de perfil queda puesto **sin mover un solo archivo**, y su primer
 consumidor real es el comando de purga de `inst_*` legacy de Cargo. **Verificado en juego el
 2026-07-26 — planilla T, la primera del framework: 9 de 9**. Hicieron falta tres rondas, y el
@@ -87,7 +100,12 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 
 ## Pendiente de verificar
 
-- Nada — la tanda de `Corpus.Data` cerró con la **planilla T en 9/9** (2026-07-26) y sus seis
+- Nada de la ready barrier: **cerró en juego el 2026-08-08, 4/4** (selftest_cl verde con
+  `fuente=fallback` y `_readyQueue=0`; las líneas `(…, client)` que nunca habían salido; 51 defs
+  no-bulk en `cargo_dev_items_cl`; las 5 barras en el panel). **Ojo con lo que NO cerró:**
+  `fuente=fallback` dice que `InitPostEntity` **sigue sin llegar** al realm cliente — el respaldo
+  lo cubre y el log lo hace visible, nadie lo explicó. Ver la deuda de abajo.
+- La tanda de `Corpus.Data` cerró con la **planilla T en 9/9** (2026-07-26) y sus seis
   parches en `[APLICADO]`. Planilla:
   https://claude.ai/code/artifact/fc204b66-e751-42a2-af8a-0c02429934bd
 - El banco de sonidos se **confirmó en juego el 2026-07-24** desde sus consumidores
@@ -95,6 +113,31 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 
 ## Remanentes / deuda conocida
 
+- **`InitPostEntity` NO SE DISPARA en el realm CLIENTE — MEDIDO, ya no es hipótesis** (arco B,
+  2026-08-08, dos lecturas, la 2.ª en mapa nuevo): `initPostEntity=NO llegó mundoAlCargar=no`.
+  El `no` mata **H1**: el mundo no existía cuando cargó `corpus_ready.lua`, y el evento corre
+  después de las entidades ⇒ **el hook estaba puesto a tiempo** y aun así el evento nunca llegó.
+  «Llega tarde» ya se había descartado. **Esto asciende al respaldo CLIENT-only**: no rodea un
+  defecto sospechado, es **la ruta normal de un realm donde el evento no existe** — `fuente=
+  fallback` en cliente es lo ESPERADO. Queda abierto sólo si la causa es GMod en listen server o
+  un tercero de los 380 suscritos; **no se persigue**: nadie nos desengancha por nombre, así que
+  un tercero tendría que matar el evento para todos, y ahí da igual quién sea. Historial de cómo
+  se llegó acá:
+  La barrera no depende de él y nadie está bloqueado. **Descartado leyendo `dev/other/`:** ningún
+  tercero hace `hook.Remove("InitPostEntity")`, ninguno pisa `hook.Add/Remove/Call` ni
+  `GAMEMODE.InitPostEntity`, y los cuatro `hook.GetTable()[…]` leen otros eventos sin mutar —H2
+  («un tercero interfiere») se queda sin mecanismo a la vista, aunque `dev/other/` no tiene los
+  380 addons suscritos y ausencia ahí no prueba nada. **Y el barrido destapó un defecto de
+  MEDICIÓN:** `fuente=fallback` dice quién ganó la carrera y no distingue causas. Instrumentado
+  y **medido el mismo día**: `initPostEntity=**NO llegó**` — o sea que el evento no aparece
+  después del respaldo, y **«llega tarde» queda descartado** (era una tercera causa que no estaba
+  en la lista). **Pero H1 y «no dispara nunca» siguen EMPATADAS**: H1 dice que el evento pasó
+  *antes* de que registráramos el hook, y ahí la bandera queda en falso igual. Las separa
+  `mundoAlCargar=sí|no` (`Corpus._worldAtLoad`, file-scope, ya en el mismo detalle): **`no`** ⇒
+  el hook estaba a tiempo y el evento nunca llegó (**H1 muerta**); **`sí`** ⇒ H1 viva y el
+  problema es cuándo corre nuestro autorun, no el evento. **Lo contesta el próximo
+  `corpus_selftest_cl`, gratis.** Testigos ajenos sobre el mismo evento y realm:
+  `sh_bm_main.lua:226` (Better Movement) y `cl_loadoutmenu.lua:1822` (Quick Loadouts).
 - **Sin `addon.json` todavía** — el repo aún no se puede empaquetar para Workshop
   (§8 de la arquitectura pide uno por raíz). No bloquea el testeo local en
   `garrysmod/addons/`.

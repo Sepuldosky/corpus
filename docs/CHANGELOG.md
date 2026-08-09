@@ -1180,3 +1180,221 @@ que un formulario de dos estados "tira a la basura justo lo más valioso"; acá 
 apuesta. El corolario operativo es §7.3 (b): un ✓ se adjudica ABRIENDO su evidencia, y el
 hallazgo más caro de esta tanda no salió de ningún check verde — salió de insistir con el
 único que no lo estaba.
+
+---
+
+## PARCHES DE sesión La ready barrier no disparaba en el realm CLIENTE — 2026-08-08
+
+Sesión de **diagnóstico**, abierta por un reporte del autor que parecían dos problemas
+distintos —*«no me llegaron los ítems»* y *«en el inventario dice que no reconoce módulos
+cargados»*— y era **uno solo**, en la primitiva 5. Veredicto completo, con la evidencia y
+la cadena entera: [`dev/VEREDICTO_ready_barrier_cliente.md`](../../dev/VEREDICTO_ready_barrier_cliente.md).
+
+**El hecho.** `corpus_ready.lua` colgaba la barrera de un solo hook, `InitPostEntity`, y
+**ese hook no llega al realm CLIENTE**. Medido tres veces, independientes entre sí:
+`corpus_selftest_cl` daba `readyFired=false corridas=0` contra `true`/`1` en server; en los
+**dos** arranques del `console.log` ninguna de las líneas `(…, client)` de los cross-registros
+salió jamás; y las dos líneas client-only de las barras del StatusPanel no están en el log en
+ninguna parte. Discriminante limpio dentro del mismo realm: **`Initialize` SÍ dispara** en
+cliente —de ahí salen los cuatro `cargado (client)`— e `InitPostEntity` no. No era orden de
+carga ni archivo faltante: `Corpus.OnReady` existe en el cliente, el hook quedó puesto, el
+evento no llegó. **POR QUÉ no llega sigue sin medir, y el remedio no depende de saberlo.**
+
+**Lo que costaba: 4.413 defs y 3 barras, sin un solo error de Lua.** Todo lo que se registra
+dentro de `Corpus.OnReady` quedaba colgado en `_readyQueue` en el realm que DIBUJA — 4 defs
+médicas de Coagulant, 15 de comida de Craving, **4.394 de attachments ARC9**, las 3 barras del
+StatusPanel, la sustitución de modelos de `corpus-stalker`, el `RefreshTheme`. **COR-12** existe
+justamente porque Cargo no sincroniza defs de módulo por red: la barrera rota anula el realm
+cliente y deja el contrato incumplido **aunque el archivo esté bien escrito**. Sin def, el grid
+no omite la entrada — **dibuja la celda vacía** (`corpus_cargo_grid.lua:44`, el `return` va
+después del fondo y el borde). Lo único que el jugador veía eran armas y munición: las defs
+`autogen`, el único set que Cargo sí manda en el snapshot.
+
+- PARCHE 1 — `corpus_ready.lua`: **la barrera deja de colgar de un solo hook** (voto del autor
+  entre dos formas, 2026-08-08). Se extrae `Fire(source)`, **idempotente por `_readyFired`**, y
+  se le agrega un **respaldo CLIENT-only**: el primer `Think` con `LocalPlayer()` válido, que se
+  desengancha solo. Tardío a propósito — `Initialize` ya corrió, así que la garantía que la
+  barrera promete (todos los módulos presentes ya registrados) se sostiene por esta ruta igual
+  que por la otra. Si en una instalación `InitPostEntity` SÍ llega, dispara primero y el
+  respaldo es un no-op. Restituye **COR-5** (detección, nunca asunción) aplicada al propio
+  framework; la asunción rota estaba escrita en `corpus_cargo_init.lua:155`. **[APLICADO
+  2026-08-08]**
+- PARCHE 2 — `corpus_ready.lua`: la barrera **habla siempre, no solo cuando algo sale mal**.
+  Nuevo `Corpus._readySource` y una línea de log con la ruta que disparó y **cuántos wirings se
+  soltaron**, por realm. Con esa línea, «la barrera no disparó en este realm» se ve LEYENDO el
+  log, sin correr un selftest — que es como esto pasó dos arranques enteros con el log en verde.
+  **[APLICADO 2026-08-08]**
+- PARCHE 3 — `corpus_selftest.lua`: segundo check de ready, **`#Corpus._readyQueue == 0`**. El
+  check viejo decía que la barrera no había disparado y nada más; lo que había detrás eran 4.413
+  registros perdidos. La cola mide el **daño**, no el hecho. El check viejo suma la `fuente` a su
+  detalle. **[APLICADO 2026-08-08]**
+
+**Lo que deja como método, y es lo más caro de la tanda.** El análisis previo tenía el defecto
+**escrito en la evidencia que estaba usando para descartarlo**: cuatro líneas decían `(4 defs,
+server)`, `(15 defs, server)`, `(2/2, server)`, y se citaron como *«los cross-registros
+funcionaron»*. El string lo arma `SERVER and "server" or "client"` — **que la mitad `client` no
+aparezca nunca era el hallazgo**, y el par de control estaba al lado (`cargado (server)` **y**
+`(client)`). *Cuando una línea se imprime una vez por realm, contarla una sola vez no es una
+confirmación.* Y el plan de checks proponía `cargo_dev_items` y un `lua_run` para decidirlo: los
+dos son shared, en listen server **gana el server**, y habrían salido verdes midiendo el único
+realm sano. De los cinco checks propuestos, el único que tocaba el realm roto era el selftest de
+cliente, y fue el único rojo. **En un programa con dos realms, «¿dónde corre este check?» es
+parte del check** — y si para el realm sospechoso no existe instrumento, eso no es un detalle:
+es la razón por la que el defecto sobrevive.
+
+**Pendiente: la pasada en juego del autor.** El harness **no puede** reproducir esto —su stub
+dispara `hook.Run("InitPostEntity")` en los dos realms por construcción, así que la ruta rota no
+existe ahí—. Lo que el harness sí acredita es que la barrera nueva funciona y no rompió nada:
+`harness_cargo.py` **828 verdes** con la línea nueva imprimiendo `2 wiring(s) … (server)` y
+`3 … (client)`, y `harness_coagulant.py` / `harness_craving.py` en verde. **El verde offline no
+cierra este bloque**; lo cierra ver las líneas `(…, client)` en el log y los ítems en el grid.
+
+### Pasada en juego (2026-08-08) — CIERRA, y el instrumento nuevo corrigió el diagnóstico
+
+Reporte del autor: *«el inventario se ve bien como antes, tengo todo lo que debería tener»*, con
+los tres bloques de consola pegados. Los cuatro criterios del veredicto, uno por uno:
+
+- **`corpus_selftest_cl` en verde**, incluido el check nuevo: `readyFired=true corridas=1
+  fuente=fallback` y `_readyQueue=0`. **`fuente=fallback` es el resultado que discrimina, y hay
+  que leerlo bien: `InitPostEntity` SIGUE sin llegar al realm cliente.** El defecto se reprodujo
+  esta corrida y lo que disparó fue el respaldo del PARCHE 1. No se arregló el hook — se lo
+  rodeó, y el PARCHE 2 hace que eso se vea en cada arranque en vez de haber que deducirlo. Si un
+  día la línea dijera `InitPostEntity`, sería noticia.
+- **Las líneas `(…, client)` que no existían, todas presentes:** `ítems médicos registrados
+  contra Cargo (4 defs, client)`, `consumibles registrados contra Cargo (15 defs, client)`,
+  `modelos de ítem sustituidos: 2/2 (client)`, las dos de barras del StatusPanel y el puente ARC9.
+- **`cargo_dev_items_cl`: 51 defs no-bulk + 4.467 bulk en el realm CLIENT**, con las 4 de
+  Coagulant y las 15 de Craving en sus categorías. El catálogo que el grid renderiza existe.
+- **El inventario y el panel.** Las 5 barras (Health, HL2 Armor, Blood, Hunger, Hydration) en
+  lugar del `"No bars registered (absent modules)"`, y el grid con los ítems médicos, la comida y
+  los attachments.
+
+**Lo que el instrumento agregó al diagnóstico, y es la parte que vale.** La línea del PARCHE 2
+dijo **`9 wiring(s)`**. El veredicto había enumerado **ocho** sitios leyendo el árbol; el noveno
+es `persona de Sidorovich registrada: 19 líneas (client)` de `corpus-stalker`, que también estaba
+colgado y **no estaba en la tabla**. *Una enumeración hecha a mano sobre el código se parece
+mucho a un censo y no lo es: el contador del propio mecanismo encontró uno más.* El conteo no era
+adorno del log — era el control de la enumeración.
+
+Con esto los **3 parches quedan verificados en juego** y el bloque cierra. Sigue **abierto y sin
+medir** (declarado, no olvidado): *por qué* `InitPostEntity` no llega al realm cliente. El
+respaldo lo cubre y la línea de log lo hace visible; no lo explica.
+
+---
+
+## PARCHES DE sesión Arco B: el testigo de InitPostEntity — 2026-08-08
+
+Continuación del bloque anterior, sobre **lo único que había quedado abierto**: *por qué*
+`InitPostEntity` no llega al realm CLIENTE. Encargo: `dev/PROMPT_quickslots_x0_e_initpostentity.txt`
+§4-§5. **La causa NO se identificó**, y eso es el resultado, no un fracaso: el prompt lo
+autorizaba explícitamente porque el arco es **conocimiento, no funcionalidad** —la barrera ya
+no depende de ese hook y el log dice qué ruta disparó, así que nadie está bloqueado—.
+
+**Lo que sí se descartó** (barrido de `dev/other/`, la copia local de los mods de terceros):
+**ningún** addon hace `hook.Remove("InitPostEntity", …)`; ninguno pisa `hook.Add`/`Remove`/
+`Call`/`Run` ni el método `GAMEMODE.InitPostEntity`; y los **cuatro** `hook.GetTable()[…]` que
+existen leen otros eventos (`CalcView`, `PostPlayerDraw`, `Think`) sin mutar la tabla. O sea:
+**nadie nos desengancha**, y la hipótesis H2 («un tercero interfiere») se queda sin un mecanismo
+a la vista. **Descartado no es probado:** `dev/other/` no tiene los 380 addons suscritos, así
+que la ausencia ahí no prueba nada sobre lo montado.
+
+**Lo que el barrido sí encontró, y es una predicción falsable.** Hay terceros que dependen del
+MISMO evento en el MISMO realm: el `bm_init` CLIENT de Better Movement (`sh_bm_main.lua:226`,
+`initialize_bm(LocalPlayer())`) y el `QuickLoadoutInit` de Quick Loadouts
+(`cl_loadoutmenu.lua:1822`, cuyo `NetworkLoadout()` de arranque **solo** corre ahí). Si el
+evento de verdad no llega al cliente en esta instalación, esos dos **también están muertos**, y
+por la misma razón. No son nuestro código: son testigos ajenos, gratis.
+
+**El defecto de MEDICIÓN que el barrido destapó, y es la parte que vale.** `fuente=fallback`
+acredita **quién ganó la carrera**, y por lo tanto **no distingue dos causas distintas**:
+«`InitPostEntity` nunca llega a este realm» y «llega, pero después del primer `Think`». Hoy las
+dos imprimen exactamente la misma línea. El respaldo del bloque anterior rodeó el defecto y, sin
+querer, **tapó la pregunta**. Un instrumento que no puede separar dos causas no está midiendo la
+que importa — misma familia que los controles del catálogo de `dev/`.
+
+- PARCHE 1 — `corpus_ready.lua`: **el hook de `InitPostEntity` pasa a ser también el TESTIGO del
+  evento.** Queda puesto siempre y no se desengancha aunque el respaldo haya disparado antes;
+  anota `Corpus._initPostEntitySeen` y, si llega con la barrera ya disparada por otra ruta,
+  **lo dice en el log** (`InitPostEntity llegó TARDE: …`, con el realm). `Fire` sigue siendo un
+  no-op en ese caso: **no cambia una sola conducta**, solo deja de callarse. Es el discriminante
+  que el §5.2 del prompt pedía escribir, resuelto **sin un archivo nuevo**: un `hook.Add` de
+  prueba en otro archivo de `lua/autorun/` no discrimina nada, porque se registra en el mismo
+  momento que el nuestro y ya está medido que el nuestro se registró.
+- PARCHE 2 — `corpus_selftest.lua`: el check `ready: dispara una vez` suma **`initPostEntity=
+  llegó | NO llegó`** a su detalle. **A propósito NO es un check propio**: uno que siempre pasara
+  sería un verde que no mide, y uno que fallara estaría reprobando a la barrera **por funcionar
+  por su respaldo**, que es exactamente como se diseñó. El dato viaja en el detalle de un
+  criterio que ya se corre, que es donde el autor ya mira.
+- PARCHE 3 — `corpus_ready.lua`, header: la línea «POR QUÉ no llega sigue sin medir» pasa a
+  **«sigue SIN IDENTIFICAR»** y se le cuelga lo descartado y los dos testigos ajenos, con
+  archivo y línea. El hueco que el bloque anterior había reservado queda escrito (§5.3 del
+  prompt) — con lo que se sabe, que es menos de lo que se quería.
+
+**Verificación.** `harness_cargo.py` **828 verdes** (el conteo **no** sube y está bien: no se
+acuñó ningún check, se enriqueció el detalle de uno existente), `harness_coagulant.py` y
+`harness_craving.py` en verde. **El harness no puede acreditar nada de este arco**: su stub
+dispara `hook.Run("InitPostEntity")` en los dos realms por construcción, así que ahí el evento
+**siempre** llega y la rama nueva nunca corre. El verde acredita que no se rompió nada, y nada
+más — igual que en el bloque anterior.
+
+**Lo que cierra esto, y lo corre el autor:** el próximo `corpus_selftest_cl`.
+
+### Medido el mismo día — `initPostEntity=NO llegó`, y el instrumento midió MENOS de lo previsto
+
+`corpus_selftest_cl` del autor, entero en verde:
+`readyFired=true corridas=1 fuente=fallback **initPostEntity=NO llegó**`, y la línea
+`llegó TARDE` no apareció.
+
+**Lo que eso prueba:** el evento no aparece **después** del respaldo. «Llega tarde» queda
+descartado, y era una tercera causa que ni siquiera estaba en la lista de hipótesis.
+
+**Lo que NO prueba, y el PARCHE 2 se había acreditado de más al escribirse:** que H1 quede sola
+en pie. **H1 dice que el evento pasó ANTES de que se registrara nuestro hook** — y en ese
+escenario `_initPostEntitySeen` queda en falso exactamente igual que si el evento no disparara
+nunca. **Las dos causas producen la misma lectura**, así que el discriminante nuevo separó una
+tercera y dejó las dos originales empatadas. *Un instrumento nuevo puede achicar la pregunta sin
+contestarla, y decir que la contestó es el mismo error que este bloque viene pagando.*
+
+- PARCHE 4 — `corpus_ready.lua` + `corpus_selftest.lua`: **`Corpus._worldAtLoad`**, medido UNA
+  vez en file-scope, y reportado como `mundoAlCargar=sí|no` en el mismo detalle. Es lo único que
+  separa las dos que quedan, y la inferencia es de ORDEN, no una teoría del engine:
+  `InitPostEntity` corre **después** de que las entidades existen. **`no`** ⇒ cuando pusimos el
+  hook el evento todavía no había ocurrido ⇒ el hook estaba a tiempo y el evento **nunca llegó**
+  (H1 MUERTA). **`sí`** ⇒ el mundo ya existía al cargar el archivo, el evento pudo haber pasado
+  y **H1 queda viva** — y entonces el problema no es el evento sino CUÁNDO corre nuestro autorun
+  en esta instalación. Se lee en file-scope a propósito: leerlo más tarde contestaría otra
+  pregunta. Guardado con `isfunction(game and game.GetWorld)` — en el harness `game` es un
+  autoNoop y devuelve nil, así que ahí cae en `no` sin romper nada (828 verdes, sin cambio de
+  conteo: sigue sin acuñarse un check).
+
+### CERRADO — el evento NO SE DISPARA en el realm cliente (medido, mapa nuevo, 2026-08-08)
+
+Segunda lectura del autor, en un mapa recién cargado, selftest entero en verde:
+
+    ready: dispara una vez — readyFired=true corridas=1 fuente=fallback
+                             initPostEntity=NO llegó  mundoAlCargar=no
+
+**`mundoAlCargar=no` mata H1.** Cuando `corpus_ready.lua` cargó, el mundo todavía no existía;
+`InitPostEntity` corre después de que las entidades existen, así que en ese momento el evento no
+había ocurrido y **el hook quedó puesto a tiempo**. Sumado a `initPostEntity=NO llegó` leído
+mucho después de conectar: **desde entonces el evento no llegó nunca**. Las dos hipótesis que el
+arco B arrastraba desde el veredicto quedan resueltas — «llega tarde y el respaldo le ganó»
+descartada por la lectura anterior, y **H1 («el evento pasó antes de que registráramos el hook»)
+muerta por ésta**. De yapa, la premisa que este archivo declara en su línea 3 —autorun corre
+antes que `InitPostEntity`— pasó de asunción a **medición** en el realm cliente.
+
+**Lo que esto le hace al parche del bloque anterior: lo asciende.** El respaldo CLIENT-only
+dejó de ser «rodear un defecto sospechado» y pasó a ser **la ruta normal de un realm donde el
+evento demostrablemente no existe**. `fuente=fallback` en cliente es el resultado ESPERADO, no
+una degradación. Es COR-5 sostenida por evidencia en lugar de por prudencia.
+
+**Lo que queda abierto, y es mucho más chico:** si la ausencia es conducta de GMod en listen
+server o un tercero de los 380 suscritos. El barrido de `dev/other/` no encontró a nadie que nos
+desenganche **por nombre**, así que un tercero tendría que estar matando el evento **para todos**
+— y en ese caso da igual quién sea: el hecho medido es el mismo y el remedio también. Separar
+esas dos costaría una instalación limpia, por cero ganancia funcional. **No se persigue.**
+Testigos ajenos disponibles gratis si alguna vez importa: `sh_bm_main.lua:226` (Better Movement)
+y `cl_loadoutmenu.lua:1822` (Quick Loadouts) dependen del mismo evento en el mismo realm.
+
+Los tres instrumentos (`initPostEntity=`, `mundoAlCargar=`, la línea `llegó TARDE`) **se quedan**:
+son lo que haría visible que un parche de GMod devuelva el evento algún día.
