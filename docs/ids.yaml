@@ -841,6 +841,28 @@ ids:
       *_convenciones_commits.txt de módulo eran docs sin un solo ID — sobre ellos el gate
       no salía limpio, salía CIEGO.
 
+  CRG-68:
+    titulo: "El StatusPanel dibuja MAGNITUD, jamás significado: softMax/hardMax son data del registrante, y el exceso se pinta como tramado sobre la barra llena, nunca alargándola."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §11.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08, pedida por Craving (CRV-20: sus stats llegan a 150). Es CRG-1
+      aplicado a la única superficie donde la tentación es real, porque acá el dato llega con
+      una consecuencia pegada — el sobrellenado gobierna una probabilidad de vómito, y Cargo
+      no sabe ni debe saber que el vómito existe.
+      EL DEFECTO QUE ARREGLA ESTÁ MEDIDO, NO SUPUESTO (corpus_cargo_statuspanel.lua, poll de
+      Build): hoy clampea a 0..100, así que 138 no desborda la barra — la deja LLENA Y MUDA.
+      El jugador ve lo mismo con 100 que con 149, y con 149 la próxima mordida lo hace
+      vomitar casi seguro. Es peor que un desborde: un desborde se ve. La primera redacción
+      del §10 de Craving afirmaba que la barra se desbordaba; era una API ajena afirmada de
+      memoria —lo que CRG-24 prohíbe— y se corrigió el mismo día al leer el archivo.
+      Alargar la barra queda PROHIBIDO por la norma y no es cosmética: mentiría sobre qué es
+      "lleno". Y el tramado se recorta con render.SetScissorRect (CRG-28). Degrada en las dos
+      direcciones: registrante viejo sin los campos pinta como siempre; Cargo viejo ignora
+      campos que no conoce. Ninguna mitad necesita saber la versión de la otra.
+
   # ── COA — Coagulant ─────────────────────────────────────────────────────────
   # El módulo mejor instrumentado del ecosistema: selftest + harness + seis rondas
   # de planilla con IDs (A/E/G/H/I). Es el ÚNICO con evidencia tipo planilla real.
@@ -1114,12 +1136,18 @@ ids:
     evidencia:
       - { tipo: selftest, ref: "los 4 cruces realm × Cargo dan verde con y sin Cargo" }
   COA-31:
-    titulo: "Coagulant no detecta a Craving: la soft-dep es de dirección única — Craving lo consume a él."
+    titulo: "ENMENDADA 2026-08-08: Coagulant SÍ detecta a Craving, pero solo para LEER (el permiso y su alcance viven en COA-38); el resto de la dirección única sigue en pie."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §12"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia: INTENCION
-    nota: "La otra mitad es CRV-13. Las dos mitades del mismo pacto, enunciadas por separado en cada repo — si una deriva, nada las cruza hoy."
+    nota: >
+      La otra mitad es CRV-13. Las dos mitades del mismo pacto, enunciadas por separado en
+      cada repo — si una deriva, nada las cruza hoy; por eso la enmienda del 2026-08-08 se
+      escribió en las DOS el mismo día y con la misma sede citada (COA-38). Enunciado
+      original: "Coagulant no detecta a Craving: la soft-dep es de dirección única — Craving
+      lo consume a él". Lo que la enmienda NO toca: Coagulant no escribe estado de Craving,
+      y la detección sigue siendo por CAPACIDAD (isfunction), nunca por presencia.
   COA-32:
     titulo: "No hay evento por cada punto de sangre: el estado continuo se lee por GetBlood/NW2."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
@@ -1169,6 +1197,53 @@ ids:
       - { tipo: harness, ref: "dev/harness_coagulant.py — el circuito completo de una contusión (venda la cierra, el medkit deja el score en 0) y el orden: balazo leve antes que moretón medio, ni una contusión en SEVERITY_MAX le gana a un sangrado" }
       - { tipo: planilla, ref: "Coagulant — 2026-07-29, 5/5: checks 1-3 y 5 ✓ en la primera pasada (la contusión se venda y el medkit la borra); el 4 ✗ destapó el orden invertido y ✓ en la re-pasada tras corregirlo (balazo leve antes que moretón medio)" }
     nota: "Acuñada el 2026-07-29. Con el criterio viejo ('¿sangra?') la contusión —mult 0.0— era invendable, y como el medkit solo borra lo ya TRATADO (COA-21), incurable: pesaba entera en cojera/sway/visión hasta morir, y una caída dejaba cojera permanente. Es la salida (1) de las tres que ACE3 le da al trauma cerrado; las otras dos —dolor con analgésico, fractura con férula— siguen diferidas por §1. El diferimiento a medias es la causa: la contusión quedó con ENTRADA al sistema (crea herida, suma al score) y sin ninguna salida. El ORDEN de la norma se corrigió el mismo día tras la pasada del autor (check 4 ✗): la primera redacción hacía dominar la severidad y el sangrado desempatar, y con un balazo leve más un moretón medio la venda atendía el moretón. Manda el sangrado — hemorragia primero, como en la doctrina de trauma real; un moretón nunca mata. El peso se deriva de SEVERITY_MAX (COA-35)."
+
+  COA-38:
+    titulo: "Coagulant PUEDE detectar a Craving, read-only y por capacidad: lee los cinco valores metabólicos por GetMetabolic, y nunca escribe estado ajeno."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08 por voto del autor. Es la SEDE de la excepción que enmienda
+      COA-31 y CRV-13; esas dos entradas solo la citan. RAZÓN, anotada para que la decisión
+      sea falsable: Cargo puede ser autónomo, pero Coagulant ya depende de Cargo para
+      almacenar los medicamentos y Craving ya depende de Coagulant para que la inanición sea
+      clínica — la dirección única describía un desacople que en estos dos módulos ya no
+      existía. EL PRECIO, que es parte del voto y no una glosa: el permiso es de LECTURA. El
+      día que Coagulant escriba en Craving, o que Craving lea a Coagulant fuera del push de
+      su §4, esta enmienda se reabre. Sin Craving montado —o con uno sin GetMetabolic— la
+      fila METABOLIC no existe y las cinco palancas quedan neutras: COA-7 aplicado a un peer
+      nuevo.
+  COA-39:
+    titulo: "ApplyExternalCondition(ply, id, severity) queda RATIFICADA por el dueño, con la semántica clínica de cada id; el canal lleva SOLO condiciones que pueden matar, nunca gauges."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. CIERRA LA DEUDA D-5: la firma llevaba un mes congelada por el
+      CONSUMIDOR (CRV-4, mock-first) y sin ratificar por el dueño. Lo que faltaba no era la
+      firma sino la SEMÁNTICA: starvation suprime la regeneración natural de sangre en
+      proporción a severity; dehydration además baja el techo de plasma y sube los bpm. En
+      los dos, la muerte pasa a ser un desangrado que no regenera — de Coagulant, un solo
+      dueño (CRV-3). Ratificada ≠ implementada: sigue con 0 hits en el lua/ de este repo, y
+      hasta que exista, el puente de Craving cae a su fallback por capacidad (CRV-2), que es
+      lo correcto. El criterio para un id nuevo es binario y por eso está en la norma: si la
+      condición no puede matar, no es condición — es gauge, y los gauges se LEEN (COA-38).
+  COA-40:
+    titulo: "El metabolismo TECHA y FRENA, nunca mata: ningún valor leído de Craving toca HP; la muerte llega por sangre en 0 y por nada más."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Es CRV-3 leída desde este lado. Existe para impedir el modo de
+      falla obvio de sumar cinco gauges nuevos a un módulo médico: cinco causas de muerte
+      compitiendo, cada una razonable por separado. Corolario de implementación: los cinco
+      entran por palancas QUE YA EXISTEN (techo de stamina, techo de sangre y bpm,
+      REGEN_PER_S, BleedRate) y ninguno crea un sistema nuevo — si un valor metabólico
+      necesita maquinaria propia, el diseño está mal y se discute antes (COA-28).
 
   # ── CRV — Craving ───────────────────────────────────────────────────────────
 
@@ -1268,12 +1343,20 @@ ids:
       - { tipo: selftest, ref: "config pura: drenaje, sobrepeso, severity" }
     nota: "Gemela de COA-27."
   CRV-13:
-    titulo: "La dirección de la soft-dep es única: Craving detecta a sus peers y nadie detecta a Craving."
+    titulo: "La dirección de la soft-dep es única: Craving detecta a sus peers y nadie detecta a Craving, SALVO Coagulant y solo para leer (enmienda 2026-08-08)."
     sede: "corpus-craving/docs/Craving_Architecture.md §1"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia: INTENCION
-    nota: "Gemela de COA-31 (Coagulant no detecta a Craving). Las dos mitades del mismo pacto, enunciadas por separado en cada repo."
+    nota: >
+      Gemela de COA-31 (Coagulant no detecta a Craving). Las dos mitades del mismo pacto,
+      enunciadas por separado en cada repo. ENMENDADA el 2026-08-08 por voto del autor, en
+      las dos mitades a la vez: la SEDE de la excepción es COA-38 (§8 de Coagulant), que la
+      concede; esta entrada solo registra que Craving la acepta. Alcance exacto, anotado
+      porque un permiso sobre un eje no autoriza el sub-eje que nadie votó: Coagulant LEE
+      los cinco valores metabólicos por CRAVING.GetMetabolic; no escribe estado de Craving,
+      y Craving sigue sin leer a Coagulant (su única vía es el push de §4). El getter
+      devuelve tabla NUEVA (CRV-24) para que el read-only sea exigible y no una promesa.
   CRV-14:
     titulo: "La entity resuelve Corpus y el módulo SIEMPRE en runtime, jamás en file-scope: scripted_ents la carga antes del boot del módulo."
     sede: "corpus-craving/lua/entities/corpus_craving_food.lua (cabecera)"
@@ -1320,6 +1403,84 @@ ids:
     evidencia:
       - { tipo: codigo, ref: "git log de corpus-craving — los alcances realmente usados" }
     nota: "Acuñado el 2026-07-19 (D-13/H1). Aplica GIT-6. `coagulant` es alcance propio: nombra el PUENTE hacia ese módulo (soft-dep), no código ajeno."
+  CRV-20:
+    titulo: "El clamp real de los stats es 150 (STAT_HARD); el 'tope' 100 (STAT_MAX) sigue rigiendo presentación, umbrales, respawn, severity y déficit."
+    sede: "corpus-craving/docs/Craving_Architecture.md §2.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08 (voto del autor: comer de más es posible hasta el 150 %).
+      Deroga la frase de §2 "no hay valores negativos ni overfill" — el piso sigue en 0. Son
+      DOS constantes con DOS trabajos y confundirlas rompe medio módulo: por encima de 100
+      no hay umbral nuevo, ni hint nuevo, ni efecto positivo. Estar en 138 de hambre no
+      alimenta mejor que estar en 100; solo compra tiempo. Consecuencia de red que se anota
+      acá porque es la que muerde a los consumidores: los getters de CRV-1 dejaron de
+      devolver 0..100, y la barra del StatusPanel de Cargo espera 0..100 (ver §10 — el
+      autor votó una marca de sobrellenado en Cargo, feature que todavía no existe).
+  CRV-21:
+    titulo: "La probabilidad de vómito es ((sobrellenado)/50)² sobre el más desbordado de los dos stats, se tira UNA vez por consumo y revierte exactamente esa comida más 8 de hidratación."
+    sede: "corpus-craving/docs/Craving_Architecture.md §2.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. El invariante que fijó el autor es el EXTREMO (100 % al llegar
+      a 150); la curva la eligió el diseño: lineal lo cumple pero deja la banda inservible
+      —con 130 ya tirás 60 % y nadie sobrecome nunca—, la cuadrática mantiene el muro y
+      vuelve usable el tramo 100-130, que es donde vive la decisión. CONSECUENCIA ANOTADA
+      PARA QUE NADIE LA DESCUBRA COMO BUG: 150 no es un estado alcanzable, es la pared donde
+      el vómito es seguro; la banda que se sostiene es ~100-135. El vómito no es un no-op:
+      revierte los cinco valores de esa comida y resta 8 de hidratación —lo único que puede
+      dejarte PEOR que antes de comer—, la unidad ya la consumió Cargo, y suena (lo oyen los
+      de al lado, como el estómago de §3: comparten convar).
+  CRV-22:
+    titulo: "Los cinco valores metabólicos son explícitos por def: ninguno se infiere de otro, ni del kind, ni de los tags."
+    sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Tercera vez que el módulo tropieza con lo mismo y primera que
+      la regla queda escrita en general: el anti-desperdicio infería el stat de los números
+      (lo arregló `kind`, §5.1), y la tentación acá era `energy = hunger`. La descartó el
+      autor con una razón concreta y falsable: si energy es una vista de hunger, un shot de
+      glucagón en Coagulant no tiene de qué agarrarse — un eje que no se puede mover solo no
+      es un eje. Los tres campos nuevos son OPCIONALES con default 0 (un addon de terceros
+      no puede romperse por una enmienda nuestra), pero las 15 defs propias los declaran
+      todos y el harness lo verifica como COBERTURA, no como sintaxis: una def propia con
+      los tres en 0 es un olvido, no una decisión.
+  CRV-23:
+    titulo: "`tier` multiplica los tres nutrientes (junk 0.75 / standard 1.0 / quality 1.25) y NUNCA hunger ni hydration."
+    sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Es lo que saca a `tier` del limbo en que lo dejó §5.1 ("no
+      gobierna nada todavía"). LA MITAD PROHIBIDA ES EL PUNTO DE LA NORMA, no un detalle:
+      hunger e hydration están balanceados y verificados en juego desde julio, y meterles un
+      factor retroactivo re-balancearía las 15 defs EN SILENCIO. El valor declarado es el
+      contenido NOMINAL del alimento y `tier` dice si esta versión rinde mejor o peor que lo
+      nominal; nadie compensa hacia atrás (no existe una def que declare 73 para terminar en
+      55, que es lo que pasaría si el multiplicador entrara por el lado equivocado y alguien
+      quisiera fijar el efectivo). Consecuencia buscada: la comida basura queda peor en los
+      tres ejes pero sigue LLENANDO igual — llena el estómago y no alimenta.
+  CRV-24:
+    titulo: "Craving publica números crudos y no interpreta clínicamente: acá no existe el concepto de déficit, ni su umbral, ni su efecto."
+    sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Contraparte exacta de COA-38/COA-40: el umbral de déficit vive
+      en la config de Coagulant, no acá. Es la frontera de siempre leída al derecho — el
+      número es supervivencia, la consecuencia es medicina — y es lo que hace que la
+      excepción de dirección (CRV-13) no se convierta en fusión de dominios. Corolario de
+      implementación que la vuelve exigible: GetMetabolic devuelve una tabla NUEVA en cada
+      llamada, jamás la interna; con la tabla por referencia, "Coagulant solo lee" sería una
+      convención que nadie puede hacer cumplir. Contrapartida asumida: aloca, así que nadie
+      la llama en un Paint — el consumidor que dibuja la cachea en su refresco de vitales.
 
   # ── CRG — Cargo ─────────────────────────────────────────────────────────────
   # El módulo más grande del ecosistema. Su evidencia es dev/harness_cargo.py (2807
@@ -2292,13 +2453,23 @@ deuda:
       deferrals de §9 están fielmente descritos (sin árbitro, no se tocaron).
     propuesta: "Cumplida."
   D-5:
-    titulo: "CRV-4 congela una firma de Coagulant que Coagulant nunca ratificó."
+    titulo: "CERRADA 2026-08-08: el dueño ratificó ApplyExternalCondition en Coagulant_Architecture.md §8 (COA-39), con la misma firma que CRV-4 había congelado desde el consumidor."
     detalle: >
-      ApplyExternalCondition(ply, id, severity) está congelada mock-first por el
-      CONSUMIDOR (Craving, §4 de su arquitectura, que la marca 'a ratificar en
-      Coagulant_Architecture.md §8'). El dueño no la firmó. Es FLU-17 funcionando
-      a medias: la firma se congeló, pero la ratificación quedó pendiente.
-    propuesta: "Ratificarla en Coagulant_Architecture.md §8 o negociarla, cuando Coagulant cierre su ronda 7."
+      ApplyExternalCondition(ply, id, severity) estaba congelada mock-first por el
+      CONSUMIDOR (Craving, §4 de su arquitectura, que la marcaba 'a ratificar en
+      Coagulant_Architecture.md §8'). El dueño no la había firmado. Era FLU-17 funcionando
+      a medias: la firma se congeló, pero la ratificación quedó pendiente un mes.
+    propuesta: >
+      CUMPLIDA — enmienda del 2026-08-08, votada por el autor. La firma se ratificó TAL CUAL
+      la había congelado el consumidor: no hubo que negociar ni un argumento, que es el
+      resultado que FLU-17 promete cuando el mock-first se hace bien.
+      LO QUE FALTABA NO ERA LA FIRMA SINO LA SEMÁNTICA, y eso es lo que agrega COA-39: qué
+      hace Coagulant con cada uno de los dos ids, y quién mata en cada caso. Sin eso, "está
+      ratificada" habría sido una firma sin contrato.
+      SE CIERRA UNA DEUDA DE DISEÑO, NO DE CÓDIGO: ApplyExternalCondition sigue con 0 hits
+      en el lua/ de Coagulant, y hasta que exista, el puente de Craving cae a su fallback
+      por capacidad (CRV-2). Esa distinción es el precio del cierre y va escrita acá para
+      que nadie lea "D-5 cerrada" como "el puente funciona".
   D-6:
     titulo: "CERRADA 2026-07-19: política git unificada en la versión estricta — ni commit ni push sin pedido, en los siete repos (voto del autor)."
     detalle: >
