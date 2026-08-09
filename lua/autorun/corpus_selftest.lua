@@ -82,15 +82,24 @@ function Corpus._SelfTest()
     -- 4) Ready: pasada la barrera, la suscripción corre inmediata y una sola vez
     local corridas = 0
     Corpus.OnReady(function() corridas = corridas + 1 end)
-    -- `initPostEntity=` NO es un criterio: es el dato del arco B viajando en el
+    -- `hookIPE=` NO es un criterio: es el dato del arco B viajando en el
     -- detalle de un check que ya se corre. Un check propio sería o un verde que
     -- no mide (si siempre pasa) o un rojo que reprueba a la barrera por
     -- funcionar por su respaldo, que es exactamente lo que se diseñó. `fuente`
-    -- dice quién ganó la carrera; esto dice si el otro corredor llegó siquiera.
+    -- dice quién ganó la carrera; esto dice si el otro corredor arrancó.
+    --
+    -- EL RÓTULO SE LLAMABA `initPostEntity=llegó | NO llegó` Y ESE NOMBRE COSTÓ
+    -- UNA RONDA (renombrado el 2026-08-09). La bandera la escribe el propio
+    -- callback de la barrera, así que sólo puede medir **si NUESTRO hook corrió**;
+    -- nombrarla por el EVENTO invitaba a leer «no llegó» como «el evento no se
+    -- disparó», y así se cerró el arco B el 2026-08-08 — mal: el `console.log`
+    -- muestra a un tercero corriendo su callback de `InitPostEntity` en el mismo
+    -- realm y el mismo arranque (ver el header de `corpus_ready.lua`). Un
+    -- instrumento se nombra por lo que TOCA, no por lo que uno querría concluir.
     check(r, "ready: dispara una vez", Corpus._readyFired == true and corridas == 1,
         "readyFired=" .. tostring(Corpus._readyFired) .. " corridas=" .. tostring(corridas)
             .. " fuente=" .. tostring(Corpus._readySource)
-            .. " initPostEntity=" .. (Corpus._initPostEntitySeen and "llegó" or "NO llegó")
+            .. " hookIPE=" .. (Corpus._initPostEntitySeen and "corrió" or "NO corrió")
             .. " mundoAlCargar=" .. (Corpus._worldAtLoad and "sí" or "no"))
 
     -- La cola colgada mide el DAÑO, no solo el hecho. El check de arriba decía
