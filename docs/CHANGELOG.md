@@ -1398,3 +1398,108 @@ y `cl_loadoutmenu.lua:1822` (Quick Loadouts) dependen del mismo evento en el mis
 
 Los tres instrumentos (`initPostEntity=`, `mundoAlCargar=`, la línea `llegó TARDE`) **se quedan**:
 son lo que haría visible que un parche de GMod devuelva el evento algún día.
+
+---
+
+## PARCHES DE sesión Arco B ronda 2: el evento SÍ se dispara — el arco anterior se cerró mal — 2026-08-09
+
+Encargo: `dev/PROMPT_arcoB_ronda2_initpostentity.txt`. El §3.1 pedía reparar una deriva de doc y
+el §3.2 mirar dos testigos ajenos. **Los testigos contestaron, y contestaron que la conclusión
+del bloque anterior era falsa.**
+
+### El hecho, y reemplaza al que este CHANGELOG dio por CERRADO el 2026-08-08
+
+**`InitPostEntity` SÍ se dispara en el realm CLIENTE.** Lo que no corre es **nuestro callback**.
+Los dos enunciados producen exactamente la misma lectura del selftest y **no son la misma
+afirmación**; el bloque anterior escribió el segundo y concluyó el primero.
+
+**La medición** — `garrysmod/console.log`, 61.397 líneas, **nueve** arranques de mapa. En el
+arranque que rodea a la 2.ª lectura del selftest (líneas 18024-18231), realm CLIENTE:
+
+| # | Línea del log | Qué acredita |
+|---|---|---|
+| 1 | los cuatro `cargado (client)` | el boot diferido a `Initialize` ya corrió ⇒ todo `autorun` cargó ⇒ **nuestro `hook.Add` ya estaba puesto** |
+| 2 | `[Quick Loadouts] Generating weapon table...` | **su callback de `InitPostEntity`, realm CLIENTE**, corrió |
+| 3 | `ready barrier: 9 wiring(s) disparados por fallback (client)` | la barrera disparó por el respaldo |
+| 4 | `ready: dispara una vez — … initPostEntity=NO llegó mundoAlCargar=no` | nuestro callback nunca corrió |
+
+El paso 2 aparece en los **nueve** arranques, siempre **11-12 líneas** antes del paso 3.
+
+**Por qué el paso 2 no puede venir de otra ruta** (que es lo que lo vuelve prueba y no indicio):
+`cl_loadoutmenu.lua` se `include`a **sólo** en la rama CLIENT de `chensquickloadout.lua:8`, así
+que su `hook.Add("InitPostEntity", "QuickLoadoutInit")` de `:1822` es del realm cliente.
+`GenerateWeaponTable()` tiene tres llamadores: ese hook, el armado del menú (`:583`) y el
+concommand `quickloadout_reloadweapons` (`:1850`). El menú exige **una tecla**, y una tecla exige
+un `LocalPlayer()` válido — que es la condición del paso 3, **posterior**. El concommand no
+aparece **ni una vez** en las 61.397 líneas. Queda el hook.
+
+### El mecanismo — está en la fuente del engine, en disco, y no es una teoría
+
+`garrysmod/lua/includes/modules/hook.lua`, función `Call`:
+
+```lua
+for k, v in pairs( HookTable ) do
+    a, b, c, d, e, f = v( ... )
+    if ( a != nil ) then return a, b, c, d, e, f end   -- ABORTA LA CADENA
+end
+```
+
+Un tercero que devuelva **cualquier** valor no-nil en `InitPostEntity` deja sin evento a todos
+los oyentes que caigan después de él en el orden de `pairs()` sobre una tabla hash: **sin conocer
+nuestro nombre, sin desengancharnos y sin un solo error de Lua.** Es lo único que explica lo que
+las hipótesis viejas no explicaban — por qué un tercero corre y nosotros no, en el mismo evento,
+el mismo realm y el mismo arranque.
+
+**Y tumba el argumento de economía con el que el arco se cerró.** El prompt anterior razonó que
+«un tercero tendría que estar matando el evento para TODOS, y entonces da igual quién sea». El
+corte **no es para todos**: es para los de más abajo en la fila. Por eso importaba quién.
+
+### La lección, y es de instrumento — la más cara de las tres que lleva este arco
+
+`Corpus._initPostEntitySeen` la escribe **el propio callback de la barrera**. Una bandera que sólo
+puede ponerse en `true` desde adentro del callback mide **si el callback corrió**, jamás si el
+evento ocurrió. El detalle la imprimía como **`initPostEntity=NO llegó`**: el **nombre** del
+instrumento contrabandeó la conclusión, y una vez impreso, tres documentos y un header lo
+repitieron como hecho medido. `mundoAlCargar` midió bien lo suyo (el hook estaba puesto a tiempo)
+y no autorizaba el salto: «puesto a tiempo» + «no corrió» deja abierta la cadena cortada.
+*Un instrumento se nombra por lo que TOCA, no por lo que uno querría concluir.*
+
+- PARCHE 1 — `corpus_selftest.lua`: el rótulo pasa de `initPostEntity=llegó | NO llegó` a
+  **`hookIPE=corrió | NO corrió`**, con el porqué escrito al lado. **No se acuña ni se retira un
+  check** (§4 del encargo): el instrumento se queda, sólo deja de mentir con el nombre.
+- PARCHE 2 — `corpus_ready.lua`, header y comentario de la bandera: el hallazgo del 2026-08-08 se
+  marca **REFUTADO** y se reemplaza por el medido, con la tabla del log, el descarte de la ruta
+  del menú, la cita a `hook.lua` y el testigo que sirve. Cero cambios de conducta: **no se toca
+  una línea de la barrera** — el respaldo se queda y ahora se apoya en una propiedad
+  **estructural** de `hook.Call`, no en una rareza de esta instalación.
+- PARCHE 3 — `CORPUS_Architecture.md`, la deriva del §3.1 del encargo, en sus tres sitios:
+  `:90` (tabla de primitivas), `:115` (firma comentada) y `:210` (`Initialize` … «antes de
+  `InitPostEntity`», que enunciaba la garantía contra el evento equivocado — ahora se enuncia
+  contra la barrera, que es lo que el boot diferido necesita y lo único que el framework
+  controla). Más la nota nueva de §3 con el hecho y sus consecuencias.
+- PARCHE 4 — dos sitios más con la misma deriva, fuera de los tres que el encargo enumeró:
+  `CLAUDE.md` (mapa de archivos, fila de `corpus_ready.lua`) y `corpus_convenciones_commits.txt`
+  (glosa del alcance `ready`). §7 del flujo: el código manda sobre el doc, en todos los docs.
+
+### Lo que NO se pudo identificar, y lo que lo separa
+
+**Quién corta la cadena: SIN IDENTIFICAR.** Barrido de `dev/other/`: de los **41**
+`hook.Add("InitPostEntity", …)` que hay, **ninguno devuelve un valor** al nivel del handler.
+**Descartado no es probado:** `dev/other/` no tiene los 380 addons suscritos.
+
+Lo separa **una sola medición que hoy no existe**: si nuestro hook está en
+`hook.GetTable()["InitPostEntity"]` en runtime del realm cliente, nadie nos desenganchó y el
+corte es por retorno; si no está, un tercero nos borró por nombre. **No se escribió** — el arco
+sigue siendo conocimiento y no funcionalidad, y el §4 del encargo pedía no acuñar checks por él.
+
+**Y un testigo que hay que descartar antes de que alguien lo use:** **Better Movement NO sirve**,
+aunque su `bm_init` CLIENT (`sh_bm_main.lua:226`) cuelgue del mismo evento. Sólo escribe NW2 vars
+que el SERVER reescribe en cada `PlayerSpawn` (`:219-223`) y replica, así que en listen server su
+ausencia **no produce ningún síntoma observable**. Un testigo cuyo fracaso es invisible no
+atestigua — habría dado verde sin medir.
+
+**Verificación.** `harness_cargo.py` **828 verdes** (el conteo no sube y está bien: no se acuñó
+ningún check, se renombró el detalle de uno existente), `harness_coagulant.py` y
+`harness_craving.py` en verde. El harness **sigue sin poder acreditar nada de este arco**: su stub
+hace `hook.Run("InitPostEntity")` en los dos realms por construcción, así que ahí ninguna cadena
+se corta. Lo que acredita este bloque es el `console.log` del autor y la fuente del engine.

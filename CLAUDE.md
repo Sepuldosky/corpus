@@ -45,7 +45,7 @@ Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada a
 | [`lua/autorun/corpus_registry.lua`](lua/autorun/corpus_registry.lua) | shared | Registro: `RegisterModule`/`HasModule`/`GetModule` — **invariante by-ref** (misma tabla por referencia, ver nota en §3 de la arquitectura) |
 | [`lua/autorun/corpus_data.lua`](lua/autorun/corpus_data.lua) | shared | Persistencia: `Corpus.Data.Save/Load/List/Delete` + el `scope` de **COR-19**; hoy resuelve a `data/corpus/<module>/<key>.json` |
 | [`lua/autorun/corpus_net.lua`](lua/autorun/corpus_net.lua) | shared | Net: `Corpus.Net.Register` → `"corpus_<module>_<msgName>"` (`AddNetworkString` solo en server) |
-| [`lua/autorun/corpus_ready.lua`](lua/autorun/corpus_ready.lua) | shared | Ready barrier: `Corpus.OnReady`, dispara una vez tras `InitPostEntity` |
+| [`lua/autorun/corpus_ready.lua`](lua/autorun/corpus_ready.lua) | shared | Ready barrier: `Corpus.OnReady`, dispara **una vez, con la primera de varias señales** — `InitPostEntity` o, en cliente, el primer `Think` con `LocalPlayer()` válido, porque está **medido** que ese evento no llega al realm CLIENTE (§3 de la arquitectura) |
 | [`lua/autorun/corpus_log.lua`](lua/autorun/corpus_log.lua) | shared | Log: `Corpus.Log` con prefijo `[Corpus:<module>]` |
 | [`lua/autorun/client/corpus_ui.lua`](lua/autorun/client/corpus_ui.lua) | client | UI shell: `Corpus.UI.RegisterTab` — categoría única "Corpus" en el menú Q (Utilities) |
 | [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo). En **listen server** ese nombre corre el realm SERVER; para el CLIENT está el alias `corpus_selftest_cl` |

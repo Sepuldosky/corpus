@@ -103,7 +103,9 @@ Para corpus/ (el framework), los alcances definidos son:
     UI shell del menú Q compartido: Corpus.UI.RegisterTab.
 
   ready:
-    Ready barrier: Corpus.OnReady y su disparo tras InitPostEntity.
+    Ready barrier: Corpus.OnReady y sus señales de disparo (InitPostEntity y,
+    solo en cliente, el respaldo sobre Think), más los instrumentos que
+    acreditan cuál disparó.
 
   log:
     Logging: Corpus.Log y su formato de prefijo.

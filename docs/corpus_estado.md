@@ -7,14 +7,23 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-08-08 (**arco B CERRADO y con hallazgo MEDIDO: `InitPostEntity` no
-se dispara en el realm CLIENTE** — `initPostEntity=NO llegó mundoAlCargar=no`, dos lecturas, la
-2.ª en mapa nuevo. El `no` **mata H1**: el hook estaba puesto antes de que existiera el mundo, o
-sea a tiempo, y el evento igual nunca llegó. El respaldo CLIENT-only del bloque anterior queda
-**ascendido de parche a ruta normal** de ese realm, y `fuente=fallback` pasa a ser el resultado
-esperado. Hizo falta destapar un defecto del propio instrumento: `fuente=` sola no distinguía
-causas, o sea que el respaldo había **tapado la pregunta**. Contexto previo: **la primitiva 5, la ready barrier, NO DISPARABA
-en el realm CLIENTE** — `InitPostEntity` no llega ahí, `Initialize` sí; se perdían **4.413 defs**
+**Última actualización:** 2026-08-09 (**arco B ronda 2: el cierre del 2026-08-08 estaba MAL y
+queda REFUTADO. `InitPostEntity` SÍ se dispara en el realm CLIENTE** — lo que no corre es
+**nuestro callback**, que no es la misma afirmación. Lo mide el `console.log` del autor, nueve
+arranques: el callback CLIENTE de `InitPostEntity` de Quick Loadouts corre 11-12 líneas **antes**
+de nuestra línea de `fallback`, en el mismo arranque en que el selftest dice que el nuestro no
+corrió, y no puede venir de otra ruta porque el menú exige una tecla y la tecla exige el
+`LocalPlayer()` que recién valida el paso siguiente. **El mecanismo está en la fuente del engine,
+en disco** (`lua/includes/modules/hook.lua`): `hook.Call` **aborta la cadena entera** en cuanto un
+hook devuelve un valor no-nil, así que un tercero deja sin evento a todos los de más abajo en un
+`pairs()`, sin saber nuestro nombre y sin un error de Lua. **Quién corta: SIN IDENTIFICAR** — los
+41 `hook.Add("InitPostEntity")` de `dev/other/` no devuelven valor, pero ahí no están los 380
+suscritos. **La lección es de instrumento y es la cara:** `_initPostEntitySeen` la escribe el
+propio callback, así que sólo puede medir «corrió nuestro hook»; se imprimía como
+`initPostEntity=NO llegó` y **el nombre contrabandeó la conclusión** a tres docs y un header. Hoy
+el rótulo es `hookIPE=corrió | NO corrió`. **Cero cambios de conducta**: el respaldo CLIENT-only
+se queda y ahora se apoya en algo **estructural**, no en una rareza local. Contexto previo: **la primitiva 5, la ready barrier, NO DISPARABA
+en el realm CLIENTE** — su callback de `InitPostEntity` no corría ahí, `Initialize` sí; se perdían **4.413 defs**
 —4 médicas, 15 de comida, 4.394 de attachments ARC9— y las 3 barras del StatusPanel, **sin un solo
 error de Lua y con el log en verde**. La barrera deja de colgar de un hook único: `Fire` idempotente
 + respaldo CLIENT-only, y ahora **habla siempre** —qué ruta disparó y cuántos wirings soltó, por
@@ -103,8 +112,9 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 - Nada de la ready barrier: **cerró en juego el 2026-08-08, 4/4** (selftest_cl verde con
   `fuente=fallback` y `_readyQueue=0`; las líneas `(…, client)` que nunca habían salido; 51 defs
   no-bulk en `cargo_dev_items_cl`; las 5 barras en el panel). **Ojo con lo que NO cerró:**
-  `fuente=fallback` dice que `InitPostEntity` **sigue sin llegar** al realm cliente — el respaldo
-  lo cubre y el log lo hace visible, nadie lo explicó. Ver la deuda de abajo.
+  `fuente=fallback` dice que **nuestro callback** de `InitPostEntity` sigue sin correr en el realm
+  cliente — el respaldo lo cubre y el log lo hace visible. **El evento sí se dispara**; quién corta
+  la cadena de hooks sigue sin identificarse. Ver la deuda de abajo.
 - La tanda de `Corpus.Data` cerró con la **planilla T en 9/9** (2026-07-26) y sus seis
   parches en `[APLICADO]`. Planilla:
   https://claude.ai/code/artifact/fc204b66-e751-42a2-af8a-0c02429934bd
@@ -113,31 +123,31 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 
 ## Remanentes / deuda conocida
 
-- **`InitPostEntity` NO SE DISPARA en el realm CLIENTE — MEDIDO, ya no es hipótesis** (arco B,
-  2026-08-08, dos lecturas, la 2.ª en mapa nuevo): `initPostEntity=NO llegó mundoAlCargar=no`.
-  El `no` mata **H1**: el mundo no existía cuando cargó `corpus_ready.lua`, y el evento corre
-  después de las entidades ⇒ **el hook estaba puesto a tiempo** y aun así el evento nunca llegó.
-  «Llega tarde» ya se había descartado. **Esto asciende al respaldo CLIENT-only**: no rodea un
-  defecto sospechado, es **la ruta normal de un realm donde el evento no existe** — `fuente=
-  fallback` en cliente es lo ESPERADO. Queda abierto sólo si la causa es GMod en listen server o
-  un tercero de los 380 suscritos; **no se persigue**: nadie nos desengancha por nombre, así que
-  un tercero tendría que matar el evento para todos, y ahí da igual quién sea. Historial de cómo
-  se llegó acá:
-  La barrera no depende de él y nadie está bloqueado. **Descartado leyendo `dev/other/`:** ningún
-  tercero hace `hook.Remove("InitPostEntity")`, ninguno pisa `hook.Add/Remove/Call` ni
-  `GAMEMODE.InitPostEntity`, y los cuatro `hook.GetTable()[…]` leen otros eventos sin mutar —H2
-  («un tercero interfiere») se queda sin mecanismo a la vista, aunque `dev/other/` no tiene los
-  380 addons suscritos y ausencia ahí no prueba nada. **Y el barrido destapó un defecto de
-  MEDICIÓN:** `fuente=fallback` dice quién ganó la carrera y no distingue causas. Instrumentado
-  y **medido el mismo día**: `initPostEntity=**NO llegó**` — o sea que el evento no aparece
-  después del respaldo, y **«llega tarde» queda descartado** (era una tercera causa que no estaba
-  en la lista). **Pero H1 y «no dispara nunca» siguen EMPATADAS**: H1 dice que el evento pasó
-  *antes* de que registráramos el hook, y ahí la bandera queda en falso igual. Las separa
-  `mundoAlCargar=sí|no` (`Corpus._worldAtLoad`, file-scope, ya en el mismo detalle): **`no`** ⇒
-  el hook estaba a tiempo y el evento nunca llegó (**H1 muerta**); **`sí`** ⇒ H1 viva y el
-  problema es cuándo corre nuestro autorun, no el evento. **Lo contesta el próximo
-  `corpus_selftest_cl`, gratis.** Testigos ajenos sobre el mismo evento y realm:
-  `sh_bm_main.lua:226` (Better Movement) y `cl_loadoutmenu.lua:1822` (Quick Loadouts).
+- **Nuestro callback de `InitPostEntity` no corre en el realm CLIENTE — y el EVENTO SÍ SE
+  DISPARA** (arco B ronda 2, 2026-08-09; el cierre del 2026-08-08, que decía lo contrario, queda
+  **REFUTADO**). Medido en el `console.log` del autor, nueve arranques: el callback CLIENTE de
+  `InitPostEntity` de Quick Loadouts (`cl_loadoutmenu.lua:1822`, `include` sólo en la rama CLIENT)
+  corre 11-12 líneas **antes** de nuestra línea `disparados por fallback (client)`, en el mismo
+  arranque en que el selftest dice que el nuestro no corrió. No puede ser la ruta del menú: el
+  menú exige una tecla y la tecla exige el `LocalPlayer()` válido que recién habilita el paso
+  siguiente, y el concommand no aparece en las 61.397 líneas.
+  **Mecanismo, en la fuente del engine en disco** (`lua/includes/modules/hook.lua`, `Call`):
+  `if ( a != nil ) then return … end` **aborta la cadena entera**, así que un tercero que devuelva
+  algo deja sin evento a todos los que caigan después en el `pairs()` — sin saber nuestro nombre y
+  sin un error de Lua. Eso **tumba** el argumento con que el arco se había cerrado («tendría que
+  matarlo para todos, da igual quién sea»): el corte es sólo para los de más abajo en la fila.
+  **Quién corta: SIN IDENTIFICAR** — los 41 `hook.Add("InitPostEntity")` de `dev/other/` no
+  devuelven valor al nivel del handler, pero ahí no están los 380 suscritos.
+  **Lo separaría una medición que hoy no existe:** si nuestro hook está en
+  `hook.GetTable()["InitPostEntity"]` en runtime del cliente, el corte es por retorno; si no está,
+  alguien nos borró por nombre. **No se escribió**: sigue siendo conocimiento, no funcionalidad.
+  **Testigos:** Quick Loadouts sirve; **Better Movement NO** —su `bm_init` CLIENT sólo escribe NW2
+  vars que el server reescribe en cada `PlayerSpawn` y replica, así que su ausencia no da síntoma:
+  habría dado verde sin medir.
+  **La lección, y es de instrumento:** `_initPostEntitySeen` la escribe el propio callback, o sea
+  que sólo mide «corrió NUESTRO hook»; imprimirla como `initPostEntity=NO llegó` hizo que el
+  **nombre** contrabandeara la conclusión a tres docs y un header. Hoy el rótulo es
+  `hookIPE=corrió | NO corrió`. `mundoAlCargar` midió bien lo suyo y nunca autorizó el salto.
 - **Sin `addon.json` todavía** — el repo aún no se puede empaquetar para Workshop
   (§8 de la arquitectura pide uno por raíz). No bloquea el testeo local en
   `garrysmod/addons/`.

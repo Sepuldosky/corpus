@@ -87,7 +87,7 @@ Seis primitivas. Nada de lógica de dominio.
 | **Persistencia** | `Corpus.Data.Save(module, key, tbl, opts)` · `Load(module, key, opts) → tbl \| nil` · `List(module, opts) → { key… }` · `Delete(module, key, opts) → bool` | Los cinco módulos persisten estado; una sola convención de ruta evita colisiones, y una sola primitiva evita que cada uno invente su propio `file.*` (COR-18) |
 | **Net** | `Corpus.Net.Register(module, msgName) → fullName` | El namespace de `net.Receive` es global en Gmod; cinco módulos sin convención chocan nombres |
 | **UI shell** | `Corpus.UI.RegisterTab(module, label, buildFn)` | Reusa el patrón de layout manual (`DPanel`+`DLabel`+`DSlider`+`DTextEntry`) ya validado en ADS; una sección "Corpus" en vez de cinco menús Q sueltos |
-| **Ready barrier** | `Corpus.OnReady(fn)` | Dispara tras `InitPostEntity` con todos los módulos presentes ya registrados — punto seguro para wiring de soft-deps |
+| **Ready barrier** | `Corpus.OnReady(fn)` | Dispara **una vez, con la PRIMERA de varias señales** (`InitPostEntity`; en cliente, además, el primer `Think` con `LocalPlayer()` válido), con todos los módulos presentes ya registrados — punto seguro para wiring de soft-deps. **No cuelga de un hook único, y no es defensa especulativa:** está MEDIDO que `InitPostEntity` **no se dispara en el realm CLIENTE** de esta instalación, así que ahí la ruta normal es el respaldo (ver la nota de abajo) |
 | **Log** | `Corpus.Log(module, ...)` | Prefija `[Corpus:<module>]` — identifica el origen de un error sin adivinar |
 
 ### Firmas ilustrativas
@@ -111,12 +111,24 @@ function Corpus.Net.Register(module, msgName) -- retorna "corpus_<module>_<msgNa
 -- UI shell — una entrada por módulo bajo una sola categoría Q
 function Corpus.UI.RegisterTab(module, label, buildFn)
 
--- Ready barrier
-function Corpus.OnReady(fn)                   -- fn corre una vez, tras InitPostEntity
+-- Ready barrier — dispara con la PRIMERA señal que llegue, no con un hook fijo:
+-- InitPostEntity, o (solo CLIENT) el primer Think con LocalPlayer() válido.
+-- Idempotente: la señal que llega segunda es un no-op, no un error.
+function Corpus.OnReady(fn)                   -- fn corre una vez, con la 1.ª señal
 
 -- Log
 function Corpus.Log(module, ...)              -- print("[Corpus:"..module.."] ", ...)
 ```
+
+> **La barrera de disparo múltiple, y por qué (hecho MEDIDO — no es diseño defensivo):** hasta el 2026-08-08 la primitiva 5 era `hook.Add("InitPostEntity", ...)` a secas, y **ese hook no corría en el realm CLIENTE**. Se perdían en silencio **4.413 defs** y las 3 barras del StatusPanel de Cargo, **sin un solo error de Lua**: un wiring que no corre no se parece a una falla, se parece a un módulo que no registró nada.
+>
+> **Ojo con cómo se enuncia el hecho, porque enunciarlo mal costó una ronda entera.** El 2026-08-08 esto se escribió como «`InitPostEntity` no se dispara en el realm cliente», y el 2026-08-09 quedó **REFUTADO midiendo**: el evento **sí se dispara** ahí. Lo que no corre es **nuestro callback**. La bandera que decía `initPostEntity=NO llegó` la escribe **nuestro propio hook**, así que sólo puede reportar «nuestro hook corrió»; su NOMBRE contrabandeó la conclusión. Evidencia y mecanismo, con archivo y línea, en el header de [`corpus_ready.lua`](../lua/autorun/corpus_ready.lua).
+>
+> Consecuencias que este doc asume como contrato, no como circunstancia:
+> - **La barrera NO puede colgar de un hook único**, y ahora se sabe por qué es estructural y no una particularidad de esta instalación: `hook.Call` (`garrysmod/lua/includes/modules/hook.lua`) **aborta la cadena entera** en cuanto un hook devuelve un valor no-nil, y el orden de iteración es un `pairs()` sobre tabla hash. Cualquier tercero puede dejar sin evento a todos los oyentes que caigan después de él, **sin conocer nuestro nombre y sin un error de Lua**. Un solo `hook.Add` nunca fue una garantía.
+> - **En cliente, `fuente=fallback` es el resultado ESPERADO**, no una degradación. El log siempre dice qué ruta disparó y cuántos wirings soltó, con el realm.
+> - **Ningún consumidor cambia una línea.** `Corpus.OnReady` promete lo mismo por las dos rutas: el respaldo es tardío a propósito (`Initialize` ya corrió, así que todo `autorun` cargó y los módulos ya bootearon).
+> - Es **COR-5** (detección, nunca asunción) aplicada al propio framework, y sostenida por evidencia en vez de por prudencia.
 
 > **COR-7 — Invariante del registro (contrato duro; ésta es su sede):** `Corpus.RegisterModule(name, iface)` y `Corpus.GetModule(name)` guardan y devuelven la **misma tabla por referencia** — sin deep-copy, sin normalización de ningún tipo. El patrón "tabla única poblada por side-effect" con el que los módulos construyen su namespace (ver `Caliber_Architecture.md` §3 y §11) depende de que sea así; un copy defensivo acá lo rompe en silencio. Es un contrato **distinto** al de **COR-8** (`Corpus.Data.Save/Load` sí normaliza en el round-trip JSON: `util.JSONToTable` puede devolver claves numéricas donde se guardaron strings) — no confundir ambos invariantes.
 
@@ -207,7 +219,9 @@ El init es el **único** archivo del módulo en `lua/autorun/` (**shared**, no `
 
 La trampa está en el orden: Gmod fusiona `lua/autorun/` de **todos** los addons y lo ejecuta en orden alfabético del nombre de archivo. `corpus_caliber_init.lua` ordena **antes** que `corpus_data.lua` y `corpus_registry.lua`, así que en una carga de mapa normal **`Corpus` todavía no existe** cuando corre el init del módulo. Un `error()` en file-scope no protege de nada: lo único que consigue es que el módulo **no se registre nunca** — falla silenciosa de módulo, no crash del server.
 
-De ahí el patrón real, verificado en juego y hoy template de los cuatro módulos con código: **sonda + boot diferido al hook `Initialize`** (corre en ambos realms después de todo `autorun` y antes de `InitPostEntity`, así que conserva las garantías: tabs de UI antes de `PopulateToolMenu`, net strings antes de que conecte un cliente).
+De ahí el patrón real, verificado en juego y hoy template de los cuatro módulos con código: **sonda + boot diferido al hook `Initialize`**, que corre en ambos realms después de todo `autorun` y **antes de que la ready barrier de §3 dispare por cualquiera de sus señales** — así conserva las garantías: tabs de UI antes de `PopulateToolMenu`, net strings antes de que conecte un cliente, y todo módulo presente ya registrado cuando corre un `Corpus.OnReady`.
+
+> **Esa cláusula se escribía «antes de `InitPostEntity`», y enunciarla contra ese evento era frágil:** en el realm CLIENTE el evento se dispara pero **nuestro hook no corre** (ver la nota de §3), así que el orden contra el evento no acredita nada sobre el orden contra la barrera — que es lo único que el boot diferido necesita. `Initialize` **sí** dispara en ambos realms —está medido, en el `console.log`: de ahí salen los `cargado (client)` de los cuatro módulos, y salen **antes** que el `InitPostEntity` cliente de los terceros—, y el respaldo CLIENT-only de la barrera es posterior por construcción (primer `Think` con `LocalPlayer()` válido). El orden sobre el que descansa el boot diferido no cambió; lo que cambió es **contra qué se enuncia**, y ahora se enuncia contra algo que el framework controla.
 
 ```lua
 -- corpus_caliber_init.lua — único archivo en lua/autorun/ (SHARED)
