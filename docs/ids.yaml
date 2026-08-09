@@ -134,6 +134,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: codigo, ref: "corpus-caliber — boot diferido a Initialize (CAL-1), el patrón template" }
+      - { tipo: codigo, ref: "corpus/lua/autorun/corpus_ready.lua — la barrera dispara con la PRIMERA de varias señales y con guard de idempotencia; el mecanismo y su medición viven en el header del archivo y en el CHANGELOG del 2026-08-09 (arco B ronda 2)" }
   COR-6:
     titulo: "Prefijo de archivo por addon: los seis consumidores (cinco módulos + corpus-stalker) usan corpus_<addon>_*.lua en todo su árbol Lua; el framework se reserva corpus_<primitiva>.lua. Contra colisión entre los siete addons montados a la vez."
     sede: "corpus/CLAUDE.md §Contratos que no debes romper · 6"
@@ -1232,7 +1233,7 @@ ids:
       lo correcto. El criterio para un id nuevo es binario y por eso está en la norma: si la
       condición no puede matar, no es condición — es gauge, y los gauges se LEEN (COA-38).
   COA-40:
-    titulo: "El metabolismo TECHA y FRENA, nunca mata: ningún valor leído de Craving toca HP; la muerte llega por sangre en 0 y por nada más."
+    titulo: "ENMENDADA 2026-08-08b: el metabolismo TECHA y FRENA, nunca mata; la muerte sigue teniendo UN dueño, y ese dueño pasa a ser la PERFUSIÓN en 0 (COA-41), no el volumen de sangre."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §8"
     fuerza: INVARIANTE
     estado: VIGENTE
@@ -1244,6 +1245,211 @@ ids:
       entran por palancas QUE YA EXISTEN (techo de stamina, techo de sangre y bpm,
       REGEN_PER_S, BleedRate) y ninguno crea un sistema nuevo — si un valor metabólico
       necesita maquinaria propia, el diseño está mal y se discute antes (COA-28).
+      ENMIENDA 2026-08-08b: el enunciado original decía "la muerte llega por sangre en 0 y
+      por nada más" y esa mitad quedó falsa el mismo día que se acuñó COA-41 — el volumen
+      pasó a ser UNA de las dos entradas de la perfusión. Lo que la enmienda NO toca, que es
+      todo lo que esta norma existía para proteger: el metabolismo sigue sin tocar HP, sigue
+      sin matar, y sigue habiendo UN solo dueño de la muerte. Se reescribe el titulo en vez
+      de dejarlo envejecer porque una línea vieja al lado de una norma vigente es exactamente
+      el modo de falla que este registro existe para atajar.
+
+  COA-41:
+    titulo: "La muerte cambia de INSUMO y no de dueño: el drenaje de HP se alimenta de la PERFUSIÓN (blood × sat/100), no del volumen de sangre solo."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08 por voto del autor. ENMIENDA a COA-40 en su enunciado, no en su
+      sustancia. Lo que NO cambia y por eso esto no es una segunda ruta de muerte: el HP
+      nativo sigue siendo el dueño (§2), la salida sigue siendo el mismo DMG_GENERIC sin
+      atacante de COA-11, y el umbral y la curva de §5 son los de siempre — lo único que se
+      sustituye es qué número entra. RETRO-COMPATIBLE POR CONSTRUCCIÓN: sat sano vale 100 (no
+      97-99, que es lo real) justamente para que Perfusion == blood y NINGÚN número de
+      balance de §4-§6 se mueva; mostrar 100 en el estado sano es la misma regla que pinta de
+      cromo un cuerpo alimentado. El evento Coagulant_BloodCritical CONSERVA su nombre aunque
+      ahora cruce por perfusión: renombrarlo rompería a Craving, que lo consume, y el evento
+      siempre significó "entró en la zona donde se muere". Lo que habilita: asfixia, agente
+      nervioso, neumotórax y ahogo convergen en la amplitud del ECG que el jugador ya mira.
+  COA-42:
+    titulo: "La saturación es un vital propio y NO es la stamina: se encuentran en el techo de stamina y en la perfusión, jamás se fusionan en un número."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Nace de una propuesta de SIMPLIFICACIÓN del autor (¿oxígeno =
+      stamina?) que se rechaza con tres modos de falla concretos, y por eso la norma es
+      prohibitiva y no descriptiva: (1) escalas de tiempo y agencia opuestas — fusionadas,
+      correr ES asfixiarse; (2) destruye la única discriminación que la categoría AIRWAY
+      existe para hacer: un jugador que esprintó y uno con neumotórax a tensión se le
+      presentan IDÉNTICOS al médico; (3) las superficies de tratamiento son disjuntas —
+      descansar curaría un neumotórax. El acoplamiento real existe y tiene sede: un término
+      más en StaminaCap, la fórmula que ya recibe seis. Y sale MÁS BARATO que fusionarlas:
+      sat no tiene drenaje por frame, nace en 100 y sólo se mueve con causa, mientras que
+      fusionar obligaría a desenredar Exertion, que ya está escrita. No entra en la escalera
+      de etiquetas de ritmo del ECG: la saturación no es un ritmo.
+  COA-43:
+    titulo: "El daño ambiental entra como CONDICIÓN SISTÉMICA por ApplyExternalCondition, nunca como herida; lo que llega con evento de daño lo mapea Coagulant solo."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Ids nuevos: radiation, nerve_agent, toxin. NO cambia la regla de
+      admisión de COA-39 y no hace falta que la cambie — los tres pueden matar, y matan por
+      la vía de COA-41. §3 tenía razón en no crearles herida: no son trauma localizable. La
+      partición de vías es MECÁNICA, no de gusto: lo que llega como DMG_* lo mapea Coagulant
+      en el mismo PostEntityTakeDamage donde ya nacen las heridas (COA-9) porque ya ve ese
+      evento; el canal externo es para lo que NO tiene evento de daño (zonas de radiación,
+      artefactos equipados, anomalías químicas) — o sea Stalker, COA-48. LA RADIACIÓN NO ES
+      UNA QUEMADURA: lo que mata en el síndrome agudo es la médula, o sea regeneración a cero
+      y sangrado multiplicado — exactamente las dos palancas que COA-38 ya asignó a protein y
+      micro, así que no necesita mecánica nueva sino un acumulador de dosis. DROWN no gana id:
+      es entrada directa a sat y un id sería una condición que no dice nada nuevo.
+  COA-44:
+    titulo: "Bajo niebla diagnóstica el conocimiento tiene tres capas — síntoma gratis, signo por examen, diagnóstico por instrumento — y el síntoma NUNCA se oculta."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08 por voto del autor, con su matiz textual: "lo más obvio de que
+      ocurre es dolor y efectos que sufre el jugador". Esa frase es el LÍMITE de la niebla y
+      no sólo su permiso. Decisión concreta sobre el paperdoll: bajo niebla la rampa pinta
+      DOLOR, no score — el dolor es síntoma, el score es diagnóstico, y que el dolor no
+      discrimine (una zona a 6 puede ser tres balas o un fémur) ES el juego. DOS
+      CONSECUENCIAS QUE HAY QUE LEER ANTES DE BAJARLA: (a) la niebla es un filtro de RED, no
+      de dibujo — si el server manda todo y el cliente tapa, la derrota un cliente
+      modificado y deja de ser regla del mundo; el snapshot de §9 pasa a filtrarse por
+      observador, y eso tiene costo real; (b) PROMUEVE AL DOLOR de diferido (§1) a REQUISITO:
+      es el único canal gratis, y sin él la niebla apaga la pantalla en vez de complicarla.
+      Nace APAGADA por convar: le pega de frente al flujo de campo, donde ver el estado de un
+      vistazo es la mecánica.
+  COA-45:
+    titulo: "Los dispositivos persistentes siguen siendo CASOS ESPECIALES con su propio campo de zona, como z.tq; no hay contenedor genérico de dispositivos."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Se propuso generalizar z.tq a un z.dev que alojara vía IV, tubo
+      torácico, tubo endotraqueal y mascarilla; el autor votó que no. EL PRECIO SE ESCRIBE
+      ACÁ para que no aparezca como sorpresa tres rondas después: cada dispositivo nuevo paga
+      su campo en st.zones, su render sobre el eje de la zona (§10) y su línea en el snapshot
+      (§9), y ninguna de las tres se amortiza con la siguiente — z.tq es hoy la única
+      instancia y funciona, el precio se paga recién desde la segunda. Consecuencia de
+      catálogo: tubo torácico, ventilador y vía IV quedan DIFERIDOS Y NOMBRADOS, no
+      descartados, y los fluidos siguen siendo autocontenidos. Criterio para admitir uno el
+      día que se pida: que su estado sea observable en el paperdoll y que su ausencia cambie
+      la simulación. Si sólo decora, es un consumible.
+  COA-46:
+    titulo: "Tres correcciones a la tabla de damage types de §3: DMG_ACID va a quemadura, DMG_SHOCK debe dejar arritmia y DMG_BLAST debe tocar la saturación."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08 leyendo corpus_coagulant_config.lua:139-155 contra la tabla de
+      §3. Son de CÓDIGO VIVO y no dependen de nada del resto de §17. (1) DMG_ACID no está en
+      el bitfield DMG_QUEMA, así que cae al default conservador y una quemadura química
+      produce una CONTUSIÓN — sangra distinto (0.0 contra 0.2) y sobre todo miente sobre qué
+      pasó. (2) DMG_SHOCK está bien como quemadura por el daño tisular, pero pierde la
+      arritmia, que es lo característico de la electrocución y lo único que el ECG podría
+      dibujar y una acción revertir. (3) DMG_BLAST produce metralla y nada torácico: la
+      lesión pulmonar por onda expansiva es la causa clásica del neumotórax, o sea la fuente
+      que le faltaba al Needle thoracostomy — entra como caída de sat acompañando la herida,
+      no como herida nueva.
+  COA-47:
+    titulo: "Un menú médico cuyo ECG puede decir ASYSTOLE necesita RCP y desfibrilador; entran por el registro abierto de acciones, sin cambio de UI."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. No es una carencia de hospital: ACE3 tiene RCP, y ésta es la
+      omisión más visible del catálogo v4 tal como está — una etiqueta de ritmo escrita en la
+      escalera del spec sin una sola acción que responda a ella. Con COA-41 gana causa (la
+      perfusión puede colapsar por saturación, no sólo por sangrado) y con COA-46 el
+      desfibrilador gana la suya. Caso testigo del hallazgo que ordenó toda la enmienda: el
+      catálogo tenía acciones sin condición y condiciones sin acción, en los dos sentidos.
+  COA-48:
+    titulo: "Stalker es peer EMISOR de condiciones ambientales: empuja por ApplyExternalCondition y no lee estado clínico, no registra acciones y no dibuja menú."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §12"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-08. Cierra una asimetría que llevaba semanas: STALKER_Arquitectura
+      §2 ya declaraba a Coagulant como destino de "los efectos clínicos de la radiación y de
+      las anomalías químicas" por esta misma firma, mientras §12 de Coagulant ni siquiera
+      listaba a Stalker como peer — un pacto escrito en un solo lado, el mismo modo de falla
+      que la deuda D-5 (COA-39) y que COA-31/CRV-13. Mismo régimen que los otros tres soft-
+      deps: detección por CAPACIDAD y nunca por presencia, y degradación honesta si Stalker
+      no está montado (las condiciones no llegan y el daño cae al HP nativo, §14).
+
+  COA-49:
+    titulo: "La herida tratada tiene TIEMPO: se resuelve sola por reloj o se infecta al tratarla sucia; la sepsis mata por perfusión, nunca por una ruta propia."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-09 por voto del autor, cerrando el primero de los dos ejes que §17
+      había anotado sin votar. Tres contadores (a/t/i) y dos relojes sobre la forma que YA
+      existe: los estados son contadores POR TIPO como a y t, no un enum por herida, porque el
+      cupo ya es por tipo y por estado y romper esa forma obligaría a rehacer el reparto de
+      glifos. EL CHECK QUE ESTA NORMA TUVO QUE PASAR, y por eso está escrito acá: COA-21 nació
+      porque una herida tratada pesaba PARA SIEMPRE y dejaba cojera permanente — agregar
+      tiempo sin resolución automática habría reintroducido ese bug con otro nombre. Por eso
+      t se resuelve SOLA por reloj y el Medkit no cambia una línea: pasa a ser el atajo de
+      algo que además ocurre solo, no la única salida. La sepsis baja el techo de sangre,
+      suprime la regeneración y sube los bpm — tres palancas existentes — y si mata, mata por
+      COA-41: no es id del canal de COA-39 porque no viene de afuera, nace del estado de las
+      propias heridas. Le da su can() al antibiótico, que estaba en el catálogo v4 sin gate:
+      es el segundo caso del mismo hallazgo que ordenó §17, después de la atropina.
+
+  COA-50:
+    titulo: "El área hospital es UNA entidad con modelo OPCIONAL: la estación provee capacidad y define el área de suministro, y esos dos gates son independientes."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-09 por voto del autor, cerrando el segundo de los dos ejes que §17
+      dejó sin votar. LA SEPARACIÓN ES LA NORMA: suministro (contenedores de Cargo dentro del
+      radio) y capacidad (la estación) son gates INDEPENDIENTES en cada can() — juntarlos hace
+      que tener morfina en un armario habilite una cirugía. El modelo es la PIEL y no la
+      entidad: camilla comprada o SetNoDraw para mapas de roleplay con hospital ya construido,
+      el mismo código, y por eso la compra de modelos es OPCIONAL POR CONSTRUCCIÓN. Se compra
+      UNA sola cosa, la camilla, porque es la única con papel mecánico y porque es la marca
+      visible de un radio que si no es invisible — un radio invisible es una trampa. "El
+      paciente se queda" NO cuesta mecánica nueva: canalización larga + radio + cancelación
+      por la vía que ya existe; ocupar físicamente la camilla queda diferido por caro. Dos
+      capacidades al arranque (imaging, surgery) con enum abierto, porque cada capacidad es
+      una pregunta más en cada can(). El área se resuelve al ABRIR el menú y en el server,
+      jamás por can(): misma disciplina que COA-44. CONSECUENCIA DECLARADA: OpenFor no
+      comprueba dueño, así que el área ensancha de 160 u a la sala el radio en que cualquiera
+      abre cualquier contenedor — el dueño de ese permiso es Cargo, no Coagulant.
+  COA-51:
+    titulo: "El área de suministro necesita AreaHas/AreaCount/AreaTake de Cargo, y hasta que Cargo las RATIFIQUE el tramo no baja a código; leer _byId sería la segunda deuda silenciosa."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-09. Es COA-50 mirada desde la frontera, y se separa en su propia
+      norma porque es lo único de ese diseño que NO depende de Coagulant. El contrato público
+      de Cargo expone solo Containers.Attach: el contenido vive en _byId/Snapshot, off-
+      contract. Coagulant YA carga una deuda de esa clase (ClientState.items para el conteo de
+      los botones, con la nota escrita de que se rompe en silencio si Cargo cambia su
+      snapshot), y firmar la segunda convertiría un accidente en método. LAS TRES, NO DOS, por
+      una lección pagada: CountItem cuenta solo stacks y los unique le son invisibles — es por
+      qué el torniquete daba siempre 0 (fallo G4, 2026-07-13) hasta que apareció HasItem; un
+      AreaCount sin AreaHas reproduce el defecto con el mismo síntoma. Y ES UN PEDIDO, NO UN
+      PACTO: escrito el mismo día en los dos lados (roadmap #60 de Cargo) porque D-5 dejó la
+      lección de qué pasa cuando una firma vive un mes en un solo lado. Si Cargo la rechaza o
+      la devuelve con otra forma, manda Cargo: la superficie es suya.
 
   # ── CRV — Craving ───────────────────────────────────────────────────────────
 
@@ -2315,18 +2521,23 @@ ids:
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-07-26
+  fecha: 2026-08-09
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 218
-  intencion: 55          # 25% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-07-26 (roadmap #47, las NVG de Neosun como
-  # ítems: CRG-62 y CRG-63, ninguna INTENCION — las dos nacen con código, harness y
-  # planilla presupuestada). Antes venía de la corrida del mismo día para B5 (216/55), y
+  total: 243
+  intencion: 75          # 31% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-08-08 (enmienda §17 de Coagulant: alta de
+  # COA-41..COA-48, las OCHO en INTENCION — es una sesión de DISEÑO y no hay una línea de
+  # código que las ejerza; el porcentaje sube de 25% a 30% y eso es honesto, no un
+  # retroceso: lo deshonesto sería acuñarlas con una evidencia que no existe). ESE SALTO
+  # DE 218 A 240 NO ES TODO MÍO: la tanda metabólica del mismo día (COA-38/39/40, CRV-24)
+  # tampoco refrescó este bloque, así que venía arrastrando drift — justo lo que el
+  # comentario de abajo prohíbe, y van dos veces. Antes venía de la corrida del 2026-07-26
+  # (roadmap #47, las NVG de Neosun como ítems: CRG-62 y CRG-63, ninguna INTENCION). Antes venía de la corrida del mismo día para B5 (216/55), y
   # antes de la del 2026-07-25 (213/56), que B4 no refrescó al acuñar CRG-60 — justo lo que
   # este comentario prohíbe: se copia en CADA tanda que toque el registro, no cuando alguien
   # se acuerda.
