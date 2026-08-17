@@ -1451,6 +1451,68 @@ ids:
       lección de qué pasa cuando una firma vive un mes en un solo lado. Si Cargo la rechaza o
       la devuelve con otra forma, manda Cargo: la superficie es suya.
 
+  COA-52:
+    titulo: "El dolor es estado POR ZONA derivado de las heridas más un agregado global SATURADO en 0..100; no se almacena y no tiene reloj propio — lo único almacenado es la supresión, y el decaimiento del dolor es el reloj de curación de COA-49."
+    sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Acuñada el 2026-08-17 por voto del autor en seis puntos, antes de una línea de Lua
+      (COA-28). UNA norma con partes y no seis IDs: ninguna de sus partes rige a otro módulo.
+      EL DISPARADOR ES QUE EL DOLOR YA SE CONSUMÍA SIN HABERSE ESCRITO — cinco consumidores con
+      número exacto (bpm +pain*0.22, StaminaCap -pain*0.35, DAZED con pain>80, irregularidad del
+      ECG con pain>85, y la puerta de la morfina pain>10) y CERO productores; medido: 0 hits de
+      `pain` en los 13 archivos del lua/, con `blood` en 64 como control positivo. Es por zona Y
+      global porque las dos cosas son requisito ya votado: COA-44 pinta la silueta con dolor por
+      zona bajo niebla y el síntoma gratis de COA-49 es el dolor de una zona TRATADA.
+      LA AGREGACIÓN ES SUMA CON CLAMP y eso es lo que salva las cuatro fórmulas: suma cruda da
+      0..700 (bpm +154, StaminaCap -245 y los umbrales 80/85 sin sentido), el máximo no acumula
+      —tres balazos en tres zonas duelen igual que uno— y el promedio ponderado vuelve DAZED
+      inalcanzable por trauma localizado, que es el único trauma que este módulo modela.
+      La zona vive en la MISMA escala 0..100, y PAIN_FULL_AT = 60 satura la RAMPA y no el estado
+      (espejo de ZONE_FULL_AT = 6, que satura en dos heridas graves). LA PRODUCCIÓN SE DERIVA DE
+      TRES EJES con UNA sola constante absoluta: PAIN_PER_WOUND 40 × PAIN_TYPE × PAIN_SEVERITY.
+      PAIN_TYPE son los valores de ACE3 LITERALES —referente citado, no fuente adoptada— y el eje
+      de SEVERIDAD es nuestro porque la tabla de ACE no tiene ninguno: ésa es la mitad que no se
+      podía copiar. La matriz son 15 celdas y no 18: WOUND_TYPES tiene CINCO tipos, y el sexto
+      —`punzante`— lo nombra COA-49 y no existe en el árbol; su fila entra inerte.
+      EL DOLOR NO SE ALMACENA: se deriva con la misma forma que el score de §6 (activa 1.00,
+      tratada 0.35, infectada 1.00 entera). De ahí sale que NO HAY TASA DE DECAIMIENTO — el
+      decaimiento del dolor ES el reloj HEAL_S de COA-49 — y que el síntoma de infección salga
+      exacto en sus DOS mitades: al pasar t→i el dolor vuelve a SUBIR (0.35→1.00) y además deja
+      de BAJAR. Da vuelta una dependencia que estaba escrita al revés en
+      dev/PROMPT_coagulant_menu_v5.txt §4.3: el dolor no está bloqueado por COA-49, CONSUME su
+      reloj, y con la forma de lista de hoy el término `i` lee 0 y es exactamente neutro.
+      LOS ANALGÉSICOS PONEN TECHO Y NO RESTAN, y el modelo lo obliga: a un derivado no se le
+      resta sin ALMACENAR la resta. La variable de estado es painSuppress (el par pain/painSuppress
+      de ACE3, recomendación de su D10), los cinco consumidores leen el PERCIBIDO, y
+      AddPainSuppression reemplaza al inexistente CoaAddDrug — cuyo `10` eran MILIGRAMOS y no
+      puntos de dolor. Efecto de segundo orden que justifica la elección: bajo niebla la morfina
+      te CIEGA EL DIAGNÓSTICO (el síntoma es el percibido), así que deja de ser un buff y pasa a
+      ser un costo de información — y le da razón de existir a la naloxona de COA-50. La puerta
+      pain>10 se auto-limita porque lee el percibido, así que el apilamiento no necesita regla.
+      FUENTES: isquemia y fractura SÍ, torniquete NO. Los dos entran como PISO con la misma forma
+      que las cláusulas max() de ZoneScore (isquemia 60 espejo de max(score,6); fx 30 y férula 12
+      espejo de max(score,3)). El torniquete no duele porque a los 90 s YA se vuelve isquemia: un
+      reloj, no dos. Conserva su -12 plano (oclusión mecánica) y la fractura pierde sus -15/-6
+      cuando la fórmula exista: un canal por causa, cero doble cobro. Costo de migración MEDIDO en
+      cero — StaminaCap, frac y splint tienen 0 hits en el lua/, viven sólo en el spec v5.
+      LA SEXTA COLISIÓN, que la sesión encontró y no estaba en la lista: UN VITAL QUE LA NIEBLA
+      PUEDE OCULTAR NO PUEDE VIAJAR POR NW2, porque un NW2 se replica a TODOS los clientes y no
+      tiene filtro por observador. Por eso el dolor va en el snapshot (owner-only) y no gana
+      NW2Float, y por eso el server manda `p` por zona SIEMPRE y el cliente nunca lo deriva —dos
+      ramas de la misma magnitud divergirían justo al cambiar la convar—. DEUDA QUE DESTAPA y que
+      esta sesión NO arregla: `coagulant_blood` ya viaja por NW2 a todos los clientes y la cifra de
+      sangre es capa de DIAGNÓSTICO en la tabla de COA-44, o sea que la niebla tiene un agujero
+      ANTERIOR al dolor; no se toca acá porque mover ese NW2 rompe la barra del StatusPanel de
+      Cargo y la mini-barra del modo degradado.
+      Y LA ACLARACIÓN QUE HAY QUE DEJAR ESCRITA O SE LEE AL REVÉS: COA-41 prometió que ningún
+      número de balance se mueve, y esa promesa era sobre `sat` sano = 100 y NO cubría al dolor
+      porque el dolor no existía. Que el dolor tampoco mueva nada es una decisión de diseño
+      APARTE —elegir una agregación que preserva el rango—, no un corolario de COA-41: si algún
+      día se vota suma cruda, el retuneo vuelve por ESTA norma y no por aquélla.
+
   # ── CRV — Craving ───────────────────────────────────────────────────────────
 
   CRV-1:
@@ -2521,16 +2583,18 @@ ids:
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-08-09
+  fecha: 2026-08-17
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 243
-  intencion: 75          # 31% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-08-08 (enmienda §17 de Coagulant: alta de
+  total: 244
+  intencion: 76          # 31% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-08-17 (sesión de diseño del DOLOR en Coagulant:
+  # alta de COA-52, en INTENCION — no hay una línea de Lua que la ejerza y el porcentaje no se
+  # mueve del 31%). Antes venía de la corrida del 2026-08-08 (enmienda §17 de Coagulant: alta de
   # COA-41..COA-48, las OCHO en INTENCION — es una sesión de DISEÑO y no hay una línea de
   # código que las ejerza; el porcentaje sube de 25% a 30% y eso es honesto, no un
   # retroceso: lo deshonesto sería acuñarlas con una evidencia que no existe). ESE SALTO
