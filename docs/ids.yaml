@@ -868,6 +868,37 @@ ids:
   # El módulo mejor instrumentado del ecosistema: selftest + harness + seis rondas
   # de planilla con IDs (A/E/G/H/I). Es el ÚNICO con evidencia tipo planilla real.
 
+  CRG-69:
+    titulo: "El catálogo de ítems se recorre por la API pública (Items.GetAll / Items.ByCategory), y sale ORDENADO POR ID: `_defs` es un hash y su orden de `pairs` no se repite entre sesiones."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — 7 checks del accesor, entre ellos el del ORDEN sobre el catálogo entero, verificado en negativo borrándole el table.sort (2026-08-18)" }
+      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en CADA realm: forma, frescura de la lista, defs por referencia y cruce ByCategory contra GetAll" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua — SortedDefs es el único recorrido público; los tres internos (dev, lan, iconeditor) siguen leyendo _defs porque viven adentro" }
+    nota: >
+      Acuñada el 2026-08-18. La pidió corpus-stalker: su trader de comida vende "todo lo que
+      declare category = food" como REGLA y no como lista —para que una comida registrada
+      mañana por cualquier addon entre sola—, y esa regla no se escribe sin recorrer el
+      registro. `Items.Get` respondía por UNA def; los tres recorridos que existían (dev, lan,
+      iconeditor) leen `_defs` directo porque viven ADENTRO del módulo, y STK-1 le prohíbe al
+      consumidor agregar el accesor. Mismo movimiento que Trade.StockOf/HasViewer/ClearViewers:
+      alcanzar la tabla privada desde afuera no evita el acoplamiento, lo muda.
+      LA MITAD QUE NO ES OBVIA ES EL ORDEN, y es por lo que esto es INVARIANTE y no una firma.
+      Sin `table.sort`, un trader que siembra stock recorriendo el registro arma un catálogo
+      distinto en cada arranque SIN que nadie lo haya sorteado, y un defecto que dependa del
+      orden no se reproduce dos veces: se lee como mala suerte, que es la peor forma que puede
+      tomar. Con el orden fijo, lo único aleatorio que ve un caller es lo que el caller pidió.
+      LO QUE LA MEDICIÓN CORRIGIÓ DE SÍ MISMA: el primer check de orden del harness comparaba
+      DOS elementos y NO discriminaba — borrando el `table.sort` a propósito, el selftest se
+      puso rojo y ese check siguió verde, porque con dos elementos un `pairs` sin ordenar
+      acierta la mitad de las veces. Lo que juzga es recorrer el catálogo ENTERO (miles de ids
+      ascendentes por azar del hash no pasa). Un caso suelto no juzga un orden.
+      LO QUE NO DICE: nada sobre mutar el registro (no hay vía pública para desregistrar y esto
+      no abre una), y nada sobre ocultar el catálogo bulk — esconder attachments y armas
+      capturadas es decisión de DISPLAY y vive en el listado de dev; un accesor que descartara
+      entradas mentiría sobre qué hay registrado.
   # COA-1 NO EXISTE A PROPÓSITO. La regla de realms de las defs es COR-12: su sede es
   # el contrato de ítems del framework, y lo que Coagulant, Craving y corpus-stalker
   # tienen en sus docs son COPIAS de esa norma, no normas propias. Acuñarle un ID a
