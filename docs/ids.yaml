@@ -1580,13 +1580,18 @@ ids:
       - { tipo: selftest, ref: "round-trip de Consume" }
       - { tipo: codigo, ref: "en juego: con barra llena NO consume" }
   CRV-9:
-    titulo: "Los stats son server-autoritativos, escala 100 → 0, clampeados siempre a [0,100]."
+    titulo: "Los stats son server-autoritativos y de escala 100 → 0; el piso es 0 y el techo lo fija CRV-20."
     sede: "corpus-craving/docs/Craving_Architecture.md §2"
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
       - { tipo: selftest, ref: "clamps" }
-    nota: "La mitad del espejo NW2 es ahora CRV-18 (curaduría D-10, 2026-07-19)."
+    nota: >
+      La mitad del espejo NW2 es ahora CRV-18 (curaduría D-10, 2026-07-19). El título decía
+      "clampeados siempre a [0,100]" y quedó FALSO con la enmienda del 2026-08-08: su propia
+      sede (§2) ya declaraba derogada esa frase — "el piso sigue en 0, pero el techo dejó de
+      ser 100" — y el clamp real pasó a ser STAT_HARD (CRV-20). Alineado el 2026-08-17 al
+      bajar §5.2 a código; el yaml no es autoridad y acá estaba contradiciendo a su sede.
   CRV-10:
     titulo: "Reconexión ≠ respawn: reconectar restaura lo persistido (cierra el exploit de comer gratis) y morir aplica el 75/75."
     sede: "corpus-craving/docs/Craving_Architecture.md §12"
@@ -1661,8 +1666,14 @@ ids:
     fuerza: INVARIANTE
     estado: VIGENTE
     evidencia:
-      - { tipo: harness, ref: "dev/harness_craving.py — 55 checks client" }
-    nota: "Partido de CRV-9 en la curaduría D-10 (2026-07-19)."
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+    nota: >
+      Partido de CRV-9 en la curaduría D-10 (2026-07-19). El ref decía "— 55 checks client",
+      cifra de julio que envejeció sola (hoy son cientos): una línea de evidencia con un
+      número adentro se desactualiza sin que nadie toque la nota, así que se sacó el número
+      en vez de reemplazarlo por otro que va a envejecer igual. Desde el 2026-08-17 el
+      epsilon cubre los CINCO stats, y el harness mide que un tick de micro (0.006) NO
+      publica y que ~17 sí — el epsilon y el drenaje lento se llevan bien por diseño (§9).
   CRV-19:
     titulo: "Los alcances de commit de Craving son los 11 de §3 de su doc de convenciones (config, assets, core, coagulant, items, entity, bars, options, dev, init, docs); el CLAUDE.md los resume y el doc manda."
     sede: "corpus-craving/docs/craving_convenciones_commits.txt §3"
@@ -1676,7 +1687,10 @@ ids:
     sede: "corpus-craving/docs/Craving_Architecture.md §2.1"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_craving.py" }
+      - { tipo: selftest, ref: "clamp de Restore/_SetStats a STAT_HARD; umbrales quietos sobre 100" }
+      - { tipo: codigo, ref: "en juego 2026-08-17: craving_set 140 deja 140 y ningún umbral se mueve" }
     nota: >
       Acuñada el 2026-08-08 (voto del autor: comer de más es posible hasta el 150 %).
       Deroga la frase de §2 "no hay valores negativos ni overfill" — el piso sigue en 0. Son
@@ -1686,6 +1700,10 @@ ids:
       acá porque es la que muerde a los consumidores: los getters de CRV-1 dejaron de
       devolver 0..100, y la barra del StatusPanel de Cargo espera 0..100 (ver §10 — el
       autor votó una marca de sobrellenado en Cargo, feature que todavía no existe).
+      BAJADA A CÓDIGO el 2026-08-17 junto con §5.2 y NO con el resto de §2.1: §5.2 exige
+      las dos constantes (sus tres ejes van en la misma banda) y §8 que los cinco getters
+      devuelvan 0..150, así que el clamp entra con ese tramo y el VÓMITO (CRV-21) con el
+      otro. VERIFICADA EN JUEGO el 2026-08-17 (planilla craving-nutrientes-r1, 14/14).
   CRV-21:
     titulo: "La probabilidad de vómito es ((sobrellenado)/50)² sobre el más desbordado de los dos stats, se tira UNA vez por consumo y revierte exactamente esa comida más 8 de hidratación."
     sede: "corpus-craving/docs/Craving_Architecture.md §2.1"
@@ -1701,13 +1719,19 @@ ids:
       el vómito es seguro; la banda que se sostiene es ~100-135. El vómito no es un no-op:
       revierte los cinco valores de esa comida y resta 8 de hidratación —lo único que puede
       dejarte PEOR que antes de comer—, la unidad ya la consumió Cargo, y suena (lo oyen los
-      de al lado, como el estómago de §3: comparten convar).
+      de al lado, como el estómago de §3: comparten convar). SIGUE SIN UNA LÍNEA DE CÓDIGO
+      al 2026-08-17: es el tramo (a), y CRV-20 bajó sin él a propósito — el vómito revierte
+      los CINCO valores de esa comida, así que escribirlo antes de §5.2 lo habría dejado
+      escrito sobre dos y habría que volver a tocarlo. Con §5.2 ya en código se escribe UNA
+      vez sobre cinco.
   CRV-22:
     titulo: "Los cinco valores metabólicos son explícitos por def: ninguno se infiere de otro, ni del kind, ni de los tags."
     sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
+    evidencia:
+      - { tipo: selftest, ref: "cobertura: las 15 defs propias declaran los tres y ninguna suma 0" }
+      - { tipo: codigo, ref: "en juego 2026-08-17: los tres se mueven por def, ninguno sigue a otro" }
     nota: >
       Acuñada el 2026-08-08. Tercera vez que el módulo tropieza con lo mismo y primera que
       la regla queda escrita en general: el anti-desperdicio infería el stat de los números
@@ -1717,13 +1741,17 @@ ids:
       es un eje. Los tres campos nuevos son OPCIONALES con default 0 (un addon de terceros
       no puede romperse por una enmienda nuestra), pero las 15 defs propias los declaran
       todos y el harness lo verifica como COBERTURA, no como sintaxis: una def propia con
-      los tres en 0 es un olvido, no una decisión.
+      los tres en 0 es un olvido, no una decisión. BAJADA A CÓDIGO el 2026-08-17: las 15
+      declaran los tres y el check de cobertura exige suma > 0 (chequear el TIPO pasaría
+      siempre, porque Register los defaultea). VERIFICADA EN JUEGO el 2026-08-17.
   CRV-23:
     titulo: "`tier` multiplica los tres nutrientes (junk 0.75 / standard 1.0 / quality 1.25) y NUNCA hunger ni hydration."
     sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
+    evidencia:
+      - { tipo: selftest, ref: "NutrientsOf deriva el efectivo del declarado; hunger/hyd intactos" }
+      - { tipo: codigo, ref: "en juego 2026-08-17: junk ×0,75 y quality ×1,25 medidos; hunger/hyd intactos" }
     nota: >
       Acuñada el 2026-08-08. Es lo que saca a `tier` del limbo en que lo dejó §5.1 ("no
       gobierna nada todavía"). LA MITAD PROHIBIDA ES EL PUNTO DE LA NORMA, no un detalle:
@@ -1734,12 +1762,19 @@ ids:
       55, que es lo que pasaría si el multiplicador entrara por el lado equivocado y alguien
       quisiera fijar el efectivo). Consecuencia buscada: la comida basura queda peor en los
       tres ejes pero sigue LLENANDO igual — llena el estómago y no alimenta.
+      BAJADA A CÓDIGO el 2026-08-17: Food.TIER_MULT vive pegado a Food.TIERS (son el mismo
+      vocabulario cerrado) y Food.NutrientsOf es el ÚNICO lugar donde el tier multiplica.
+      VERIFICADA EN JUEGO el 2026-08-17 con los DOS extremos y el número exacto: cola (junk)
+      dio energy 41,2 sobre 55 declarados y salchicha (quality) 25,0/43,8/15,0 sobre 20/35/12,
+      con hambre e hidratación moviéndose SOLO lo declarado.
   CRV-24:
     titulo: "Craving publica números crudos y no interpreta clínicamente: acá no existe el concepto de déficit, ni su umbral, ni su efecto."
     sede: "corpus-craving/docs/Craving_Architecture.md §5.2"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
+    evidencia:
+      - { tipo: selftest, ref: "GetMetabolic: tabla nueva por llamada, escribirla no pisa el estado" }
+      - { tipo: codigo, ref: "en juego 2026-08-17: los cinco crudos, mismo valor en los dos realms" }
     nota: >
       Acuñada el 2026-08-08. Contraparte exacta de COA-38/COA-40: el umbral de déficit vive
       en la config de Coagulant, no acá. Es la frontera de siempre leída al derecho — el
@@ -1749,6 +1784,8 @@ ids:
       llamada, jamás la interna; con la tabla por referencia, "Coagulant solo lee" sería una
       convención que nadie puede hacer cumplir. Contrapartida asumida: aloca, así que nadie
       la llama en un Paint — el consumidor que dibuja la cachea en su refresco de vitales.
+      BAJADA A CÓDIGO el 2026-08-17, en los DOS realms (server lee el estado, cliente el
+      espejo NW2). VERIFICADA EN JUEGO el 2026-08-17: los dos realms imprimen los mismos cinco.
 
   # ── CRG — Cargo ─────────────────────────────────────────────────────────────
   # El módulo más grande del ecosistema. Su evidencia es dev/harness_cargo.py (2807
