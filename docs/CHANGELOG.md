@@ -1503,3 +1503,64 @@ ningún check, se renombró el detalle de uno existente), `harness_coagulant.py`
 `harness_craving.py` en verde. El harness **sigue sin poder acreditar nada de este arco**: su stub
 hace `hook.Run("InitPostEntity")` en los dos realms por construcción, así que ahí ninguna cadena
 se corta. Lo que acredita este bloque es el `console.log` del autor y la fuente del engine.
+
+---
+
+## PARCHES DE sesión La categoría Corpus estaba vacía: el spawnmenu se arma antes del boot — 2026-08-17
+
+Reportado por el autor al final de la sesión del fix de Sidorovich: menú Q → Utilities →
+**la categoría "Corpus" aparece, pero no cuelga ninguna entrada** — ni Caliber, ni Cargo, ni
+Coagulant, ni Craving. Sólo quedaban las convars para tocar nada. Cero errores de Lua.
+
+**Dos hipótesis refutadas antes de la buena, y las dos por el `console.log`, no por argumento.**
+(1) *La cadena de `Initialize` cortada por un tercero que devuelve un valor* —el defecto del arco
+B— habría explicado los cuatro módulos ausentes de golpe y sin error. **Refutada:** el log tiene
+las cuatro líneas `cargado (client)` en todas las cargas, así que los cuatro `Boot()` corrieron y
+los cuatro `RegisterTab` se llamaron. (2) *Un `PopulateToolMenu` de un tercero reventando y
+abortando la cadena*, que es la forma exacta del bug de Sidorovich de esta misma sesión.
+**Refutada:** el único error cliente candidato (`Glide // config.lua:859`) sale de un `DoClick` —
+el autor abriendo el menú de Glide a mano— y además cae antes de la última carga.
+
+**La causa, medida en la fuente del gamemode y no asumida.** Sandbox cuelga la creación del
+spawnmenu de **`OnGamemodeLoaded`** (`gamemodes/sandbox/gamemode/spawnmenu/spawnmenu.lua:236`), y
+dentro de esa misma función corre `AddToolMenuCategories` (`:217`) y después `PopulateToolMenu`
+(`:221`). Ese evento llega **antes** de que los módulos booteen en `Initialize`. De ahí la firma
+del síntoma, que es lo que lo hacía raro: la **categoría** la agrega un hook nuestro que no
+depende de nadie, así que aparece; las **entradas** salen de `Corpus.UI._tabs`, que en ese
+instante todavía está vacía. Y el registro tardío tampoco alcanza: `ToolMenu:Init()` llama a
+`LoadTools()`, que lee `spawnmenu.GetTools()` **una sola vez** al crear el panel
+(`spawnmenu/toolmenu.lua:13`) — un `AddToolMenuOption` posterior entra a la tabla y no se dibuja
+nunca.
+
+**El comentario del propio archivo mentía, y por eso el defecto era invisible.** El header de
+`corpus_ui.lua` afirmaba que el spawnmenu se construye *"después de InitPostEntity"*. No hay
+ninguna medición detrás de esa frase, y mientras estuvo ahí, cualquiera que auditara la primitiva
+4 leía el motivo por el cual el bug no podía existir. Es el mismo modo de falla que el arco B:
+una creencia sobre el engine, escrita como si fuera un hecho verificado.
+
+- PARCHE 1 — fix(ui): `lua/autorun/client/corpus_ui.lua` — el contrato de la primitiva pasa a ser
+  **"registrá cuando quieras"**. Se agrega `Corpus.UI._poblado` (nuestro `PopulateToolMenu` ya
+  corrió, o sea que el `ToolMenu` ya leyó la tabla) y, si un `RegisterTab` llega después, se
+  agenda **un** `spawnmenu_reload` diferido a `timer.Simple(0)` — diferido a propósito, para que
+  los cuatro módulos registrando en el mismo frame paguen un solo rebuild. No hay recursión: el
+  rebuild vuelve a correr `PopulateToolMenu`, que sólo re-lee la tabla, y sin un registro NUEVO
+  después de eso nadie agenda otro. El header se reescribe con las tres sedes medidas y la línea
+  falsa se borra. **[PENDIENTE]**
+
+**Lo que NO se hizo, y por qué.** No se tocó la deferencia a `Initialize` de los cuatro módulos.
+Sería la otra mitad —registrar antes de que el menú se arme— pero son cuatro repos, y el arreglo
+en la primitiva cubre además el caso que ninguna reordenación cubre: un módulo que registre su tab
+en runtime, mucho después del boot. La primitiva tiene que aguantar eso igual.
+
+**Deuda de instrumento, declarada.** El header de `corpus_selftest.lua` dice *"El tab de UI
+(primitiva 4) se verifica visual"*. Éste es el único hueco de las cinco primitivas y es justo
+donde vivió el bug: ningún check habría podido delatarlo, porque no hay ninguno. Peor, `lua_run_cl`
+está gateado por `sv_allowcslua`, así que `Corpus.UI._tabs` **no es inspeccionable en juego** — el
+diagnóstico se cerró leyendo el `console.log` y la fuente del engine, sin poder consultar el
+estado del cliente ni una vez. Un `corpus_ui_dump` de realm CLIENT cerraría las dos cosas.
+
+Verificación (PASO 4, del autor): cargar mapa y abrir Q → Utilities → Corpus **sin tocar nada**.
+Criterio: las cuatro entradas presentes de una. El diagnóstico ya está confirmado a mano —el autor
+corrió `spawnmenu_reload` y las entradas aparecieron—, pero eso acredita la CAUSA, no el parche:
+lo que falta medir es que el rebuild automático dispare solo. Y si aparecen, mirar que **no
+parpadee dos veces** ni queden dos categorías: sería la señal de que el debounce no agrupó.

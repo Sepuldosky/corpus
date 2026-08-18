@@ -109,6 +109,11 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
 
 ## Pendiente de verificar
 
+- **El rebuild automático del spawnmenu** (primitiva 4, PARCHE 1 del 2026-08-17). La CAUSA está
+  confirmada a mano —la categoría "Corpus" salía vacía y `spawnmenu_reload` hizo aparecer las
+  cuatro entradas—, pero eso acredita el diagnóstico, **no el parche**: falta ver que el rebuild
+  dispare solo al cargar mapa. Criterio y trampa (que no parpadee dos veces, señal de debounce
+  roto) en el CHANGELOG.
 - Nada de la ready barrier: **cerró en juego el 2026-08-08, 4/4** (selftest_cl verde con
   `fuente=fallback` y `_readyQueue=0`; las líneas `(…, client)` que nunca habían salido; 51 defs
   no-bulk en `cargo_dev_items_cl`; las 5 barras en el panel). **Ojo con lo que NO cerró:**
@@ -204,8 +209,16 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
    voto del autor: COR-12 SE QUEDA** — no gobierna ítems sino el protocolo de registro entre
    módulos, del linaje de COR-3/COR-4; enuncia la FORMA, jamás la SEMÁNTICA, y si algún día
    menciona stacks, peso o slots el voto se reabre. Deudas de verificación **en juego, del
-   autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) — Coagulant quedó
+   autor**: la entry #27 de Cargo (`[PENDIENTE]` con código en árbol) y el **PARCHE 1 de la
+   primitiva 4** del 2026-08-17 (el rebuild automático del spawnmenu; la CAUSA ya está
+   confirmada a mano con `spawnmenu_reload`, falta que dispare solo) — Coagulant quedó
    sin ninguna (ronda 7, mini-ronda 8 y check N1, todo ✓).
+5. **La primitiva 4 es la única sin check, y ahí vivió un bug** (2026-08-17): la categoría
+   "Corpus" salía vacía porque el spawnmenu se arma en `OnGamemodeLoaded`, antes de que los
+   módulos booteen en `Initialize`. El header de `corpus_ui.lua` afirmaba lo contrario **sin
+   medición**, y el `corpus_selftest` declara que el tab "se verifica visual". Además
+   `Corpus.UI._tabs` **no es inspeccionable en juego** (`lua_run_cl` gateado por
+   `sv_allowcslua`): un `corpus_ui_dump` de realm CLIENT cierra las dos deudas.
 
 ---
 
