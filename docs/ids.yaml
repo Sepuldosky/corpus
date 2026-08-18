@@ -875,7 +875,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_cargo.py — 7 checks del accesor, entre ellos el del ORDEN sobre el catálogo entero, verificado en negativo borrándole el table.sort (2026-08-18)" }
-      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en CADA realm: forma, frescura de la lista, defs por referencia y cruce ByCategory contra GetAll" }
+      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en CADA realm: forma, frescura de la lista, defs por referencia y cruce ByCategory contra GetAll. ACREDITADO EN JUEGO el 2026-08-18: cargo_selftest 91 OK / cargo_selftest_cl 93 OK, 0 fallas, y los dos totales coinciden con los que el harness offline habia predicho" }
       - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua — SortedDefs es el único recorrido público; los tres internos (dev, lan, iconeditor) siguen leyendo _defs porque viven adentro" }
     nota: >
       Acuñada el 2026-08-18. La pidió corpus-stalker: su trader de comida vende "todo lo que
@@ -907,7 +907,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_cargo.py — bloque CRG-70: 14 checks (acuñación, PrintName trepando .Base, calibre desde la clase, comerciabilidad, idempotencia, los cuatro motivos exactos, la cara canónica del frag y la no-fantasma), los 8 gates verificados en negativo el 2026-08-18" }
-      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 5 checks en el realm SERVER: la mitad SIN EFECTOS (acuñar escribe en autogen_defs y un selftest en partida real no puede dejar ítems atrás)" }
+      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 5 checks en el realm SERVER: la mitad SIN EFECTOS (acuñar escribe en autogen_defs y un selftest en partida real no puede dejar ítems atrás). ACREDITADO EN JUEGO el 2026-08-18: cargo_selftest 91 OK, 0 fallas" }
       - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_capture.lua — CARGO.Capture.ItemIdFor; EnsureDef sigue siendo local y ahora resuelve nombre y calibre de la CLASE cuando no hay entidad viva" }
     nota: >
       Acuñada el 2026-08-18, un día después de CRG-69 y por el mismo consumidor. Es el MISMO
