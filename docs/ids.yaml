@@ -900,6 +900,41 @@ ids:
       capturadas es decisión de DISPLAY y vive en el listado de dev; un accesor que descartara
       entradas mentiría sobre qué hay registrado.
 
+  CRG-72:
+    titulo: "La POSICIÓN de una entrada en el grid es dato del JUGADOR y se persiste (`ord`); el criterio automático es sólo su estado inicial y un botón. Y una posición NO es una identidad: ningún ref de red la nombra, porque dos entradas de stack del mismo `id`+`condition` son FUNGIBLES y lo que un clic nombra es una CANTIDAD, no una celda."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §7.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — 31 checks del #67 (25 en SERVER: el techo de MaxStack y su piso de 1, el orden TOTAL de AutoSortLess, la siembra de un record legacy, que un pickup no mueva nada, que lo nuevo caiga al final, que el Sort sí re-escriba, que los DOS funnels estampen, el stock del trader partido y el falso bloqueo de Move all; 6 en CLIENT: las tres cantidades del clic y su control negativo) + 6 del gate de FUENTES, que aprendió a leer archivos de server/. Total de la pasada 910 -> 945. Los 12 sabotajes verificados en NEGATIVO uno por uno el 2026-08-19 con dev/sabotaje_cargo_67.py: los 12 ponen la pasada en rojo, con control de apertura y de cierre en verde" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua — Items.MaxStack y Items.AutoSortLess, la única casa del techo y del criterio; server/corpus_cargo_inventory.lua — StampOrder (llamado por los dos funnels, SaveRecord y BuildSnapshot) e Inventory.SortGrid; client/corpus_cargo_grid.lua — el comparador que respeta `ord` y cae al criterio compartido; client/corpus_cargo_trade.lua — ClickAmount" }
+      - { tipo: juego, ref: "PASADA EN JUEGO ✓ 2026-08-19 (autor): el botón Sort, el SHIFT+M1 sobre un stack y el «todo», los tres OK en el trader. Enmienda votada en la misma pasada: el «todo» pasa de CTRL+SHIFT a ALT+SHIFT, porque CTRL está bindeado a agacharse y un modificador de menú no puede ser una tecla de movimiento" }
+    nota: >
+      Acuñada el 2026-08-19, roadmap #67. EL AUTOR PIDIÓ DOS COSAS QUE PARECÍAN DOS FRENTES —que
+      los ítems guarden posición, y que apretar sobre un stack de munición opere sobre ESE stack y
+      no sobre las 800 balas de la mochila— y tenían la misma raíz: una entrada de stack no tiene
+      identidad. LA MITAD DEL VALOR DE LA ENTRADA ES QUE ESA RAÍZ NO HABÍA QUE ARREGLARLA ENTERA:
+      para el comercio la identidad resultó INNECESARIA, porque los stacks son fungibles y lo que
+      un clic manda es cuánto y no cuál. Una función de cinco líneas en el cliente cerró ese
+      frente; el `ord` quedó sólo para la posición, y no viaja en ningún ref.
+      LA PREMISA DEL PEDIDO ERA FALSA Y MEDIRLO ES LO QUE ACHICÓ EL BLOQUE: «tal vez a la munición
+      le falta información para separar stacks» — `AddStack` parte por `max_stack` desde el Block 1
+      y las 800 balas YA eran siete entradas. Faltaba no volver a sumarlas al hacer clic.
+      Y DE MEDIR EL ALCANCE SALIERON DOS DEFECTOS VIVOS Y SILENCIOSOS que nadie había pedido: el
+      comparador del grid terminaba en `(a.uid or "") < (b.uid or "")`, que para dos stacks compara
+      "" contra "" —empate total, y table.sort de Lua es quicksort y NO es estable, así que el x120
+      y el x80 de la misma munición se cambiaban de lugar entre syncs sin que nada cambiara—; y
+      Take all / Move all avisaba «no pude mover todo» sobre operaciones que habían funcionado
+      enteras, porque la lista de refs traía uno por entrada, el primero se llevaba todo y los
+      otros «no resolvían nada», que ese loop lee como bloqueado.
+      LO QUE NO DICE: nada sobre gestión espacial. El nivel 2 (posiciones reales por celda,
+      roadmap #70) enmendaría la mitad «sin gestión espacial» de la decisión del 2026-07-11, y esta
+      norma no lo hace ni lo autoriza — sólo le saca al ORDEN el ser una función del contenido. La
+      otra mitad de aquella decisión, «el costo de cargar es peso y no espacio», sigue intacta.
+      TAMPOCO DICE que un ref pueda nombrar una celda: hoy no puede, y que `FindEntry` resuelva un
+      ref de stack contra la PRIMERA entrada es un defecto abierto (roadmap #68), no un corolario
+      de esta norma.
+
   CRG-71:
     titulo: "`def.uses` lee la condición 0-100 de un único como una UNIDAD (`n / uses`) y NO GUARDA UN SEGUNDO NÚMERO: el redondeo es TECHO, la ida y vuelta la cierran `Items.UsesLeft`/`ConditionForUses`, y a 0 el ítem QUEDA porque qué significa un gastado es del módulo dueño."
     sede: "corpus-cargo/docs/Cargo_Architecture.md §3"
