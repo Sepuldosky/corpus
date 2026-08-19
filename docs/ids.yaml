@@ -900,8 +900,60 @@ ids:
       capturadas es decisión de DISPLAY y vive en el listado de dev; un accesor que descartara
       entradas mentiría sobre qué hay registrado.
 
+  CRG-73:
+    titulo: "Una entrada del grid lleva un `cid` ESTABLE —acuñado una vez en el funnel del record, nunca reasignado, con contador persistido que sólo sube— y un ref de stack que lo trae resuelve a ESA celda y a ninguna otra. El arreglo es POR CAMINO: los cinco que MUEVEN una celda lo honran; los dos que preguntan una CANTIDAD siguen agregando. Un ref SIN `cid` sigue cayendo a la primera."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §7.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — 39 checks del #68 (25 en SERVER: los dos síntomas del autor con sus counts exactos y la conservación, los cinco caminos uno por uno, la compatibilidad del ref viejo y del record legacy, la celda perdida con su aviso, que el número no se recicle y que el contador sobreviva a disco, que el Sort no lo pise, QuickTarget, y los dos controles negativos del alcance; 8 en CLIENT: que RefOf lo lleve, que discrimine, que el único siga siendo `uid` pelado, y los controles negativos del basket; 6 en el gate de FUENTES, dos de ellos POR CUENTA). Total de la pasada 945 -> 985. Los 16 sabotajes verificados en NEGATIVO uno por uno el 2026-08-19 con dev/sabotaje_cargo_68.py: los 16 ponen la pasada en rojo, con control de apertura y de cierre en verde" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua — StampCid y StampEntries (el funnel, llamado por SaveRecord y BuildSnapshot), FindEntry con el conjunto del `cid`, FindCell (los cinco caminos), EntrySnapshot y QuickTarget; client/corpus_cargo_grid.lua — Grid.RefOf, el único sitio del cliente que arma un ref de stack" }
+      - { tipo: juego, ref: "PENDIENTE — pasada del autor: arrastrar la celda de 107 al cinturón y botar el grid de munición contando los ítems que caen" }
+    nota: >
+      Acuñada el 2026-08-19, roadmap #68. DE DÓNDE SALE, textual del autor en juego: «al meter al
+      belt, ese que tiene 107 se mete otro de 120, incluso bote toda mi municion de pistola del grid
+      y salieron 6 items de pistola en vez de los 4 que tengo en el grid». Y al confirmarle que el
+      stack de 107 no era un bug, aclaró el pedido: «que en vez de mandar 120 de otro stack, se mande
+      justo ese stack de 107 al belt».
+      NO SE ESTABAN CREANDO BALAS, y decirlo primero es lo que ahorró la ronda: la conservación se
+      cumplía y lo que no se cumplía era CUÁL entrada se movía. Los DOS síntomas del reporte son UN
+      defecto —el ref traía `{ id, condition }` y `FindEntry` resolvía contra la PRIMERA que
+      emparejaba—, y por eso los dos caen con el MISMO sabotaje.
+      POR QUÉ NO ES EL `ord` DE CRG-72, que era la opción barata: el botón Sort reescribe todos los
+      `ord` de una, así que un intent que nombrara un `ord` lo podía re-apuntar un re-orden que
+      aterrizara entre el clic y el paquete. El `cid` se paga una vez y además paga la mitad del
+      roadmap #70, donde un intent de arrastre tiene que decir «mové ESTA celda al slot 12».
+      POR QUÉ NO ES UN BLOB POR STACK, que fue lo que el autor propuso: un blob existe para guardar
+      HISTORIA (condición, attachments, clip1) y dos stacks de 9x19 no tienen ninguna que los
+      distinga. Costaría un blob persistido por stack de munición en el record, rotación de `uid` en
+      cada merge y cada split, y rompería el espejo cinturón-pool, que está construido sobre «N balas
+      del tipo T». Arreglaría el síntoma pagando con un OBJETO DE PERSISTENCIA lo que resuelve un
+      CAMPO.
+      POR QUÉ EL CONTADOR VIVE EN EL RECORD Y SE PERSISTE, que es la parte que no se ve: derivarlo de
+      «el mayor `cid` vivo más uno» reciclaría el número de una entrada que acaba de irse, y un
+      número reciclado es exactamente lo que dejaría a un intent viejo disparar sobre una celda que
+      el jugador nunca apretó — la falla que el campo existe para evitar.
+      SE LLAMA `cid` Y NO `sid`, que es como lo nombró el roadmap, por una razón medida: `sid`
+      significa SteamID en las 40 apariciones que tiene el módulo, cuatro de ellas en `GetRecord`,
+      que es la función vecina de la que hospeda el campo.
+      LA LECCIÓN DE MÉTODO DE LA TANDA salió del sabotaje 14 y es la única que costó una vuelta: el
+      check de «el Sort no pisa el `cid`» estaba VERDE Y NO PODÍA FALLAR, porque en un grid recién
+      nacido los `cid` coinciden con sus posiciones y pisarlos con la posición reescribe los MISMOS
+      números. El arreglo fue darle churn al grid del check y dejarle una PRECONDICIÓN que lo delate.
+      Un verde cuyo mecanismo no se ejercita no se distingue de un verde que sí.
+      LO QUE NO DICE: nada sobre el basket del trade ni sobre la transferencia de contenedores. Ahí
+      la semántica correcta es de CANTIDAD y no de celda, el agregado es lo que mantiene ALCANZABLE
+      al stack gemelo (informe en juego 2026-07-14), y `MatchesRef` / `StackTotal` / `Trade.RefKey`
+      ignoran el campo a propósito — con dos controles negativos en el harness que lo sostienen.
+      Y tampoco dice nada sobre POSICIONES: el `cid` es una identidad, no una casilla; el nivel 2
+      del grid sigue siendo el #70.
+      LA FRONTERA QUE QUEDA DECLARADA, en vez de disimulada: un import LAN reconstruye las entradas
+      de cero y su contador arranca de nuevo, así que un ref emitido antes del import podría
+      teóricamente coincidir con un `cid` nuevo del mismo ítem. Requiere un import aterrizando entre
+      un clic y su paquete; no se cierra y se deja escrito.
+
   CRG-72:
-    titulo: "La POSICIÓN de una entrada en el grid es dato del JUGADOR y se persiste (`ord`); el criterio automático es sólo su estado inicial y un botón. Y una posición NO es una identidad: ningún ref de red la nombra, porque dos entradas de stack del mismo `id`+`condition` son FUNGIBLES y lo que un clic nombra es una CANTIDAD, no una celda."
+    titulo: "La POSICIÓN de una entrada en el grid es dato del JUGADOR y se persiste (`ord`); el criterio automático es sólo su estado inicial y un botón. Y una posición NO es una identidad: ningún ref de red nombra un `ord`, así que un re-sort no puede re-apuntar un intent en vuelo. ENMENDADA por CRG-73 el 2026-08-19 en su MITAD DE ALCANCE: la identidad de una entrada SÍ existe (`cid`) y sí viaja en los refs de los cinco caminos que mueven una celda; que dos stacks del mismo `id`+`condition` sean FUNGIBLES y que un clic nombre una CANTIDAD sigue valiendo, pero SÓLO donde la pregunta es cuánto — el basket del trade y la transferencia de contenedores."
     sede: "corpus-cargo/docs/Cargo_Architecture.md §7.2"
     fuerza: INVARIANTE
     estado: VIGENTE
@@ -931,9 +983,14 @@ ids:
       roadmap #70) enmendaría la mitad «sin gestión espacial» de la decisión del 2026-07-11, y esta
       norma no lo hace ni lo autoriza — sólo le saca al ORDEN el ser una función del contenido. La
       otra mitad de aquella decisión, «el costo de cargar es peso y no espacio», sigue intacta.
-      TAMPOCO DICE que un ref pueda nombrar una celda: hoy no puede, y que `FindEntry` resuelva un
-      ref de stack contra la PRIMERA entrada es un defecto abierto (roadmap #68), no un corolario
-      de esta norma.
+      LO QUE DECÍA Y YA NO: «TAMPOCO DICE que un ref pueda nombrar una celda: hoy no puede, y que
+      `FindEntry` resuelva un ref de stack contra la PRIMERA entrada es un defecto abierto (roadmap
+      #68)». Ese defecto CERRÓ el 2026-08-19 con CRG-73, que le da a la entrada un `cid` estable. La
+      norma de acá arriba no cambia de contenido —el `ord` sigue sin viajar en ningún ref y el Sort
+      sigue sin poder re-apuntar nada—; lo que cambia es que ya no se puede leer como «ningún ref
+      nombra una entrada», porque ahora cinco caminos sí la nombran. Se dice explícito para que
+      nadie lea la mitad «una posición no es una identidad» como permiso para volver a resolver un
+      ref de stack contra la primera que empareje.
 
   CRG-71:
     titulo: "`def.uses` lee la condición 0-100 de un único como una UNIDAD (`n / uses`) y NO GUARDA UN SEGUNDO NÚMERO: el redondeo es TECHO, la ida y vuelta la cierran `Items.UsesLeft`/`ConditionForUses`, y a 0 el ítem QUEDA porque qué significa un gastado es del módulo dueño."
