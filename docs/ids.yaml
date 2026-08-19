@@ -942,7 +942,7 @@ ids:
     estado: VIGENTE
     evidencia:
       - { tipo: harness, ref: "dev/harness_cargo.py — 37 checks en SERVER (los dos portones del Register, los bordes del techo, la ida y vuelta sobre los 65 pares de 1..10 usos, el precio invariante, y los dos defectos de la tecla) + 15 en CLIENT (el texto de las dos formas y la cuenta del chip) + 6 del gate de FUENTES. Los 14 sabotajes verificados en NEGATIVO uno por uno el 2026-08-19: los 14 ponen la pasada en rojo" }
-      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en server y 14 en cliente sobre cargo_dev_pills, SIN EFECTOS (gastar un uso muta un blob y un selftest en partida real no puede dejar ítems tocados). PENDIENTE DE PASADA EN JUEGO: harness predice cargo_selftest 100 / cargo_selftest_cl 107" }
+      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en server y 14 en cliente sobre cargo_dev_pills, SIN EFECTOS (gastar un uso muta un blob y un selftest en partida real no puede dejar ítems tocados). ACREDITADO EN JUEGO el 2026-08-19: cargo_selftest 100 OK / cargo_selftest_cl 107 OK, 0 fallas en los dos, y los dos totales COINCIDEN con los que el harness offline había predicho. Planilla dev/checks/cargo-usos-r1.html: 12 de 12" }
       - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua — UsesOf/UsesLeft/ConditionForUses y los dos error() del Register; client/corpus_cargo_theme.lua — ConditionShort/ConditionLong, únicas que deciden el texto; server/corpus_cargo_inventory.lua — QuickTarget" }
     nota: >
       Acuñada el 2026-08-19, roadmap #66. LA MITAD DEL VALOR DE LA ENTRADA FUE NO ESCRIBIRLA:
