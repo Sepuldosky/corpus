@@ -900,6 +900,48 @@ ids:
       capturadas es decisión de DISPLAY y vive en el listado de dev; un accesor que descartara
       entradas mentiría sobre qué hay registrado.
 
+  CRG-71:
+    titulo: "`def.uses` lee la condición 0-100 de un único como una UNIDAD (`n / uses`) y NO GUARDA UN SEGUNDO NÚMERO: el redondeo es TECHO, la ida y vuelta la cierran `Items.UsesLeft`/`ConditionForUses`, y a 0 el ítem QUEDA porque qué significa un gastado es del módulo dueño."
+    sede: "corpus-cargo/docs/Cargo_Architecture.md §3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_cargo.py — 37 checks en SERVER (los dos portones del Register, los bordes del techo, la ida y vuelta sobre los 65 pares de 1..10 usos, el precio invariante, y los dos defectos de la tecla) + 15 en CLIENT (el texto de las dos formas y la cuenta del chip) + 6 del gate de FUENTES. Los 14 sabotajes verificados en NEGATIVO uno por uno el 2026-08-19: los 14 ponen la pasada en rojo" }
+      - { tipo: selftest, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_dev.lua — 9 checks en server y 14 en cliente sobre cargo_dev_pills, SIN EFECTOS (gastar un uso muta un blob y un selftest en partida real no puede dejar ítems tocados). PENDIENTE DE PASADA EN JUEGO: harness predice cargo_selftest 100 / cargo_selftest_cl 107" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/shared/corpus_cargo_items.lua — UsesOf/UsesLeft/ConditionForUses y los dos error() del Register; client/corpus_cargo_theme.lua — ConditionShort/ConditionLong, únicas que deciden el texto; server/corpus_cargo_inventory.lua — QuickTarget" }
+    nota: >
+      Acuñada el 2026-08-19, roadmap #66. LA MITAD DEL VALOR DE LA ENTRADA FUE NO ESCRIBIRLA:
+      el pedido del autor ("el tooltip debería decir cuántos usos le queda, eso parece que le
+      queda pendiente a Cargo") sonaba a una feature entera, y la barrita que describía YA
+      ESTABA DIBUJADA hacía rondas — y el precio de un frasco a medio usar ya se partía al
+      medio sin una línea escrita, porque sale de value × condición × spread. Lo único que
+      faltaba era la UNIDAD. La lección se paga en la dirección contraria a la habitual: acá
+      no faltó medir un defecto, faltó medir lo que YA ANDABA antes de diseñar encima.
+      POR QUÉ ES INVARIANTE Y NO UNA FIRMA: porque lo que se defiende es que NO haya un
+      segundo número. Alguien que "mejore" esto guardando los usos en el blob rompe cuatro
+      cosas de una — el precio deja de derivar de la condición, la persistencia gana un campo,
+      el round-trip deja de ser aritmética y pasa a ser sincronización, y CRG-7 (el stack se
+      parte por condición) empieza a hablar de un dato que ya no manda.
+      EL REDONDEO ES TECHO, y es un voto (autor, 2026-08-19). Lo que compra es la única línea
+      que Cargo y el módulo dueño pueden acordar sin hablarse: 0 usos si y sólo si condición 0.
+      Con piso, un frasco en 33,3 con uses=3 lee "0 usos" mientras todavía sirve y el jugador
+      tira un ítem que funciona. El techo sólo puede errar hacia arriba y sólo si el dueño
+      resta a mano — que es lo que ConditionForUses existe para evitar: restar 33 tres veces
+      desde 100 deja 1, y el techo lee ese 1 como un uso inexistente. El epsilon de UsesLeft
+      NO es cosmético: sin él la ida y vuelta falla en uses=7 (medido en el sabotaje).
+      A CERO EL ÍTEM QUEDA, y está escrito porque el que consuma va a asumir lo contrario:
+      es CRG-1 aplicado — qué es un frasco vacío (vendible, rellenable, basura) lo decide el
+      dueño, no el inventario.
+      DE PASO CERRÓ DOS DEFECTOS VIVOS Y SILENCIOSOS de la tecla rápida, que direccionaba con
+      un `{ id = itemId }` armado a mano: un unique era inalcanzable (y se podía atar igual
+      arrastrándolo, porque el gate de clase estaba sólo en el menú contextual — el Tourniquet
+      de Coagulant lleva meses así) y un stack CON condición también, ése sin ni un Notice.
+      Los dos son la misma forma: una ref construida a mano que sólo empareja una de las tres
+      formas de entry que existen.
+      Y EL GATE DE FUENTES DEL HARNESS SALIÓ DE ACÁ: verificando en negativo se midió que
+      sabotear el helper ponía todo en rojo pero revertir el SITIO DE LLAMADA dejaba la pasada
+      verde entera. Un helper impecable que nadie llama es un render viejo con un verde encima,
+      y los closures de PaintOver no tienen nombre por el que agarrarlos desde Lua.
   CRG-70:
     titulo: "El ítem de una clase de arma se pide por Capture.ItemIdFor(class), que acuña la def autogen si nadie tuvo una en la mano — y lo que acuña, lo PERSISTE: lo que un trader vende, un jugador lo compra."
     sede: "corpus-cargo/docs/Cargo_Architecture.md §3"
