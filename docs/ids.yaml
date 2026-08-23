@@ -69,6 +69,7 @@ familias_excluidas:
   Q: "ídem P — segunda sección de planilla de Cargo (Q1-Q5), tanda B3: el serializador único de dueño y el saneo de la entidad. Registrada ANTES de usarse (FLU-30); R y S siguen presupuestadas para B4 y B5"
   R: "ídem P — tercera sección de planilla de Cargo (R1-R5), tanda B4: el savegame de GMod. Registrada ANTES de usarse (FLU-30); S sigue presupuestada para B5"
   S: "ídem P — cuarta sección de planilla de Cargo (S1-S5), tanda B5: el export/import LAN. Registrada ANTES de usarse (FLU-30). Con ella el plan de persistencia agota su presupuesto de planilla (P=B1, Q=B3, R=B4, S=B5); B6 quedó diferido a Cortex y no reserva letra"
+  J: "IDs de check de planilla de CALIBER (J1-J13) — PRIMERA sección del módulo, tramo 0 del Block 3: la medición del reparto de ply:Armor(). Registrada el 2026-08-23, DESPUÉS de su primera corrida y no antes (FLU-30 incumplida, y queda dicho). ⚠ La J estaba en la tabla de arriba como ejemplo INVENTADO del handoff ('planilla Caliber, check J4') y se había sacado por no existir en ningún repo; ahora existe, y la letra que el ejemplo citaba es la que el módulo estrena. Las filas nacieron etiquetadas P-1/P-2/Q1..Q6 —CHOCANDO con P y Q, que son secciones de Cargo ya registradas— y se renombraron a J1..J13 antes de la segunda corrida: un ref 'Q4' habría sido ambiguo entre dos módulos. Los rótulos Q1..Q6 siguen vivos DENTRO del texto, pero como las seis PREGUNTAS del tramo, no como ids de check."
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
   U: "ídem P — quinta sección de planilla de Cargo (U1-U6, cerrada 6/6 el 2026-07-27), roadmap #47: las NVG de Neosun como ítems (la señal genérica de equipamiento, los defs derivados y la captura de la entidad de mundo). Registrada ANTES de usarse (FLU-30); nació con cinco checks y la 2.ª pasada le sumó el U6, sin reciclar números (FLU-07). Es la primera de Cargo que NO es del plan de persistencia — ése agotó su presupuesto en P/Q/R/S. La T no se recicla: es de corpus y es otra planilla"
   V: "ídem P — sexta sección de planilla de Cargo (V1-V9), roadmap #46: las luces en el wheel (el tercer grupo de chips — linterna por intent propio, NVG con tránsito CRG-64, dispositivos ARC9 por ToggleStat/PostModify, el empuje de anclaje y la negativa de ausencia). Registrada ANTES de usarse (FLU-30), en el mismo parche que la acuña (entry 53); nació con seis checks y la planilla entregada le sumó V7-V9, los candidatos del USO, sin reciclar números (FLU-07 — la lección de #47: la planilla mide lo que se propuso medir, el uso mide lo que falta; V7 lleva además la medición pendiente de la diferida (h)). Es la otra mitad del frente de #47: aquella planilla midió POSEER, ésta mide ACCIONAR"
@@ -852,6 +853,112 @@ ids:
       tabla concreta de ESTE repo, no una copia de la del framework. Los cuatro
       *_convenciones_commits.txt de módulo eran docs sin un solo ID — sobre ellos el gate
       no salía limpio, salía CIEGO.
+
+  CAL-24:
+    titulo: "EL PROVEEDOR DEL PERFIL DE ARMADURA DE JUGADOR LO DECIDE LA **PRESENCIA** DE CARGO, NO EL INVENTARIO. Con Cargo montado, Cargo EMPUJA el perfil al equipar/desequipar y la vía SUIT queda apagada aunque el jugador ande desnudo; sin Cargo, el SUIT de HL2 habilita el sistema completo. Un solo proveedor, por construcción. El empuje consume la señal que YA existe (Corpus_Cargo_EquipChanged, CRG-62) y su puerta de respawn (slotId nil = se re-aplicó el set entero): no se acuña señal nueva."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.1"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: INTENCION, ref: "el paso 2 del tramo [1] todavía no está escrito: la norma existe para que se escriba contra ella, no al revés" }
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua — Corpus_Cargo_EquipChanged y RegiveEquipped, la señal y la puerta que este contrato consume, ya vivas" }
+    nota: >
+      Acuñada el 2026-08-22 (voto del autor) y bajada a la sede el 2026-08-23.
+      POR QUÉ ES UNA NORMA Y NO UNA PREFERENCIA: si el proveedor se colgara del INVENTARIO
+      en vez de la presencia, desnudarse regalaría la armadura del traje — y el flip-flop
+      sería SILENCIOSO, porque las dos vías escriben las mismas NWvars. Un bug que no
+      imprime nada y que sólo se nota perdiendo una pelea.
+      ⚠ Las puertas de equipamiento son CINCO y no cuatro (Cargo_Architecture.md §4):
+      DropEquipped NO pasa por Unequip. Un oyente que cubra cuatro se ve idéntico a uno que
+      cubre las cinco.
+
+  CAL-25:
+    titulo: "CARGO MANDA EL ÍTEM; CALIBER TRADUCE A PERFIL. `class`, `dur_max` y la tabla de materiales son dominio de Caliber y NO cruzan el contrato. `condition` (0-100) es ESTADO y es de Cargo; `dur_max` es la ESCALA en puntos y es de Caliber; el puente es durActual = dur_max x condition/100, y `condition` es la única fuente de verdad ALMACENADA."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.2"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: INTENCION, ref: "el traductor no existe todavía; el paso 2 del tramo [1] lo escribe" }
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_armor.lua — InitArmorNWvars, el sitio donde el puente TIENE que aplicarse y que hoy hace lo contrario" }
+    nota: >
+      Acuñada el 2026-08-22 (voto del autor) y bajada el 2026-08-23.
+      SI CARGO ARMARA EL PERFIL tendría que conocer `class`, `dur_max` y la tabla de
+      materiales — y esa tabla pasaría a tener dos lectores que se desincronizan. Es la
+      misma razón por la que el editor de armaduras vive en Cargo y no en Caliber: cada
+      lado sabe de lo suyo.
+      ⚠ TRAMPA YA PUESTA EN EL ÁRBOL: InitArmorNWvars escribe hoy
+      `Caliber_Armor_Dur_<hg> = z.dur_max` con el comentario "durActual arranca en max".
+      Con un perfil que viene de Cargo eso está MAL POR DEFECTO: una armadura usada al 40%
+      entraría al mundo como nueva, sin un solo error de Lua. El traductor aplica el puente
+      ANTES de escribir las NWvars.
+
+  CAL-26:
+    titulo: "UN EXOSHIELD **NOMBRA** UN TIPO DEL REGISTRY DE CALIBER Y OPCIONALMENTE LO ESCALA. El def de Cargo declara `shield_type` (clave de CALIBER.ShieldTypes) y overrides numéricos sobre sus defaults; los sonidos, el color y los FX viven en el registry. Una clave, no una tabla suelta: si cada def trajera su propio escudo, cada ítem inventaría uno."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.5"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: INTENCION, ref: "el sub-slot accessory con filtro category:exoshield existe en Cargo, pero ningún exoshield está registrado todavía" }
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_shields.lua — CALIBER.ShieldTypes, y el tipo `hev` ya presente con los sonidos suitcharge del engine" }
+      - { tipo: planilla, ref: "Caliber J11 — dev/checks/caliber-b3-tramo0.html, PASA el 2026-08-22: cargo_hl2_battery sube 15 y topa en 100, verificado 49->64->79->94->100. Es el escritor del pool que este contrato tiene que absorber" }
+    nota: >
+      Acuñada el 2026-08-22 (voto del autor) y bajada el 2026-08-23.
+      LA ESCALA DEJÓ DE SER UN PROBLEMA CON LA MEDICIÓN: el pool del engine absorbe 1:1
+      (ARMOR_BONUS = 1,0 medido en juego, §13.0), así que ply:Armor() y los puntos de
+      escudo están en la MISMA unidad. El `hev` con max_hp 50 contra un tope de 100 no es
+      una contradicción de escalas: son 50 puntos de daño absorbidos contra 100, o sea una
+      perilla de balance.
+      ⚠ CONSECUENCIA SOBRE UN ÍTEM QUE YA EXISTE: cargo_hl2_battery hace
+      SetArmor(min(Armor()+15, 100)). Con el mapeo del paso 2 queda correcto POR
+      CONSTRUCCIÓN y Cargo no cambia una línea — salvo el tope, que hoy es un 100 literal y
+      tiene que pasar a ser el max_hp del escudo activo, o una batería sobre un `hev` de 50
+      cargaría hasta el doble de lo que el escudo puede tener.
+
+  CRG-77:
+    titulo: "UN HITGROUP TIENE **UN SOLO DUEÑO**. Cada ítem declara qué hitgroups reclama, el SLOT da el default (Head -> 1, Body -> 2..7), y el chequeo AL EQUIPAR rechaza un segundo ítem que reclame uno ya tomado. Un traje cerrado que reclame la cabeza es LEGAL y bloquea el slot Head mientras esté puesto: la trampa se vuelve MECÁNICA en vez de una regla que alguien tiene que recordar."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: INTENCION, ref: "el campo de claim no existe todavía en el contrato de ítem; lo escribe el paso 3 del tramo [1]" }
+    nota: >
+      Acuñada el 2026-08-22 (voto del autor) y bajada el 2026-08-23.
+      LA SEDE ES CARGO Y NO CALIBER aunque el doc de la prosa sea el de Caliber: el claim se
+      valida EN EL EQUIP, que es un flujo de inventario, y Cargo es el único lado que puede
+      RECHAZAR la acción. Caliber recibe un perfil ya consistente y no arbitra nada.
+      DEPENDE DEL PASO 3: hoy la durabilidad de Caliber vive POR HITGROUP
+      (Caliber_Armor_Dur_<hg>, 8 slots 0-7) y las condition_zones de Cargo son CUATRO
+      (torso/stomach/arms/legs en el chaleco dev). Un chaleco tiene UN panel de brazos, no
+      dos. Sin la indirección hitgroup -> slot de zona, Cargo no puede expresar sus zonas.
+      ⚠ Y el vocabulario de Cargo todavía no cierra: sus condition_zones usan "torso", que
+      COA-8/COA-7 mataron, y colapsan izquierda y derecha. El vocabulario COMPARTIDO son los
+      hitgroups del engine — Coagulant también los consume. Lo demás son etiquetas de
+      presentación.
+      EN LA UI, grisar las zonas que el slot no permite: es el mismo mecanismo que la deuda
+      heredada de Caliber_Architecture.md §10 ("sin auto-grisado de zonas imposibles"), así
+      que una pieza paga las dos. Se paga en el paso 4, no antes.
+
+  CRG-78:
+    titulo: "`condition` ES LA ÚNICA FUENTE DE VERDAD **ALMACENADA**, y es de Cargo. `durActual` es DERIVADO Y VOLÁTIL: vive en NWvars mientras el ítem está puesto y NO se persiste jamás. Caliber escribe de vuelta al DESEQUIPAR y en un tick perezoso mientras está puesto — NUNCA por hit."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.4"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: INTENCION, ref: "no hay escritura de vuelta todavía; la escribe el paso 2 del tramo [1]" }
+    nota: >
+      Acuñada el 2026-08-22 (voto del autor) y bajada el 2026-08-23. ES EL PUNTO MÁS FRÁGIL
+      DEL CONTRATO, PORQUE HAY UNA CARRERA: Caliber descuenta durabilidad en el hit y Cargo
+      es el dueño del número.
+      POR HIT es lo que la carrera prohíbe: un hit escribe `rec`, el mismo tick puede traer
+      un SubSlotDetach o un DropEquipped, y las dos escrituras pisan el mismo campo. Es la
+      forma exacta del defecto que Cargo ya pagó en el espejo del pool de munición.
+      SÓLO AL DESEQUIPAR pierde el estado si el jugador se desconecta o muere con el chaleco
+      puesto: la persistencia guarda el `rec`, y el `rec` tendría el condition de hace media
+      hora. EL TICK PEREZOSO resuelve las dos — el valor persistido nunca está más viejo
+      que N.
+      ⚠ CRG-9 manda igual: al destruir o reemplazar un contenedor con sub-slots ocupados,
+      las placas y el exoshield se eyectan ANTES. Un generador de escudo no se pierde como
+      efecto colateral de cambiarse el chaleco.
 
   CRG-68:
     titulo: "El StatusPanel dibuja MAGNITUD, jamás significado: softMax/hardMax son data del registrante, y el exceso se pinta como tramado sobre la barra llena, nunca alargándola."
