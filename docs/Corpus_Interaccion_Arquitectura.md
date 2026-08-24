@@ -251,6 +251,43 @@ VManip, del mismo linaje— **no un sistema de emotes en tercera persona.**
 > ⚠ **Esto contradice lo que el autor observó en juego** (*«todos pueden ver en thirdperson»*), y el
 > código es fuerte pero él tiene el juego. **Antes de escribir nada, se confirma con dos clientes.**
 > Lo más probable, si el código manda, es que lo que vio sea **su propio** cuerpo en tercera persona.
+>
+> El propio autor de GCAL lo dice en su descripción de Workshop, y calza con lo medido:
+> *«TPIK is in beta state since this is my first time doing TPIK anything and I'm not the best»*.
+
+#### ⭐ Cómo se hace ver por los demás — dos rutas MEDIDAS, y ninguna necesita net propio
+
+El contraste con **ARC9** contesta la pregunta, porque ARC9 **sí** se ve. Su TPIK entero son seis
+líneas (`Arc9 Base/lua/arc9/client/cl_tpik.lua`):
+
+```lua
+hook.Add("PrePlayerDraw", "ARC9_TPIK", function(ply, flags)
+    local wpn = ply:GetActiveWeapon()
+    if !wpn.ARC9 then return end
+    wpn:DoTPIK()
+end)
+```
+
+`PrePlayerDraw` corre para **cada jugador que dibujas** y **no hay filtro de `LocalPlayer`**;
+`DoTPIK` (`arc9_base/cl_tpik.lua:1137`) opera sobre `self:GetWM()`, el **world model**.
+
+> ⭐ **EL PRINCIPIO, y es lo que hay que llevarse:** un efecto se ve en los demás si **se DERIVA de
+> estado que ya está replicado**. ARC9 **no networkea nada del TPIK** — se cuelga del arma, que ya es
+> una entidad replicada, así que cada cliente calcula la pose solo. **GCAL anima manos que no cuelgan
+> de nada replicado**, y por eso no hay de dónde derivarlas en el cliente de al lado.
+
+Las dos rutas que eso abre, en orden de costo:
+
+1. **La del engine, y es la barata.** `ply:AddGestureSequence(seq)` / `ply:AddGesture(act)` en
+   **server**: el engine replica la capa de gesto solo. Verificado en uso real en `dev/other/`
+   —`drgbase/.../animations.lua:321` y `weapons.lua:481-491`, y el Terminator en `motion.lua:306-309`—
+   así que no es API de memoria. **Anima el PLAYER MODEL, que es lo que ven los demás**, y no toca GCAL.
+2. **La de ARC9, si hace falta la mano fina.** Poner el gesto en algo replicado (una NW var en el
+   jugador) y dibujarlo desde `PrePlayerDraw` sobre **ese** jugador. Más caro y más control.
+
+**Reparto que sale de esto:** GCAL se queda con **la primera persona** —tus manos, tu viewmodel, que es
+lo que sabe hacer y hace bien— y **lo que ven los demás sale del engine**. No compiten: cubren mitades
+distintas del mismo gesto.
 
 ### 5.3 `command` — órdenes tácticas a la escuadra
 
