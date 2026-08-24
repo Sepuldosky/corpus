@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corpus — Menú interactivo mock v1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;500;700&display=swap">
+</head>
+<body style="margin:0;background:#0e1013;">
+<style>
+/* ==========================================================================
+   TOKENS — ESPEJO de T.PALETTES en corpus_cargo_theme.lua:52-83.
+   Los valores NO se inventan: se copiaron de las dos paletas runtime vivas.
+   En Lua jamas se hardcodean colores; se leen de Theme.*
+   ========================================================================== */
+#stage[data-pal="spawnmenu"]{
+  --bg:#080a0c; --scrim:rgba(8,10,12,.80);
+  --panel:#262a30; --panel-alt:#2e333a;
+  --cell:#181b1f; --cell-hover:#343a42;
+  --border:#4a5058; --border-hi:#68707a;
+  --text:#dfe2e5; --text-dim:#8b9299;
+  --accent:#4f9bd6; --accent-dim:#2e5a7c;
+  --amber:#d6a54f; --red:#cf5040; --green:#6cbf5a;
+  --sky-a:#1d2733; --sky-b:#141a21; --ground-a:#20262c; --ground-b:#0d1013;
+}
+#stage[data-pal="olive"]{
+  --bg:#0b0c0a; --scrim:rgba(4,5,3,.80);
+  --panel:#14150f; --panel-alt:#191a13;
+  --cell:#0f100b; --cell-hover:#22251a;
+  --border:#2b2d22; --border-hi:#3a3d2e;
+  --text:#d6d9c8; --text-dim:#6e7263;
+  --accent:#9dc04b; --accent-dim:#5c7030;
+  --amber:#d9a13b; --red:#c7503a; --green:#9dc04b;
+  --sky-a:#2b3327; --sky-b:#1a1f16; --ground-a:#242a1c; --ground-b:#0d0f09;
+}
+/* chrome del documento — fijo y oscuro a proposito: esto es un visor de un HUD
+   de juego, y mostrarlo sobre fondo claro seria mentir sobre como se ve */
+.pg{
+  --doc-bg:#0e1013; --doc-panel:#171a1f; --doc-line:#262b32;
+  --doc-text:#d8dce1; --doc-dim:#8a919a; --doc-mark:#4f9bd6;
+  background:var(--doc-bg); color:var(--doc-text);
+  font-family:'Roboto Condensed','Roboto',Tahoma,sans-serif;
+  min-height:100%; padding:22px clamp(14px,3vw,40px) 56px;
+  display:flex; flex-direction:column; gap:20px;
+}
+*{box-sizing:border-box;}
+.pg h1,.pg h2,.pg h3,.pg p,.pg ul,.pg ol,.pg figure{margin:0;}
+
+/* ---------- cabecera ---------- */
+.hd{display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px 26px;
+    border-bottom:1px solid var(--doc-line); padding-bottom:14px;}
+.hd-id{display:flex; flex-direction:column; gap:3px; margin-right:auto;}
+.eyebrow{font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+         color:var(--doc-dim); font-weight:700;}
+.hd h1{font-size:clamp(19px,2.4vw,26px); font-weight:700; letter-spacing:.005em;
+       text-wrap:balance;}
+.hd h1 span{color:var(--doc-dim); font-weight:400;}
+.switches{display:flex; flex-wrap:wrap; gap:16px;}
+.sw{display:flex; flex-direction:column; gap:5px;}
+.sw-lab{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--doc-dim); font-weight:700;}
+.sw-row{display:flex; border:1px solid var(--doc-line); border-radius:2px; overflow:hidden;}
+.sw-row button{
+  font:inherit; font-size:12px; letter-spacing:.03em; padding:6px 13px;
+  background:var(--doc-panel); color:var(--doc-dim); border:0; cursor:pointer;
+  border-right:1px solid var(--doc-line); transition:background .12s,color .12s;
+}
+.sw-row button:last-child{border-right:0;}
+.sw-row button:hover{color:var(--doc-text);}
+.sw-row button[aria-pressed="true"]{background:var(--doc-mark); color:#07090b; font-weight:700;}
+.sw-row button:focus-visible{outline:2px solid var(--doc-mark); outline-offset:-2px;}
+
+/* ---------- escenario ---------- */
+.stage-wrap{position:relative; width:100%;}
+#stage{
+  position:relative; width:100%; aspect-ratio:3/2; border:1px solid var(--doc-line);
+  background:var(--bg); overflow:hidden;
+  font-family:'Roboto',Arial,sans-serif;      /* la UI del juego: la fuente que declara el theme */
+}
+#stage svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
+.view{display:none;}
+#stage[data-view="world"] .view-world{display:block;}
+#stage[data-view="self"]  .view-self{display:block;}
+
+/* silueta del mundo — sugerida a proposito; lo PRECISO es la UI de encima */
+.mass{fill:#000; opacity:.62;}
+.mass-2{fill:#000; opacity:.44;}
+.edge{fill:none; stroke:var(--border-hi); stroke-width:1.1; opacity:.30;}
+
+/* nodos */
+.leader{stroke:var(--border-hi); stroke-width:1.1; fill:none; opacity:.55;}
+.leader-on{stroke:var(--accent); stroke-width:1.4; opacity:.85;}
+.arcguide{fill:none; stroke:var(--accent); stroke-width:1; opacity:.20; stroke-dasharray:3 5;}
+
+.dot-o{fill:none; stroke:var(--border-hi); stroke-width:1.3; opacity:.85;}
+.dot-i{fill:var(--text-dim);}
+.dot-far-o{fill:none; stroke:var(--border-hi); stroke-width:1; opacity:.40;}
+.dot-far-i{fill:var(--text-dim); opacity:.45;}
+
+.chip-bg{fill:var(--panel); stroke:var(--border); stroke-width:1;}
+.chip-bg-on{fill:var(--cell-hover); stroke:var(--accent); stroke-width:1.4;}
+.chip-bg-off{fill:var(--cell); stroke:var(--border); stroke-width:1; opacity:.55;}
+.icon-cell{fill:var(--cell); stroke:var(--border); stroke-width:1;}
+.icon-cell-on{fill:var(--accent-dim); stroke:var(--accent); stroke-width:1.2;}
+.gl{fill:none; stroke:var(--text); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;}
+.gl-on{stroke:var(--text);}
+.gl-off{stroke:var(--text-dim); opacity:.6;}
+
+.t{fill:var(--text); font-size:15px; font-weight:500;}
+.t-on{fill:var(--text); font-size:15px; font-weight:700;}
+.t-dim{fill:var(--text-dim); font-size:15px; font-weight:500;}
+.t-meta{fill:var(--text-dim); font-size:12px; font-weight:500;}
+.t-amber{fill:var(--amber); font-size:12px; font-weight:700;}
+.t-key{fill:var(--text-dim); font-size:13px; font-weight:500;}
+.t-hub{fill:var(--text-dim); font-size:11px; font-weight:700; letter-spacing:.14em;}
+
+.xh{stroke:var(--text); stroke-width:1.4; opacity:.55;}
+.cursor{fill:var(--accent); stroke:var(--bg); stroke-width:1.5;}
+.hudbar{fill:var(--scrim); }
+
+/* marcadores de callout, sobre el escenario */
+.cmark circle{fill:var(--doc-mark); stroke:#07090b; stroke-width:1.2;}
+.cmark text{fill:#07090b; font-size:11px; font-weight:700;
+            font-family:'Roboto Condensed',sans-serif;}
+
+/* ---------- callouts ---------- */
+.legend{display:grid; gap:12px 26px; grid-template-columns:repeat(auto-fit,minmax(258px,1fr));}
+.cal{display:grid; grid-template-columns:22px 1fr; gap:10px; align-items:start;}
+.cal-n{width:20px; height:20px; border-radius:50%; background:var(--doc-mark); color:#07090b;
+       font-size:11px; font-weight:700; display:grid; place-items:center; margin-top:1px;}
+.cal h3{font-size:13.5px; font-weight:700; letter-spacing:.01em; margin-bottom:2px;}
+.cal p{font-size:13px; line-height:1.5; color:var(--doc-dim); max-width:60ch;}
+.cal code{font-family:ui-monospace,'Cascadia Mono',Consolas,monospace; font-size:11.5px;
+          color:var(--doc-text); background:#0a0c0f; border:1px solid var(--doc-line);
+          padding:.5px 4px; border-radius:2px;}
+.cal em{color:var(--doc-text); font-style:italic;}
+
+.note{border-left:2px solid var(--doc-mark); padding:2px 0 2px 13px;
+      font-size:13px; line-height:1.55; color:var(--doc-dim); max-width:74ch;}
+.note b{color:var(--doc-text); font-weight:700;}
+
+.foot{border-top:1px solid var(--doc-line); padding-top:12px; display:flex; flex-wrap:wrap;
+      gap:6px 22px; font-size:11.5px; color:var(--doc-dim);}
+.foot code{font-family:ui-monospace,Consolas,monospace; font-size:11px; color:var(--doc-text);}
+.sec-lab{font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+         color:var(--doc-dim); font-weight:700; border-bottom:1px solid var(--doc-line);
+         padding-bottom:7px;}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+
+<div class="pg">
+
+  <header class="hd">
+    <div class="hd-id">
+      <div class="eyebrow">Corpus · mock v1 · 2026-08-24</div>
+      <h1>Menú interactivo <span>— árbol contextual estilo ACE3</span></h1>
+    </div>
+    <div class="switches">
+      <div class="sw">
+        <div class="sw-lab">Árbol</div>
+        <div class="sw-row" id="sw-view">
+          <button data-view="world" aria-pressed="true">Entorno</button>
+          <button data-view="self" aria-pressed="false">Propio</button>
+        </div>
+      </div>
+      <div class="sw">
+        <div class="sw-lab">Paleta runtime</div>
+        <div class="sw-row" id="sw-pal">
+          <button data-pal="spawnmenu" aria-pressed="true">spawnmenu</button>
+          <button data-pal="olive" aria-pressed="false">olive</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage-wrap">
+  <div id="stage" data-view="world" data-pal="spawnmenu">
+
+    <!-- ==================== ÁRBOL DE ENTORNO ==================== -->
+    <svg class="view view-world" viewBox="0 0 1200 800" role="img"
+         aria-label="Menú de entorno abierto sobre una escena con un vehículo, un cajón y un cadáver">
+      <defs>
+        <linearGradient id="skyW" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sky-a)"/><stop offset="1" stop-color="var(--sky-b)"/>
+        </linearGradient>
+        <linearGradient id="grdW" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--ground-a)"/><stop offset="1" stop-color="var(--ground-b)"/>
+        </linearGradient>
+        <radialGradient id="vigW" cx="50%" cy="46%" r="62%">
+          <stop offset="0" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+        </radialGradient>
+      </defs>
+
+      <rect x="0" y="0" width="1200" height="470" fill="url(#skyW)"/>
+      <rect x="0" y="470" width="1200" height="330" fill="url(#grdW)"/>
+      <!-- linea de horizonte y algo de estructura lejana -->
+      <path class="edge" d="M0 470 H1200"/>
+      <path class="mass-2" d="M60 470 V352 h96 V470 Z M900 470 V300 h150 V470 Z M1080 470 V376 h74 V470 Z"/>
+
+      <!-- vehiculo Glide: chasis + dos ruedas, siluetas -->
+      <path class="mass" d="M176 468 v-46 q0-16 18-20 l52-10 34-40 q6-8 18-8 h96 q12 0 18 8 l34 40 52 10 q18 4 18 20 v46 Z"/>
+      <path class="edge" d="M176 468 v-46 q0-16 18-20 l52-10 34-40 q6-8 18-8 h96 q12 0 18 8 l34 40 52 10 q18 4 18 20 v46"/>
+      <path class="edge" d="M280 392 h136"/>
+      <circle class="mass" cx="235" cy="470" r="30"/><circle class="edge" cx="235" cy="470" r="30"/>
+      <circle class="mass" cx="455" cy="470" r="30"/><circle class="edge" cx="455" cy="470" r="30"/>
+
+      <!-- cajon de madera -->
+      <path class="mass" d="M742 546 h82 v-74 h-82 Z"/>
+      <path class="edge" d="M742 546 h82 v-74 h-82 Z M742 472 l82 74 M824 472 l-82 74"/>
+
+      <!-- cadaver -->
+      <path class="mass" d="M980 566 q10-13 27-13 h74 q15 0 15 11 t-15 11 h-74 q-17 0-27-9 Z"/>
+      <circle class="mass" cx="968" cy="560" r="14"/>
+      <path class="edge" d="M968 546 a14 14 0 1 0 .1 0"/>
+
+      <rect x="0" y="0" width="1200" height="800" fill="url(#vigW)"/>
+
+      <!-- ============ NODOS ============ -->
+      <!-- (1) NODO EXPANDIDO: el chasis, con su arco de hijos -->
+      <path class="arcguide" d="M283 214 Q 420 236 508 330"/>
+      <path class="leader-on" d="M330 430 L292 226"/>
+      <path class="leader-on" d="M330 430 L424 262"/>
+      <path class="leader-on" d="M330 430 L512 340"/>
+
+      <!-- hijo 1 -->
+      <g>
+        <rect class="chip-bg" x="283" y="196" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="290" y="203" width="24" height="24" rx="2"/>
+        <path class="gl" d="M296 215 h12 M296 210 h12 M296 220 h12"/>
+        <text class="t" x="324" y="220">Open trunk</text>
+      </g>
+      <!-- hijo 2 -->
+      <g>
+        <rect class="chip-bg" x="415" y="232" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="422" y="239" width="24" height="24" rx="2"/>
+        <path class="gl" d="M429 251 v6 h6 v-6 Z M430 251 v-4 a2 2 0 0 1 4 0 v4"/>
+        <text class="t" x="456" y="256">Lock vehicle</text>
+      </g>
+      <!-- hijo 3 (bajo el cursor) -->
+      <g>
+        <rect class="chip-bg-on" x="503" y="310" width="200" height="38" rx="2"/>
+        <rect class="icon-cell-on" x="510" y="317" width="24" height="24" rx="2"/>
+        <path class="gl gl-on" d="M516 335 v-9 h6 v-6 h5 M516 335 h12"/>
+        <text class="t-on" x="544" y="334">Enter driver seat</text>
+      </g>
+      <!-- el padre -->
+      <g>
+        <circle cx="330" cy="430" r="13" class="dot-o" style="stroke:var(--accent);opacity:1"/>
+        <circle cx="330" cy="430" r="4.5" class="dot-i" style="fill:var(--accent)"/>
+        <rect class="chip-bg" x="150" y="412" width="166" height="36" rx="2" style="opacity:.95"/>
+        <text class="t-dim" x="162" y="435">Vehicle</text>
+        <text class="t-amber" x="248" y="435">3</text>
+        <path class="gl gl-off" d="M266 424 l7 6 -7 6"/>
+      </g>
+
+      <!-- (2) las RUEDAS son entidades propias: puntos separados -->
+      <circle class="dot-o" cx="235" cy="470" r="9"/><circle class="dot-i" cx="235" cy="470" r="3"/>
+      <circle class="dot-o" cx="455" cy="470" r="9"/><circle class="dot-i" cx="455" cy="470" r="3"/>
+      <!-- el asiento tambien -->
+      <circle class="dot-o" cx="348" cy="392" r="7"/><circle class="dot-i" cx="348" cy="392" r="2.5"/>
+
+      <!-- (3) LOD medio: chip sin expandir, etiqueta hacia la IZQUIERDA -->
+      <path class="leader" d="M783 509 L742 509"/>
+      <circle class="dot-o" cx="783" cy="509" r="9"/><circle class="dot-i" cx="783" cy="509" r="3"/>
+      <g>
+        <rect class="chip-bg" x="540" y="491" width="202" height="36" rx="2"/>
+        <rect class="icon-cell" x="547" y="497" width="24" height="24" rx="2"/>
+        <path class="gl" d="M552 503 h14 v14 h-14 Z M552 503 l14 14 M566 503 l-14 14"/>
+        <text class="t" x="580" y="514">Wooden Crate</text>
+        <text class="t-meta" x="694" y="514">30 kg</text>
+      </g>
+
+      <!-- (4) cadaver -->
+      <path class="leader" d="M1010 596 L968 596"/>
+      <circle class="dot-o" cx="1010" cy="596" r="9"/><circle class="dot-i" cx="1010" cy="596" r="3"/>
+      <g>
+        <rect class="chip-bg" x="782" y="578" width="186" height="36" rx="2"/>
+        <rect class="icon-cell" x="789" y="584" width="24" height="24" rx="2"/>
+        <path class="gl" d="M795 596 a6 6 0 1 1 .1 0 M801 601 v5"/>
+        <text class="t" x="822" y="601">Search body</text>
+      </g>
+
+      <!-- (5) fuera de rango: existe en el mundo, NO en el arbol -->
+      <circle class="dot-far-o" cx="1122" cy="418" r="7"/>
+      <circle class="dot-far-i" cx="1122" cy="418" r="2.5"/>
+
+      <!-- cursor libre -->
+      <path class="cursor" d="M512 322 l0 22 5.5 -5.5 4 9 4.5 -2 -4 -8.5 7.5 -0.5 Z"/>
+      <!-- mira -->
+      <path class="xh" d="M600 392 v-13 M600 408 v13 M584 400 h-13 M616 400 h13"/>
+
+      <!-- barra inferior: la tecla sostenida -->
+      <rect class="hudbar" x="0" y="742" width="1200" height="58"/>
+      <path class="edge" d="M0 742 H1200"/>
+      <g>
+        <rect class="icon-cell" x="34" y="757" width="30" height="28" rx="3"/>
+        <text class="t-key" x="43" y="776" style="font-weight:700">Q</text>
+        <text class="t-key" x="76" y="776">mantener</text>
+        <text class="t-key" x="168" y="776" style="fill:var(--border-hi)">·</text>
+        <rect class="icon-cell" x="186" y="757" width="46" height="28" rx="3"/>
+        <path class="gl" d="M196 764 h12 v14 h-12 Z M202 764 v6" style="stroke-width:1.2"/>
+        <text class="t-key" x="244" y="776">click para ejecutar</text>
+        <text class="t-key" x="408" y="776" style="fill:var(--border-hi)">·</text>
+        <text class="t-key" x="426" y="776">soltar sin elegir no hace nada</text>
+      </g>
+
+      <!-- marcadores de callout -->
+      <g class="cmark">
+        <g><circle cx="330" cy="430" r="11"/><text x="330" y="434" text-anchor="middle">1</text></g>
+        <g><circle cx="455" cy="470" r="11"/><text x="455" y="474" text-anchor="middle">2</text></g>
+        <g><circle cx="783" cy="509" r="11"/><text x="783" y="513" text-anchor="middle">3</text></g>
+        <g><circle cx="1010" cy="596" r="11"/><text x="1010" y="600" text-anchor="middle">4</text></g>
+        <g><circle cx="1122" cy="418" r="11"/><text x="1122" y="422" text-anchor="middle">5</text></g>
+        <g><circle cx="600" cy="771" r="11"/><text x="600" y="775" text-anchor="middle">6</text></g>
+      </g>
+    </svg>
+
+    <!-- ==================== ÁRBOL PROPIO ==================== -->
+    <svg class="view view-self" viewBox="0 0 1200 800" role="img"
+         aria-label="Menú propio abierto, con las ramas por dominio y la rama médica desplegada">
+      <defs>
+        <linearGradient id="skyS" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sky-a)"/><stop offset="1" stop-color="var(--sky-b)"/>
+        </linearGradient>
+        <linearGradient id="grdS" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--ground-a)"/><stop offset="1" stop-color="var(--ground-b)"/>
+        </linearGradient>
+        <radialGradient id="vigS" cx="50%" cy="46%" r="62%">
+          <stop offset="0" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity=".70"/>
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="1200" height="470" fill="url(#skyS)"/>
+      <rect x="0" y="470" width="1200" height="330" fill="url(#grdS)"/>
+      <path class="edge" d="M0 470 H1200"/>
+      <path class="mass-2" d="M84 470 V330 h120 V470 Z M996 470 V366 h110 V470 Z"/>
+      <rect x="0" y="0" width="1200" height="800" fill="url(#vigS)"/>
+
+      <!-- radios del anillo -->
+      <path class="leader" d="M600 372 L600 236"/>
+      <path class="leader-on" d="M624 388 L774 330"/>
+      <path class="leader" d="M616 424 L706 546"/>
+      <path class="leader" d="M584 424 L494 546"/>
+      <path class="leader" d="M576 388 L426 330"/>
+
+      <!-- hub -->
+      <circle cx="600" cy="400" r="30" fill="var(--panel)" stroke="var(--border)" stroke-width="1"/>
+      <circle cx="600" cy="400" r="30" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".35"/>
+      <text class="t-hub" x="600" y="404" text-anchor="middle">SELF</text>
+
+      <!-- ramas por DOMINIO -->
+      <g>
+        <rect class="chip-bg" x="506" y="200" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="513" y="207" width="24" height="24" rx="2"/>
+        <path class="gl" d="M519 213 h12 v12 h-12 Z M523 213 v-3 h4 v3"/>
+        <text class="t" x="547" y="224">Equipment</text>
+        <text class="t-amber" x="656" y="224">4</text>
+      </g>
+      <g>
+        <rect class="chip-bg-on" x="770" y="311" width="188" height="38" rx="2"/>
+        <rect class="icon-cell-on" x="777" y="318" width="24" height="24" rx="2"/>
+        <path class="gl gl-on" d="M783 330 h12 M789 324 v12"/>
+        <text class="t-on" x="811" y="335">Medical</text>
+        <text class="t-amber" x="920" y="335">3</text>
+      </g>
+      <g>
+        <rect class="chip-bg" x="700" y="528" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="707" y="535" width="24" height="24" rx="2"/>
+        <path class="gl" d="M713 553 v-8 l6-6 6 4"/>
+        <text class="t" x="741" y="552">Gestures</text>
+        <text class="t-amber" x="850" y="552">5</text>
+      </g>
+      <g>
+        <rect class="chip-bg" x="306" y="528" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="313" y="535" width="24" height="24" rx="2"/>
+        <path class="gl" d="M317 549 h14 M321 549 v-5 h8 v5"/>
+        <text class="t" x="347" y="552">Weapon</text>
+        <text class="t-amber" x="456" y="552">6</text>
+      </g>
+      <g>
+        <rect class="chip-bg" x="238" y="311" width="188" height="38" rx="2"/>
+        <rect class="icon-cell" x="245" y="318" width="24" height="24" rx="2"/>
+        <path class="gl" d="M251 324 h12 v12 h-12 Z M251 330 h12"/>
+        <text class="t" x="279" y="335">Inventory</text>
+        <text class="t-amber" x="388" y="335">2</text>
+      </g>
+
+      <!-- segundo nivel: Medical desplegado, SIN soltar la tecla -->
+      <path class="arcguide" d="M964 250 Q 1046 330 986 424"/>
+      <path class="leader-on" d="M958 330 L968 262"/>
+      <path class="leader-on" d="M958 330 L980 338"/>
+      <path class="leader-on" d="M958 330 L974 414"/>
+      <g>
+        <rect class="chip-bg" x="962" y="243" width="176" height="36" rx="2"/>
+        <rect class="icon-cell" x="969" y="249" width="24" height="24" rx="2"/>
+        <path class="gl" d="M974 261 h14 M981 254 v14" style="stroke:var(--red)"/>
+        <text class="t" x="1003" y="266">Bandage</text>
+        <text class="t-meta" x="1102" y="266">×4</text>
+      </g>
+      <g>
+        <rect class="chip-bg" x="976" y="320" width="176" height="36" rx="2"/>
+        <rect class="icon-cell" x="983" y="326" width="24" height="24" rx="2"/>
+        <path class="gl" d="M988 343 l10-10 M996 331 l6 6" style="stroke:var(--amber)"/>
+        <text class="t" x="1017" y="343">Morphine</text>
+        <text class="t-meta" x="1114" y="343">×1</text>
+      </g>
+      <g>
+        <rect class="chip-bg-off" x="970" y="396" width="176" height="36" rx="2"/>
+        <rect class="icon-cell" x="977" y="402" width="24" height="24" rx="2" opacity=".6"/>
+        <path class="gl gl-off" d="M983 414 a6 6 0 1 1 .1 0"/>
+        <text class="t-dim" x="1011" y="419" opacity=".65">Check self</text>
+      </g>
+
+      <path class="cursor" d="M964 322 l0 22 5.5 -5.5 4 9 4.5 -2 -4 -8.5 7.5 -0.5 Z"/>
+
+      <rect class="hudbar" x="0" y="742" width="1200" height="58"/>
+      <path class="edge" d="M0 742 H1200"/>
+      <g>
+        <rect class="icon-cell" x="34" y="757" width="66" height="28" rx="3"/>
+        <text class="t-key" x="43" y="776" style="font-weight:700">Ctrl+Q</text>
+        <text class="t-key" x="112" y="776">mantener — tecla PROPIA, árbol propio</text>
+        <text class="t-key" x="418" y="776" style="fill:var(--border-hi)">·</text>
+        <text class="t-key" x="436" y="776">se baja de nivel sin soltar</text>
+      </g>
+
+      <g class="cmark">
+        <g><circle cx="600" cy="400" r="11"/><text x="600" y="404" text-anchor="middle">7</text></g>
+        <g><circle cx="1058" cy="414" r="11"/><text x="1058" y="418" text-anchor="middle">8</text></g>
+      </g>
+    </svg>
+
+  </div>
+  </div>
+
+  <p class="note" id="viewnote"><b>Árbol de entorno.</b> Se organiza por la <b>entidad apuntada</b>.
+  Los candidatos salen de una <b>consulta de proximidad</b>, no de un trace — por eso se ven varios
+  puntos a la vez, y por eso una rueda es alcanzable.</p>
+
+  <div class="sec-lab">Qué demuestra cada punto</div>
+
+  <section class="legend" id="cal-world">
+    <div class="cal"><div class="cal-n">1</div><div>
+      <h3>Un nodo con hijos se despliega hacia afuera</h3>
+      <p>El arco sale del padre y va unido por una línea. Se baja de nivel <em>sin soltar la tecla</em>.
+      El <code>3</code> ámbar es cuántos hijos tiene, y sale de resolver el árbol por <code>parent</code>.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">2</div><div>
+      <h3>La rueda es su propio punto</h3>
+      <p><code>glide_wheel</code> es una entidad real, igual que los asientos. Por eso el ejemplo canónico
+      de ACE3 —apuntar la rueda para ver sus acciones— sale gratis con anclaje por entidad.
+      Es también <em>por qué no se usa un trace</em>: la rueda es <code>SOLID_NONE</code> y un trace la atraviesa.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">3</div><div>
+      <h3>LOD: punto, chip, o desplegado</h3>
+      <p>De lejos un círculo chico; de cerca el ícono con etiqueta; bajo el cursor, el árbol.
+      La etiqueta se voltea hacia el lado con espacio en vez de salirse de pantalla.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">4</div><div>
+      <h3>Un cadáver es una entidad más</h3>
+      <p>No hace falta un árbol especial: <code>Containers.Attach</code> ya es inventario-en-entidad,
+      y CRG-21 dice que el cadáver es ese mismo primitivo.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">5</div><div>
+      <h3>Fuera de rango no aparece</h3>
+      <p>La entidad existe en el mundo pero <em>no en el árbol</em>. El <code>range</code> es por acción,
+      y el server lo <b>vuelve a chequear</b> al ejecutar, con sus propias posiciones.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">6</div><div>
+      <h3>Mantener, click, soltar</h3>
+      <p>Mientras la tecla está abajo la cámara se congela y el mouse es cursor. Se ejecuta con
+      <b>click izquierdo</b> — el clicker se traga el clic, así que el arma no dispara.
+      Soltar sin elegir no hace nada.</p>
+    </div></div>
+  </section>
+
+  <section class="legend" id="cal-self" style="display:none">
+    <div class="cal"><div class="cal-n">7</div><div>
+      <h3>El árbol propio se organiza por DOMINIO</h3>
+      <p>Y ése es el criterio <em>distinto</em> al del otro árbol, que va por entidad. No es un descuido:
+      sobre uno mismo no hay geometría que apuntar, así que vuelven las categorías abstractas.</p>
+    </div></div>
+
+    <div class="cal"><div class="cal-n">8</div><div>
+      <h3>Una acción sin condición se apaga, no desaparece</h3>
+      <p><em>Check self</em> está en gris porque su <code>condition(ply, ent)</code> dio <code>false</code> —
+      distinto de estar fuera de rango, que no se dibuja. Y distinto de apagada por el admin, que
+      tampoco se dibuja: la perilla la crea el registro, no una lista.</p>
+    </div></div>
+  </section>
+
+  <footer class="foot">
+    <span>Colores: espejo de <code>T.PALETTES</code>, <code>corpus_cargo_theme.lua:52-83</code></span>
+    <span>Fuente de la UI: <code>Roboto</code>, la que declara el theme</span>
+    <span>Spec: <code>corpus/docs/Corpus_Interaccion_Arquitectura.md</code></span>
+    <span>El mock manda hasta que exista el código; en divergencia manda el código</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  function bind(rowId, attr, after){
+    var row = document.getElementById(rowId);
+    row.addEventListener('click', function(ev){
+      var b = ev.target.closest('button'); if(!b) return;
+      Array.prototype.forEach.call(row.querySelectorAll('button'), function(x){
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      stage.setAttribute('data-' + attr, b.getAttribute('data-' + attr));
+      if (after) after(b.getAttribute('data-' + attr));
+    });
+  }
+  bind('sw-pal', 'pal');
+  bind('sw-view', 'view', function(v){
+    document.getElementById('cal-world').style.display = (v === 'world') ? '' : 'none';
+    document.getElementById('cal-self').style.display  = (v === 'self')  ? '' : 'none';
+    document.getElementById('viewnote').innerHTML = (v === 'world')
+      ? '<b>Árbol de entorno.</b> Se organiza por la <b>entidad apuntada</b>. Los candidatos salen de una <b>consulta de proximidad</b>, no de un trace — por eso se ven varios puntos a la vez, y por eso una rueda es alcanzable.'
+      : '<b>Árbol propio.</b> Se organiza por <b>dominio funcional</b>, y ése es un criterio distinto al del otro árbol a propósito. Tecla propia, y las ramas las inyectan los módulos: si apagas uno, su rama deja de existir.';
+  });
+})();
+</script>
+</body>
+</html>

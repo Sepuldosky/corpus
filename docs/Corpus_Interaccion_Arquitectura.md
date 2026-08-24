@@ -20,6 +20,12 @@
 >
 > **Origen:** propuesto por el autor el 2026-08-23. La semilla con su pedido textual y el cruce contra
 > el árbol vive en `dev/HANDOFF_menu_interactivo.md` (fuera de git).
+>
+> **Mock visual:** [`docs/mockups/corpus_interact_menu_mock_v1.html`](mockups/corpus_interact_menu_mock_v1.html)
+> — los dos árboles, el anclaje por entidad, los tres niveles de LOD y el segundo nivel desplegado, con
+> las **dos paletas runtime conmutables**. Sus colores son **espejo de `T.PALETTES`**
+> (`corpus_cargo_theme.lua:52-83`) y su fuente es la que declara el theme. **Misma regla que el wheel de
+> Cargo: el mock manda hasta que exista el código; en divergencia manda el código.**
 
 ---
 
