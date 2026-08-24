@@ -289,6 +289,26 @@ Las dos rutas que eso abre, en orden de costo:
 lo que sabe hacer y hace bien— y **lo que ven los demás sale del engine**. No compiten: cubren mitades
 distintas del mismo gesto.
 
+#### ✅ VOTADO 2026-08-24 — la rama entrega el DISPARO, y ahí termina su alcance
+
+**El autor cerró el asunto:** Corpus expone la funcionalidad de **hacer** el gesto; que la animación la
+vean todos *«es cosa del autor de GCAL»*, y **su mod no se toca**.
+
+Es la política que el ecosistema ya aplica a **Glide, ARC9 y VJ Base**, y por el mismo motivo: son mods
+**vivos y bien hechos**, se consumen por su API y se sigue su upstream. **No es una restricción de
+licencia** — es una decisión del proyecto.
+
+**Lo que eso fija, y hay que respetarlo al escribir:**
+
+- La acción de gesto es **un cable al concommand** de GCAL, y nada más. Diez líneas.
+- **Ninguna de las dos rutas de arriba se implementa.** Quedan escritas porque el día que GCAL agregue
+  la mitad de tercera persona —o el día que el autor cambie de opinión— el análisis ya está hecho y no
+  hay que volver a medirlo.
+- **Se cae la pasada con dos clientes**: ya no decide nada. Lo que el jugador vea de su propio gesto es
+  todo lo que este bloque promete.
+- ⚠ **Y por lo tanto no se promete de más en el texto de cara al jugador.** Una etiqueta que sugiera que
+  el gesto es una señal *para otros* estaría mintiendo, y eso sí es asunto nuestro.
+
 ### 5.3 `command` — órdenes tácticas a la escuadra
 
 Estilo **Ready or Not / SWAT 4**: el jugador hace de *Team Leader* y manda a sus NPCs. El catálogo
