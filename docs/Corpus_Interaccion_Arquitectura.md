@@ -4,9 +4,9 @@
 > acciones contextuales al estilo del menú interactivo de ACE3 (Arma 3) y las dos ramas de UI que lo
 > dibujan. No se requiere el chat de diseño original para entenderlo.
 >
-> **Estado:** diseño abierto. **Ocho decisiones votadas** (§2, §5, §6, §7, §8, §9.1, §9.2 y la sede),
-> **dos abiertas** — ninguna de ellas bloquea escribir el registro, que es la pieza de la que todo
-> cuelga. El detalle de las diez está en **§11**. **El código no existe.** Este documento **no acuña
+> **Estado:** **diseño CERRADO — las diez decisiones están votadas** (§2, §5, §6, §7, §8, §9.1, §9.2,
+> §10 y la sede); el detalle está en **§11**. **El código no existe todavía**, y el primer parche que
+> lo escriba arrastra tres cosas que §11 enumera. Este documento **no acuña
 > ninguna norma `COR-nn` todavía**, a propósito: **FLU-30** manda que una norma nueva entre al registro
 > *en el mismo parche*, y acuñar invariantes de framework para código inexistente sólo inflaría
 > el conteo de `INTENCION`, que `ids.yaml` lleva como métrica de salud. Las normas se acuñan cuando se
@@ -443,10 +443,49 @@ inverificable offline**.
 > El límite del engine sigue siendo un filtro **externo y gratis** —no puedes hacer WALK+USE sobre algo
 > que no alcanzas— pero **ya no carga peso en el diseño**, así que no frena escribir.
 
-**Lo que sí queda por medir, y es más chico y OFFLINE:** si las masas de los props de HL2 son *sanas*
-como peso de inventario. Un cajón de 30 kg contra un presupuesto de 54 significa **dos cajones y vas
-sobrecargado** — puede ser lo correcto o puede volver inútil el saqueo. Se lee `GetMass()` sobre una
-muestra y se mira la distribución contra los 54 kg; el *«¿se siente bien?»* sí necesita el juego.
+### ⚠ Y la masa de un prop NO se puede usar cruda — medido el 2026-08-24
+
+Esto se anotó primero como *«calibración, no diseño»*. **Al medirlo resultó ser diseño**, y por eso
+está acá y no en una nota al pie.
+
+Se leyeron las masas reales de **765 props de HL2** —`props_junk`, `props_c17`, `props_lab`,
+`props_interiors`, `props_wasteland`— parseando el VPK. Instrumento reproducible:
+`dev/leer_masas_phy.py` (no usa `vpk.exe`: el de `GarrysMod/bin` dice *«extracting»* y **no escribe
+nada**, probado con el directorio destino ya creado).
+
+| Rango | Props | Contra los 54 kg |
+|---|---|---|
+| **= 1,00 kg (el PISO)** | **89 (11,6 %)** | **Source no sabe cuánto pesan** |
+| 1–5 kg | 65 (8,5 %) | entran de a montones |
+| 5–15 kg | 152 (19,9 %) | 3 a 10 |
+| 15–54 kg | 195 (25,5 %) | uno o dos y vas cargado |
+| 54–108 kg | 59 (7,7 %) | uno solo sobrecarga |
+| > 108 kg | 205 (26,8 %) | **no entran nunca** (techo) |
+
+**La mediana es 25 kg** — el prop mediano de HL2 es media mochila. `wood_crate001a` pesa exactamente
+**30 kg**.
+
+> ⭐ **`1.0` ES UN PISO DE SOURCE, NO UNA MEDICIÓN.** De los 765, **cero** están por debajo de 1,0 y
+> **89 valen exactamente 1,00**: entre ellos una **lata de bebida**, un **diario**, botellas plásticas
+> y un **frasco de vidrio**. Una lata no pesa un kilo. El piso se confirmó contra contenido que no es
+> de Valve — en el addon *props mexicanos* el mínimo también es `1.000000`.
+>
+> **`GetMass()` es fiable ARRIBA del piso y ciego ABAJO**, o sea justo en el rango que más le importa a
+> un inventario: un diario, una lata y un frasco son **el mismo número**, y la lata está ~65×
+> sobreestimada. **Escalar no lo arregla**: todo lo clavado en 1,0 sigue igual entre sí.
+
+**Resuelto así:** se usa `GetMass()` crudo, **con un piso propio para los que están clavados en el piso
+de Source**. Una línea, **derivada y no catalogada** (CRG-41/42 intacto): si la masa es exactamente
+`1.0`, el motor está diciendo *«no sé»*, y ahí vale más un nominal chico —del orden de **0,2 kg**— que
+aceptar su número.
+
+**Lo que se descartó, y por qué:** derivar el extremo liviano del **volumen del bbox** distinguiría la
+lata del frasco, pero `GetModelBounds()` devuelve **el hull y no la malla** — una trampa que este
+proyecto ya pagó en el port de equipamiento, y cuyo modo de falla es **invisible**. El de la salida
+elegida es visible: cargas demasiados diarios.
+
+**Y la parte que no hay que tocar:** el saqueo *interesante* —el 25,5 % que cae entre 15 y 54 kg—
+**funciona bien con la masa cruda**. El defecto es sólo el escalón de la chatarra.
 
 **Dos trampas para cuando se escriba:**
 
@@ -472,11 +511,46 @@ medido, es cero) y con la **#15**.
 
 ## 10. Verificación
 
-**Corpus no tiene harness offline.** Existen `dev/harness_cargo.py`, `harness_coagulant.py` y
-`harness_craving.py`, pero no uno del framework: lo que verifica a Corpus es
-`corpus/lua/autorun/corpus_selftest.lua`, **en juego**. El primer parche que escriba código tiene que
-decidir si abre `dev/harness_corpus.py` o si extiende el selftest, y **eso es una decisión del parche,
-no de este documento**.
+**VOTADO 2026-08-24: los dos, y la repartija no es arbitraria.**
+
+La pregunta estaba planteada como *«harness nuevo vs. extender el selftest»*, y **eso asumía que la
+maquinaria no existe. Existe tres veces.**
+
+- `corpus_selftest.lua` son **144 líneas**, corre **en juego** y cubre las seis primitivas. Ya pagó lo
+  difícil: tiene **dos nombres de comando** porque el archivo es shared y en un listen server gana el
+  del SERVER — sin `corpus_selftest_cl` el realm CLIENTE del framework era **inverificable**, y así fue
+  como un check verde reportó dos veces el mismo realm (planilla T4, dos rondas).
+- Los tres harnesses (`cargo` 10.836 líneas, `coagulant` 1.579, `craving` 720) corren sobre **lupa con
+  LuaJIT 2.1, el mismo motor que GMod embebe**: no analizan el Lua, **lo ejecutan**.
+- Y **los tres ya cargan el autorun de Corpus** (`FRAMEWORK_FILES` + `corpus_ui.lua`) antes de su
+  módulo.
+
+> ⇒ **El Lua del framework ya se ejecuta offline tres veces; lo que falta es que alguien le asserte
+> algo.** Corpus entra como andamio, nunca como sujeto — y la consecuencia excede a este bloque:
+> **hoy las seis primitivas tienen CERO cobertura offline.**
+
+### La repartija: lógica offline, motor en juego
+
+| Offline (lógica pura) | Sólo en juego (motor) |
+|---|---|
+| Validar el `id`; que uno no tipeable no reciba perilla **y lo diga** | **Que `REPLICATED` replique de verdad** — el stub ignora los flags, es invisible offline |
+| Resolver el `parent`, loguear huérfanos, ordenar hermanos | Que la consulta de proximidad **encuentre hijos `SOLID_NONE`** |
+| Perilla nacida del registro; entregar el objeto; re-registrar reusa | El LOD y el filtrado en pantalla (visual) |
+| La composición maestra × acción en **una** función | |
+| Las tres puertas del server (§4) | |
+| Que los hooks devuelvan `nil` y no `true` | |
+
+### Lo que hay que hacer, en orden
+
+1. **Abrir `dev/harness_corpus.py`, sembrado desde `harness_craving.py`** (720 líneas, el más chico),
+   **no** desde las 10.836 de Cargo. Su sujeto es el framework: la séptima primitiva **y las seis que
+   hoy no tienen nada**.
+2. **Extender `corpus_selftest.lua`** con la mitad de motor, reusando su patrón de dos realms.
+3. ⚠ **NO factorizar todavía la capa de stubs compartida.** Sería la cuarta copia y tienta, pero es
+   refactorizar 13.000 líneas de instrumentos que funcionan, y mover o renombrar **rompe las anclas de
+   los sabotajes en silencio** (`ANCLA x0`, sin reventar) — pasó **cuatro veces en una sola tanda**.
+   Queda como deuda con **gatillo concreto**: *el día que el mismo bug de stub aparezca en dos
+   harnesses, se factoriza.*
 
 Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 
@@ -510,16 +584,17 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | Qué props se pueden levantar | Se acepta la regla del autor, **pero la implementa el PESO de Cargo**, no el límite del engine (§9.2) | 2026-08-24 |
 | Anclaje del árbol `world` | **Entidad + descubrimiento por proximidad + campo `component` reservado** (§5) | 2026-08-24 |
 | El bullet 9 (puertas de Glide) | **Reescrito como el LOCK de Glide** — las puertas no existen (§8) | 2026-08-24 |
+| Instrumento de verificación | **Los dos**: `dev/harness_corpus.py` nuevo para la lógica + el selftest para el motor, **sin factorizar los stubs** (§10) | 2026-08-24 |
+| La masa como peso de inventario | **`GetMass()` crudo con piso propio** para los clavados en el piso de Source (§9.2) | 2026-08-24 |
 
-**Abierto:**
+**No queda ninguna decisión abierta.** El documento está listo para que un parche escriba el registro
+de §3 y §4, que es la pieza de la que todo lo demás cuelga.
 
-1. **§10 — instrumento de verificación**: harness nuevo o extender el selftest. Lo decide el parche
-   que escriba el primer archivo.
-2. **§9.2 — la distribución de masas** de los props de HL2 contra el presupuesto de 54 kg. **No es
-   bloqueante** (offline, y es calibración y no diseño), pero decide si el saqueo de props se siente
-   bien o inútil.
+**Lo que ese primer parche arrastra, y conviene saberlo antes de empezar:**
 
-**Nada de esto bloquea escribir el registro de §3 y §4**, que es la pieza que todo lo demás cuelga.
+- Toca `CORPUS_Architecture.md` §3, que hoy dice **«Seis primitivas»**.
+- **Acuña las normas `COR-nn`**, y **FLU-30** las quiere en el registro **en el mismo parche**.
+- Abre `dev/harness_corpus.py`, que es el primer instrumento offline cuyo sujeto es el framework.
 
 ### Lo que estas dos rondas de votos enseñaron
 
