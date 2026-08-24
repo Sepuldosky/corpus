@@ -1,7 +1,7 @@
 # Corpus — Arquitectura del menú interactivo
 
 > **Uso de este documento:** subsistema del **framework**, no de un módulo. Describe el registro de
-> acciones contextuales al estilo del menú interactivo de ACE3 (Arma 3) y las dos ramas de UI que lo
+> acciones contextuales al estilo del menú interactivo de ACE3 (Arma 3) y las **tres ramas** que lo
 > dibujan. No se requiere el chat de diseño original para entenderlo.
 >
 > **Estado:** **diseño CERRADO — las diez decisiones están votadas** (§2, §5, §6, §7, §8, §9.1, §9.2,
@@ -22,8 +22,9 @@
 > el árbol vive en `dev/HANDOFF_menu_interactivo.md` (fuera de git).
 >
 > **Mock visual:** [`docs/mockups/corpus_interact_menu_mock_v1.html`](mockups/corpus_interact_menu_mock_v1.html)
-> — los dos árboles, el anclaje por entidad, los tres niveles de LOD y el segundo nivel desplegado, con
-> las **dos paletas runtime conmutables**. Sus colores son **espejo de `T.PALETTES`**
+> — el anclaje por entidad, los tres niveles de LOD y el segundo nivel desplegado, con las **dos
+> paletas runtime conmutables**. ⚠ **Es de la v1 y muestra DOS ramas: quedó desfasado con la enmienda
+> de §5 (tres ramas) y tiene elementos que se superponen.** Rehacerlo es trabajo pendiente. Sus colores son **espejo de `T.PALETTES`**
 > (`corpus_cargo_theme.lua:52-83`) y su fuente es la que declara el theme. **Misma regla que el wheel de
 > Cargo: el mock manda hasta que exista el código; en divergencia manda el código.**
 
@@ -35,10 +36,11 @@
 2. [Dónde vive: la séptima primitiva](#2-dónde-vive-la-séptima-primitiva)
 3. [El registro — la API](#3-el-registro--la-api)
 4. [Realms: qué se registra dónde y qué corre dónde](#4-realms-qué-se-registra-dónde-y-qué-corre-dónde)
-5. [Los dos árboles y sus dos criterios de separación](#5-los-dos-árboles-y-sus-dos-criterios-de-separación)
+5. [Las TRES ramas de primer nivel](#5-las-tres-ramas-de-primer-nivel)
 6. [La entrada: hold, cursor y commit](#6-la-entrada-hold-cursor-y-commit)
 7. [Las perillas de admin](#7-las-perillas-de-admin)
 8. [El catálogo de acciones pedidas](#8-el-catálogo-de-acciones-pedidas)
+8.bis. [El catálogo de órdenes de `command`](#8bis-el-catálogo-de-órdenes-de-command)
 9. [Lo que este bloque NO resuelve](#9-lo-que-este-bloque-no-resuelve)
 10. [Verificación](#10-verificación)
 11. [Estado del documento](#11-estado-del-documento)
@@ -121,12 +123,12 @@ Los tres precedentes vivos con esta forma exacta, que además dan el estilo de f
 |---|---|---|---|
 | `id` | string | sí | Único en todo el ecosistema. **Tiene que ser tipeable en consola** (`[%w_]`): pasa a ser parte de un nombre de convar — ver §7 |
 | `label` | string | sí | Texto de cara al jugador ⇒ **en inglés** (CRG-48) |
-| `tree` | `"self"` \| `"world"` | sí | Cuál de los dos árboles de §5 |
+| `tree` | `"interaction"` \| `"self"` \| `"command"` | sí | Cuál de las **tres ramas** de §5 |
 | `parent` | string \| nil | no | `id` del nodo padre. `nil` = nodo raíz. Es lo que hace que el árbol sea un árbol |
 | `order` | number | no | Orden entre hermanos. Default 100, como `RegisterCategory` |
 | `icon` | string \| nil | no | Ruta de material. `nil` = sólo etiqueta |
 | `condition` | function \| nil | no | `condition(ply, ent) -> bool`. Ausente = siempre visible. **Se evalúa en vivo, en los dos realms** |
-| `range` | number \| nil | no | Distancia máxima en unidades. Sólo tiene sentido en `tree = "world"` |
+| `range` | number \| nil | no | Distancia máxima en unidades. Sólo tiene sentido en `tree = "interaction"` |
 | `run` | function | sí | `run(ply, ent)`. **La acción.** Se registra en los dos realms, **corre sólo en server** — ver §4 |
 
 **Un nodo puede ser sólo estructura.** Un `run` que no hace nada y unos hijos colgando de su `id` es
@@ -190,23 +192,78 @@ El cliente **no ejecuta nada**. Manda **un** mensaje de net nombrando
 
 ---
 
-## 5. Los dos árboles y sus dos criterios de separación
+## 5. Las TRES ramas de primer nivel
 
-Dos entradas separadas, con teclas separadas, igual que ACE3:
+> **⚠ ENMENDADO 2026-08-24 por el autor.** Este documento decía **dos** árboles, copiando a ACE3. El
+> autor votó **tres**, y la tercera —`command`— **no es una rama más: es de otra especie.** Lo de abajo
+> ya está reescrito; lo que cambió y por qué está en §5.4.
 
-| Árbol | Sobre qué | Se organiza por |
-|---|---|---|
-| **`self`** | Uno mismo | **DOMINIO funcional** — Equipo · Médico · Gestos · Arma |
-| **`world`** | Lo que estás apuntando | **La ENTIDAD apuntada** |
+| Rama | Sobre qué | Se organiza por | Estado |
+|---|---|---|---|
+| **`interaction`** | Lo **externo** que estás apuntando | La **ENTIDAD** apuntada | diseñada acá |
+| **`self`** | **Uno mismo** | **DOMINIO** funcional | diseñada acá |
+| **`command`** | **Tu escuadra**, actuando sobre un punto o una puerta | **La ORDEN** | ⚠ **front-end de un bloque de Cortex que NO EXISTE** — §5.4 |
 
-**Que los dos criterios sean distintos es la enseñanza, no un descuido.** En ACE3 el árbol de entorno
-no tiene una categoría «vehículo»: cada componente del modelo es su propio nodo, y *para llegar a las
+### 5.1 `interaction` — tocar algo externo
+
+Todo lo que toca otra cosa: las funciones de un Glide, examinar a otro jugador por Coagulant, pedirle
+un trade, tomar props, examinar un prop en el suelo sin levantarlo, saquear un cadáver, abrir una
+puerta del mapa.
+
+**Que su criterio sea distinto al de `self` es la enseñanza, no un descuido.** En ACE3 el árbol de
+entorno no tiene una categoría «vehículo»: cada componente es su propio nodo, y *para llegar a las
 acciones de una rueda hay que apuntar esa rueda*. La excepción son las **personas**, donde vuelven las
 categorías abstractas (Médico, arrastrar, cargar, revisar inventario).
 
+### 5.2 `self` — sobre uno mismo
+
+Cambiar la munición, el equipo, lo médico, y los **gestos**.
+
+**Los gestos ya existen y se disparan con un concommand.** `[GCAL] BOCW Gestures` (Workshop
+`3759136661`, desempacado en `dev/other/[gcal] bocw gestures/`) registra **34 gestos**, cada uno con su
+`gcal_bocw_gesture_<nombre>`. **La rama sólo tiene que tirar del cable**, igual que los bullets 2 y 3.
+⚠ Dos guardas suyas mandan: es **CLIENT-only** y abre con `if not GCAL then return end` — depende de la
+base **«Garry's Mod Compliant Armature Layer»** (`3727245204`, suscrita, **sin desempacar todavía**).
+
+### 5.3 `command` — órdenes tácticas a la escuadra
+
+Estilo **Ready or Not / SWAT 4**: el jugador hace de *Team Leader* y manda a sus NPCs. El catálogo
+está en §8.bis.
+
+### 5.4 ⚠⚠ Por qué `command` NO es una rama más
+
+Las otras dos **exponen acciones que ya existen o son chicas**. `command` no expone nada: **la cosa que
+tendría que ejecutar no está escrita.** Y tiene tres propiedades que ninguna otra rama tiene:
+
+1. **Tiene DOS objetivos, no uno.** *Quién* actúa (la escuadra, o parte de ella) y *dónde* (un punto,
+   una puerta, una habitación). ⚠ **El mensaje de net de §4 lleva `(id, entidad, component)` y no tiene
+   dónde poner el primero.**
+2. **Tiene ESTADO que sobrevive al menú.** El comando *delay* encadena acciones, y `stack` deja a la
+   escuadra en una postura que dura. Eso es una **cola de órdenes por escuadra**, que el server guarda.
+   Ninguna acción de las otras dos ramas guarda nada.
+3. **Su lógica es dominio puro de IA**: formaciones, tomar una puerta, despejar una habitación,
+   suprimir. **`COR-1` y `COR-10` la dejan afuera del framework sin discusión.**
+
+> **⇒ El registro de §3 sirve como FRONT-END de `command`, y nada más. La escuadra vive en Cortex.**
+> Ese bloque **no existe**: `corpus-cortex` tiene `LICENSE`, `README` y
+> `docs/Cortex_ContratosEntrantes.md`, pero **no tiene `CLAUDE.md`**.
+>
+> ⚠ **Y eso es un bloqueante medible, no una formalidad:** `ids.yaml` declara la familia `CTX` con
+> `pendiente: true`, y su propio comentario dice que el checker **se pone rojo el día que alguien acuñe la
+> primera norma de esa familia sin haber creado el `CLAUDE.md`**. O sea que la primera norma de la
+> escuadra **exige fundar Cortex primero**.
+>
+> ⚠ **Y no es teoría: se comprobó al escribir esta sección.** La primera redacción citaba el ID literal
+> como ejemplo y `check-ids` la rechazó con `HUERFANO_DOC` ×2 — el checker **no distingue citar de
+> acuñar**. Por eso acá la familia se nombra en prosa y nunca por su token.
+
+**Consecuencia de alcance, y hay que decirla:** `interaction` y `self` se pueden escribir ya.
+**`command` no.** Su rama puede nacer **vacía y registrada** —para que el árbol tenga su tercer nodo y
+la forma quede probada— pero sus órdenes son un bloque aparte, del tamaño del Workbench.
+
 ### El anclaje — VOTADO 2026-08-24: entidad, descubrimiento por proximidad, campo reservado
 
-**El nodo del árbol `world` se ancla a una ENTIDAD**, y los candidatos salen de una **consulta de
+**El nodo de la rama `interaction` se ancla a una ENTIDAD**, y los candidatos salen de una **consulta de
 proximidad** acotada por `range`, **no de un trace**.
 
 #### Por qué no es una renuncia: lo que quieres apuntar YA son entidades
@@ -374,10 +431,78 @@ está en el roadmap.**
 | 9 | ~~Abrir/cerrar puertas de un Glide~~ → **el LOCK de Glide** | Glide | **Reescrito 2026-08-24, votado.** Medido: **Glide no tiene puertas** — ni entidad, ni bodygroup, ni mecanismo; las únicas menciones de `door` en sus 195 archivos Lua son **rutas de sonido**. Lo que sí existe es el **lock** (`isLocked`, con su latch sound en `base_glide/init.lua:409`), que es lo que de verdad gatea quién puede usar el vehículo. Se expone eso: una acción sobre el chasis, **sin assets nuevos y sin tocar Glide**. Las puertas animadas serían un bloque aparte, no una acción |
 | 10 | Puertas del mapa, con generación de llave | Corpus / sin dueño | Nuevo. Mismo asset faltante que el 9 |
 | 11 | Arrastrar a un inconsciente, subirlo a un vehículo o a la camilla | Coagulant | Nuevo. **La camilla no existe** (§9.3) |
-| 12 | Abrir el menú de Coagulant de **otro** jugador | Coagulant | Nuevo. Es la forma ACE3 clásica, y cae en el árbol `world` sobre una persona |
+| 12 | Abrir el menú de Coagulant de **otro** jugador | Coagulant | Nuevo. Es la forma ACE3 clásica, y cae en `interaction` sobre una persona |
 
 **Ninguno de los doce es del framework.** Eso es la prueba de que §2 partió bien: si alguno lo fuera,
 habría dominio subiendo a Corpus.
+
+**Reparto por rama (§5):** los bullets **1 y 5-10** son `interaction`; los **2, 3, 4** y los gestos son
+`self`; los **11 y 12** son `interaction` sobre una persona. **Ninguno de los doce es `command`** — esa
+rama es enteramente nueva y va abajo.
+
+---
+
+## 8.bis El catálogo de órdenes de `command`
+
+> **Fuente:** la guía de comandos de SWAT de *Ready or Not* que indicó el autor
+> (`steamcommunity.com/sharedfiles/filedetails/?id=3494083514`), leída el 2026-08-24, **más** su propio
+> pedido. ⚠ **La guía cubre las ÓRDENES pero NO la mecánica del menú**: no describe niveles, hold, ni
+> cómo se apunta una orden. Todo lo de *forma* sale del pedido del autor y de la convención de SWAT 4,
+> **no de la fuente** — misma regla que la advertencia de ACE3 en la cabecera.
+
+### Órdenes base
+
+| Orden | Qué hace la escuadra | Precondición |
+|---|---|---|
+| **Move To** | Se mueve a un punto y **asegura el área sola** | línea de visión al punto |
+| **Fall In** | Reagrupa sobre el jugador, **con formación**: fila simple (pasillos), fila doble (espacios anchos), diamante (amenaza multiángulo), cuña (entrada frontal) | — |
+| **Cover** | Fija la atención en un **ángulo** y aguanta la posición | línea de visión al área |
+| **Hold** | Para todo; sólo se defiende | — |
+| **Deploy** | Tira una granada o un dispositivo al punto apuntado | **equipo en el inventario** + línea de visión |
+| **Search and Secure** | Restringe sospechosos, junta armas y revisa escondites | — |
+| **Delay / Synced** | **Encadena** para que dos entradas ocurran a la vez | — |
+
+### Órdenes de puerta
+
+| Orden | Qué hace | Nota |
+|---|---|---|
+| **Stack Up** | Se alinea en la puerta: izquierda, derecha o partida; el primero revisa si está trabada | |
+| **Scan** | **Slide** (rápido, pasa de largo) · **Pie** (lento, rebana la sala) · **Peek** (vistazo) | ⚠ **no disponible en stack partido** |
+| **Breach** | **Open** (sin trabar, puede ser sigiloso) · **Kick** (trabada, puede costar varios intentos) · **Escopeta** (rápida, a distancia) · **Ariete** (abre entera y aturde a quien esté detrás) · **C2** (explosivo) | |
+| **Wedge** | Traba una puerta para bloquear una sala sin despejar; **las cuñas se reusan** | |
+| **Open / Close** | Abre o cierra a mano mientras el jugador mira a otro lado | |
+
+### La combinación que el autor pidió, y lo que arrastra
+
+**«Throw flashbang and clear»** (o *breach*). No es una orden: es una **secuencia**, y el autor ya
+enumeró sus partes: el NPC **se mueve**, **tiene visión de dónde tirar**, tira, y **vuelve a su
+posición original para no comerse el destello**.
+
+⚠ **Tres dependencias reales, y ninguna está resuelta:**
+
+1. **El NPC necesita inventario.** La flash sale de una granada **ARC9 / ARC9 EFT**, así que hace falta
+   que un NPC pueda **tener** ítems de Cargo. Hoy no puede:
+   `Inventory.OwnerKey` (`server/corpus_cargo_inventory.lua:101-104`) hace
+   `ply:SteamID64() or ("bot" .. ply:EntIndex())`, y **`SteamID64` es un método de `Player`, no de
+   `Entity`** — con un NPC **no cae en el `or`: revienta**. O sea que la puerta no está entornada, no
+   existe, y abrirla es una decisión de Cargo (¿el dueño de un inventario deja de ser un jugador?), no
+   un parche de una línea.
+2. **El efecto de flash sobre NPCs es pobre** — el autor lo midió jugando: *quedan ciegos unos segundos
+   solamente*. Habría que mejorarlo. Sede a leer: `dev/other/Arc9 EFT explosives/`.
+3. **Volver a la posición original** implica que la orden guarda un punto de retorno, o sea otra vez
+   **estado por escuadra** (§5.4, punto 2).
+
+### Lo que hay que decidir antes de escribir una línea de `command`
+
+1. **Fundar Cortex.** Sin `corpus-cortex/CLAUDE.md` no se puede acuñar su primera norma, y el checker
+   de IDs se pone rojo (§5.4).
+2. **Cómo se nombra al ejecutor.** El net de §4 no tiene campo para *quién*: ¿toda la escuadra, un
+   elemento, una selección? Es la decisión que más arrastra.
+3. **Qué es una «puerta» para el sistema.** `prop_door_rotating` y `func_door` son entidades del
+   engine; el mod *Immersive Door Openable* de `dev/other/` ya mapeó sus **siete keyvalues de sonido**
+   en dos familias, y es la referencia.
+4. **Si las formaciones son de la orden o del escuadrón.** *Fall In* trae cuatro; si la formación es un
+   estado persistente, es otra pieza de estado.
 
 ---
 
@@ -588,25 +713,43 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | Forma de las perillas de admin | **Derivada de la #61** — registro + maestra (§7) | 2026-08-24 |
 | Ícono de un prop capturado | **Pipeline propio de Cargo**, no spawnicons (§9.1) | 2026-08-24 |
 | Qué props se pueden levantar | Se acepta la regla del autor, **pero la implementa el PESO de Cargo**, no el límite del engine (§9.2) | 2026-08-24 |
-| Anclaje del árbol `world` | **Entidad + descubrimiento por proximidad + campo `component` reservado** (§5) | 2026-08-24 |
+| Anclaje de la rama `interaction` | **Entidad + descubrimiento por proximidad + campo `component` reservado** (§5) | 2026-08-24 |
 | El bullet 9 (puertas de Glide) | **Reescrito como el LOCK de Glide** — las puertas no existen (§8) | 2026-08-24 |
 | Instrumento de verificación | **Los dos**: `dev/harness_corpus.py` nuevo para la lógica + el selftest para el motor, **sin factorizar los stubs** (§10) | 2026-08-24 |
 | La masa como peso de inventario | **`GetMass()` crudo con piso propio** para los clavados en el piso de Source (§9.2) | 2026-08-24 |
 
-**No queda ninguna decisión abierta.** El documento está listo para que un parche escriba el registro
-de §3 y §4, que es la pieza de la que todo lo demás cuelga.
+### ⚠ ENMIENDA DEL 2026-08-24 — la tercera rama
 
-**Lo que ese primer parche arrastra, y conviene saberlo antes de empezar:**
+El autor votó **tres ramas** en vez de dos (§5), y con eso **el alcance dejó de ser uno solo**:
+
+| | `interaction` + `self` | `command` |
+|---|---|---|
+| Estado del diseño | **cerrado**, las diez decisiones votadas | **abierto**: 4 decisiones sin votar (§8.bis) |
+| Lo que ejecuta | acciones que **ya existen** o son chicas | **no existe nada** |
+| Se puede escribir | **sí, ya** | **no** — antes hay que fundar Cortex |
+
+**Lo que sigue firme, y no lo tocó la enmienda:** el registro de §3, los realms de §4, la entrada de
+§6, las perillas de §7 y las dos decisiones de §9. La tercera rama **entra por la puerta que el
+registro ya tenía** —`tree` pasó de dos valores a tres— y eso es exactamente lo que la propiedad 1 del
+autor pedía: que el conjunto fuera abierto. *La enmienda ejercitó el diseño en vez de romperlo.*
+
+**Lo que la enmienda SÍ desfasó:** el **mock v1** muestra dos ramas y tiene elementos superpuestos.
+Hay que rehacerlo.
+
+### Lo que el primer parche arrastra, y conviene saberlo antes de empezar
 
 - Toca `CORPUS_Architecture.md` §3, que hoy dice **«Seis primitivas»**.
 - **Acuña las normas `COR-nn`**, y **FLU-30** las quiere en el registro **en el mismo parche**.
 - Abre `dev/harness_corpus.py`, que es el primer instrumento offline cuyo sujeto es el framework.
+- **Registra la rama `command` VACÍA.** Que el tercer nodo exista y no tenga hijos prueba la forma del
+  árbol sin comprometer nada — y un árbol con una rama vacía es justo el caso que un check de «el árbol
+  vacío tiene que ser una medición» (§10) sabe distinguir.
 
 ### Lo que estas dos rondas de votos enseñaron
 
 Las dos decisiones que parecían más caras se abarataron **midiendo la premisa en vez del costo**:
 
-- La geometría del árbol `world` se justificaba con las puertas y el maletero de un Glide. **Ninguno
+- La geometría de la rama `interaction` se justificaba con las puertas y el maletero de un Glide. **Ninguno
   de los dos existe en Glide.** La opción cara se defendía con un caso que no está.
 - «Lo que puedes levantar con USE» parecía necesitar el límite de masa del engine. **Lua no restringe
   nada** ahí, y el filtro que el proyecto ya tiene —el peso— da la misma propiedad y **sí** es
