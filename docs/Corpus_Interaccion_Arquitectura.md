@@ -219,11 +219,38 @@ categorías abstractas (Médico, arrastrar, cargar, revisar inventario).
 
 Cambiar la munición, el equipo, lo médico, y los **gestos**.
 
-**Los gestos ya existen y se disparan con un concommand.** `[GCAL] BOCW Gestures` (Workshop
-`3759136661`, desempacado en `dev/other/[gcal] bocw gestures/`) registra **34 gestos**, cada uno con su
-`gcal_bocw_gesture_<nombre>`. **La rama sólo tiene que tirar del cable**, igual que los bullets 2 y 3.
-⚠ Dos guardas suyas mandan: es **CLIENT-only** y abre con `if not GCAL then return end` — depende de la
-base **«Garry's Mod Compliant Armature Layer»** (`3727245204`, suscrita, **sin desempacar todavía**).
+**Los gestos existen como assets.** `[GCAL] BOCW Gestures` (Workshop `3759136661`, en
+`dev/other/[gcal] bocw gestures/`) registra **34 gestos**, cada uno con su concommand
+`gcal_bocw_gesture_<nombre>`. Es **CLIENT-only** y abre con `if not GCAL then return end`: depende de la
+base **«Garry's Mod Compliant Armature Layer»** (`3727245204`, desempacada 45/45 en
+`dev/other/garry's mod compliant armature layer/`).
+
+#### ⚠⚠ Pero un gesto de GCAL NO LO VE NADIE MÁS. Medido el 2026-08-24
+
+La primera redacción de esta sección decía que *«la rama sólo tiene que tirar del cable»*. **Es falso, y
+leer la base lo desmiente en tres puntos:**
+
+1. **`GCAL:Play` está partida por realm.** La de **CLIENTE** (`gcal_core.lua:1377`, dentro del
+   `if CLIENT then` de `:794`) reproduce **local y no toca la red**. La de **SERVER** (`:2841`) sí hace
+   `net.Start("GCAL_Play")` + `Broadcast`.
+2. **No hay camino cliente → server.** Los únicos `net.Start` del addon son los dos del bloque
+   `if SERVER then`. El concommand del pack está registrado en el cliente ⇒ **su gesto muere ahí**.
+3. **Y el net del server no dice DE QUIÉN es el gesto**: manda `name` y `trackID`, nada más. O sea que
+   un broadcast hace que **cada cliente se lo reproduzca a SÍ MISMO** — es una primitiva de *«que todos
+   toquen esta animación»*, no de *«el jugador X hizo un gesto»*.
+
+**Y el remate:** `gcal_tpik.lua` son **521 líneas con CERO `net`, CERO NW vars** y una sola mención a
+`LocalPlayer()`. GCAL es un sistema de **manos y viewmodel del jugador local** —tiene compat con
+VManip, del mismo linaje— **no un sistema de emotes en tercera persona.**
+
+> **Consecuencia de alcance:** el cable del concommand alcanza para que **tú** veas tu propio gesto.
+> Para que **lo vean los demás**, la red la tendría que poner **Corpus**, y no es un cable: el
+> `run(ply, ent)` de §4 corre en server y sabe **quién**, pero **la `Play` de cliente de GCAL le anima
+> al jugador LOCAL**, así que dibujar el gesto de X en la pantalla de Y **es algo que GCAL no hace hoy**.
+>
+> ⚠ **Esto contradice lo que el autor observó en juego** (*«todos pueden ver en thirdperson»*), y el
+> código es fuerte pero él tiene el juego. **Antes de escribir nada, se confirma con dos clientes.**
+> Lo más probable, si el código manda, es que lo que vio sea **su propio** cuerpo en tercera persona.
 
 ### 5.3 `command` — órdenes tácticas a la escuadra
 
