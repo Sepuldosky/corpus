@@ -4,9 +4,9 @@
 > acciones contextuales al estilo del menú interactivo de ACE3 (Arma 3) y las dos ramas de UI que lo
 > dibujan. No se requiere el chat de diseño original para entenderlo.
 >
-> **Estado:** diseño abierto. **Seis decisiones votadas** (§2, §6, §7, §9.1, §9.2 y la sede), **tres
-> abiertas** — ninguna de ellas bloquea escribir el registro, que es la pieza de la que todo cuelga.
-> El detalle de las nueve está en **§11**. **El código no existe.** Este documento **no acuña
+> **Estado:** diseño abierto. **Ocho decisiones votadas** (§2, §5, §6, §7, §8, §9.1, §9.2 y la sede),
+> **dos abiertas** — ninguna de ellas bloquea escribir el registro, que es la pieza de la que todo
+> cuelga. El detalle de las diez está en **§11**. **El código no existe.** Este documento **no acuña
 > ninguna norma `COR-nn` todavía**, a propósito: **FLU-30** manda que una norma nueva entre al registro
 > *en el mismo parche*, y acuñar invariantes de framework para código inexistente sólo inflaría
 > el conteo de `INTENCION`, que `ids.yaml` lleva como métrica de salud. Las normas se acuñan cuando se
@@ -167,8 +167,12 @@ El menú interactivo tiene exactamente esas dos mitades:
 
 ### El commit, y las tres puertas del server
 
-El cliente **no ejecuta nada**. Manda **un** mensaje de net nombrando `(id de acción, entidad
-objetivo)` y el server, antes de correr `run`:
+El cliente **no ejecuta nada**. Manda **un** mensaje de net nombrando
+`(id de acción, entidad objetivo, component)` y el server, antes de correr `run`:
+
+> El tercer campo, **`component`, va siempre `nil` hoy**: es el campo reservado que vota §5 para que el
+> anclaje a geometría del modelo no obligue nunca a migrar el protocolo. Se escribe desde el primer
+> día justamente porque agregarlo después es lo caro.
 
 1. **Re-chequea la perilla** (la maestra y la de la acción — §7).
 2. **Re-chequea `condition(ply, ent)`** con su propio estado.
@@ -194,20 +198,62 @@ no tiene una categoría «vehículo»: cada componente del modelo es su propio n
 acciones de una rueda hay que apuntar esa rueda*. La excepción son las **personas**, donde vuelven las
 categorías abstractas (Médico, arrastrar, cargar, revisar inventario).
 
-### ⚠ Voto de alcance ABIERTO: entidad abstracta vs. geometría
+### El anclaje — VOTADO 2026-08-24: entidad, descubrimiento por proximidad, campo reservado
 
-**Este documento diseña el árbol `world` anclado a la ENTIDAD**, no a la geometría: un punto por
-entidad, con sus acciones colgando.
+**El nodo del árbol `world` se ancla a una ENTIDAD**, y los candidatos salen de una **consulta de
+proximidad** acotada por `range`, **no de un trace**.
 
-El modelo por geometría —un punto por puerta, uno por el maletero, uno por el motor, proyectados sobre
-el modelo— **es lo que más cambia la sensación y también lo más caro**, y **no hace falta para que el
-menú exista**. Queda declarado como extensión futura: el `spec` puede ganar un campo de anclaje
-(`attachment` o `bone`) **sin romper nada de lo escrito acá**, porque el `parent` ya es un `id` y un
-nodo de geometría es un nodo de rama más.
+#### Por qué no es una renuncia: lo que quieres apuntar YA son entidades
 
-**Consecuencia que hay que decir en voz alta:** con el modelo abstracto, los bullets 8 y 9 del pedido
-(maletero y puertas de un Glide) son **acciones hermanas de una misma entidad**, no puntos separados
-sobre el vehículo. Es menos de lo que el pedido sugería. **Es votable, y no está votado.**
+La pregunta original era «entidad abstracta vs. geometría del modelo», con la geometría como la opción
+fiel y cara. **Medido, esa disyuntiva estaba mal planteada**, porque casi todo lo que los doce bullets
+quieren apuntar ya es una entidad separada:
+
+| Objetivo | Clase |
+|---|---|
+| Props del suelo | `prop_physics` |
+| Ítems botados / efectivo | `corpus_cargo_item`, `corpus_cargo_cash` |
+| Cadáveres, jugadores | — |
+| Puertas **del mapa** | `prop_door_rotating`, `func_door` |
+| Asientos de Glide | `prop_vehicle_prisoner_pod` (`base_glide/init.lua:588`) |
+| **Ruedas de Glide** | **`glide_wheel`, entidad real** (`base_glide/sv_wheels.lua:19`) |
+
+La última es la que decide: **el ejemplo canónico de ACE3 —*«para llegar a las acciones de una rueda
+hay que apuntar esa rueda»*— sale gratis con anclaje por entidad.** No hacía falta geometría para eso.
+
+#### ⚠⚠ Y el obstáculo real no es la geometría: es el TRACE
+
+**`glide_wheel` es `SOLID_NONE`** (`glide_wheel/init.lua:8`, verificado en la fuente del mod). **Un
+`util.TraceLine` desde el ojo la atraviesa** y pega en el chasis.
+
+> Si el árbol de entorno se construyera sobre `ply:GetEyeTrace().Entity`, las ruedas serían
+> **inalcanzables para siempre**, y el síntoma se leería exactamente como *«no soporta geometría»*
+> siendo otra cosa completamente. **El error mentiría sobre la causa.**
+
+Por eso el descubrimiento es una **consulta de proximidad** (`ents.FindInSphere` acotada por el `range`
+máximo de las acciones registradas, filtrada por distancia en pantalla al centro). Da tres cosas que
+el trace no da:
+
+1. Encuentra hijos `SOLID_NONE`, como las ruedas.
+2. Devuelve **varios candidatos a la vez**, que es lo que hace que *se vea* como ACE3 — un trace
+   devuelve uno solo.
+3. Convierte «entidad hija» y «geometría del modelo» en **el mismo mecanismo** el día que haga falta
+   la segunda.
+
+#### El campo reservado, que es la parte barata
+
+**El mensaje de net lleva un campo `component` opcional desde el primer día, y hoy va siempre `nil`.**
+Cuesta un campo. El día que un nodo se ancle a un attachment o a un hueso del modelo, **el protocolo ya
+lo aguanta y no hay migración**.
+
+#### La geometría verdadera queda para cuando tenga un consumidor
+
+Y hoy **no tiene ninguno**. El único caso que se invocaba para justificarla —los bullets 8 y 9,
+maletero y puertas de un Glide— **no existe en Glide en ninguna forma**: sus 195 archivos Lua no tienen
+entidad, bodygroup ni mecanismo de puerta, y las únicas tres menciones de `door`/`trunk`/`hood` son
+**rutas de sonido** de la latch del lock más un chequeo de nombre de tool. No hay dónde poner el punto.
+
+*La opción cara se justificaba con un caso que, medido, no existe.*
 
 ---
 
@@ -318,8 +364,8 @@ está en el roadmap.**
 | 5 | Examinar un ítem sin levantarlo, y **quitar el nombre flotante** | Cargo | **Acotado y medido**: `lua/entities/corpus_cargo_item.lua:183-194` dibuja la etiqueta con `cam.Start3D2D`, y la corta a 200 u (`:186`, `DistToSqr > 200*200`). ⚠ `corpus_cargo_cash` dibuja **la misma clase de etiqueta** y hay que decidir qué hace |
 | 6 | Lootear un ragdoll | Cargo | Cruza la **#15** (loot on death, abierta). El primitivo **ya existe**: `Containers.Attach` (`server/corpus_cargo_containers.lua:124`), y CRG-21 dice que el cadáver es ese mismo primitivo |
 | 7 | Tradear con otro jugador (request / accept / **cooldown**) | Cargo | Es el **slice 3** del comercio (`Cargo_Trade_Arquitectura.md` §6). ⚠ El request/accept/cooldown es **aporte nuevo del autor**: §6 describe la sesión y el doble confirm, **no cómo se ABRE** |
-| 8 | Abrir el maletero de un Glide | Cargo + Glide | `Containers.Attach` sobre la entidad del vehículo. ⚠ Glide **no se forkea, se consume** |
-| 9 | Abrir/cerrar puertas de un Glide | Glide | Nuevo. **Falta el modelo de llave** (§9.3) |
+| 8 | Abrir el maletero de un Glide | Cargo + Glide | `Containers.Attach` sobre la **entidad del chasis** — Glide no tiene entidad de maletero, así que es **una acción sobre el vehículo**, no un punto sobre él. ⚠ Glide **no se forkea, se consume** |
+| 9 | ~~Abrir/cerrar puertas de un Glide~~ → **el LOCK de Glide** | Glide | **Reescrito 2026-08-24, votado.** Medido: **Glide no tiene puertas** — ni entidad, ni bodygroup, ni mecanismo; las únicas menciones de `door` en sus 195 archivos Lua son **rutas de sonido**. Lo que sí existe es el **lock** (`isLocked`, con su latch sound en `base_glide/init.lua:409`), que es lo que de verdad gatea quién puede usar el vehículo. Se expone eso: una acción sobre el chasis, **sin assets nuevos y sin tocar Glide**. Las puertas animadas serían un bloque aparte, no una acción |
 | 10 | Puertas del mapa, con generación de llave | Corpus / sin dueño | Nuevo. Mismo asset faltante que el 9 |
 | 11 | Arrastrar a un inconsciente, subirlo a un vehículo o a la camilla | Coagulant | Nuevo. **La camilla no existe** (§9.3) |
 | 12 | Abrir el menú de Coagulant de **otro** jugador | Coagulant | Nuevo. Es la forma ACE3 clásica, y cae en el árbol `world` sobre una persona |
@@ -416,7 +462,8 @@ medido, es cero) y con la **#15**.
 
 ### 9.3 Assets que no los tapa ningún diseño
 
-- **Modelo de llave** (bullets 9 y 10). Phantasmagoria aporta **sonidos**, no modelo.
+- **Modelo de llave** — ~~bullets 9 y 10~~ **sólo el 10** desde que el 9 pasó a ser el lock de Glide,
+  que no necesita asset. Phantasmagoria aporta **sonidos**, no modelo.
 - **Máscara de gas propia** (#44). El autor la quiere 100 % propia; el banco de sonidos ya está en
   `corpus/sound/corpus/cargo/gasmask/`.
 - **Camilla** (bullet 11), inexistente.
@@ -461,15 +508,29 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | Forma de las perillas de admin | **Derivada de la #61** — registro + maestra (§7) | 2026-08-24 |
 | Ícono de un prop capturado | **Pipeline propio de Cargo**, no spawnicons (§9.1) | 2026-08-24 |
 | Qué props se pueden levantar | Se acepta la regla del autor, **pero la implementa el PESO de Cargo**, no el límite del engine (§9.2) | 2026-08-24 |
+| Anclaje del árbol `world` | **Entidad + descubrimiento por proximidad + campo `component` reservado** (§5) | 2026-08-24 |
+| El bullet 9 (puertas de Glide) | **Reescrito como el LOCK de Glide** — las puertas no existen (§8) | 2026-08-24 |
 
 **Abierto:**
 
-1. **§5 — entidad abstracta vs. geometría** en el árbol `world`. El documento diseña la abstracta; la
-   geometría es extensión futura y **no está votada**. Es el voto que más arrastra de los tres.
-2. **§10 — instrumento de verificación**: harness nuevo o extender el selftest. Lo decide el parche
+1. **§10 — instrumento de verificación**: harness nuevo o extender el selftest. Lo decide el parche
    que escriba el primer archivo.
-3. **§9.2 — la distribución de masas** de los props de HL2 contra el presupuesto de 54 kg. **No es
+2. **§9.2 — la distribución de masas** de los props de HL2 contra el presupuesto de 54 kg. **No es
    bloqueante** (offline, y es calibración y no diseño), pero decide si el saqueo de props se siente
    bien o inútil.
 
 **Nada de esto bloquea escribir el registro de §3 y §4**, que es la pieza que todo lo demás cuelga.
+
+### Lo que estas dos rondas de votos enseñaron
+
+Las dos decisiones que parecían más caras se abarataron **midiendo la premisa en vez del costo**:
+
+- La geometría del árbol `world` se justificaba con las puertas y el maletero de un Glide. **Ninguno
+  de los dos existe en Glide.** La opción cara se defendía con un caso que no está.
+- «Lo que puedes levantar con USE» parecía necesitar el límite de masa del engine. **Lua no restringe
+  nada** ahí, y el filtro que el proyecto ya tiene —el peso— da la misma propiedad y **sí** es
+  verificable.
+
+Y a cambio apareció un obstáculo que ninguna de las dos preguntas mencionaba: **`glide_wheel` es
+`SOLID_NONE`**, así que un trace no la toca. *El costo real no estaba donde las dos opciones lo
+discutían.*
