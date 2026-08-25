@@ -2006,3 +2006,64 @@ Es el nº 98 del catálogo, en su versión barata.
 `python dev/sabotaje_corpus_interact.py` → **53/53 en rojo** con alcance correcto, **5/5**
 no-detectables verdes. El selftest corrido en los dos realms devuelve `true` y sus 11 filas de
 Interact salen OK. `check-ids` limpio; los tres harnesses hermanos en exit 0.
+
+---
+
+## PARCHES DE sesión El voto del EJECUTOR — la tanda 2 queda destrabada — 2026-08-25
+
+**Era la decisión que más arrastraba de todo el bloque**, y la única de las cuatro de §8.bis que
+frenaba a las **otras dos ramas** y no sólo a `command`: el mensaje de net se define en la tanda 2,
+y ahí hay que saber si lleva un campo más — agregarlo después es lo caro, que es el mismo argumento
+por el que `component` se reservó el día uno.
+
+**Votado por el autor: `B + C`.** El ejecutor **no viaja en el mensaje del menú** —es **estado del
+server**, y llega por el net propio de Cortex cuando el jugador cambia su selección— y el commit se
+lleva igualmente un cuarto campo **`subject`, opaco**, que el framework transporta y no interpreta.
+
+- PARCHE 1 — docs(interact): §8.bis estrena la sección del voto. **B es correcto por naturaleza y
+  no por costo**: §8.bis ya decía con estrella que la columna WHO *«no es un menú: es ESTADO, y no
+  se cierra al elegir»*, el estado **hace falta igual** (la columna WHO y la cola de Delay se
+  dibujan fuera del menú), y meterlo además en el mensaje es duplicar un hecho — lo que §7.0 del
+  flujo dice que **deriva siempre**.
+
+  **Su costo queda escrito y no disimulado:** son dos mensajes, así que hay carrera si el jugador
+  selecciona y ordena en el mismo frame. Se paga aceptando que **manda el server**, que es
+  exactamente lo que las tres puertas de §4 ya establecen.
+
+  **Y C igual, siendo B suficiente hoy:** `subject` es el gemelo de `component` y hereda su
+  precedente escrito. Compra la salida el día que aparezca una orden cuyo sujeto **no** sea la
+  selección vigente, y no toca COR-1 — transportar un opaco no es conocer su semántica.
+
+  **Descartadas con motivo:** **A** (un `actor` con semántica de escuadra, en sus tres formas) le
+  daba al framework un campo cuyo significado es **IA de escuadra**, justo lo que el voto de §2 se
+  comprometió a no hacer y con criterio de reapertura escrito. **D** (el ejecutor dentro del `id`)
+  da 7 órdenes × 5 destinatarios = **35 ids**, y §7 crea una convar por acción: 35 perillas de
+  admin. **[APLICADO 2026-08-25]**
+
+- PARCHE 2 — docs(interact): el voto se propaga a donde el protocolo está escrito, que es la mitad
+  que se olvida. **§4**: el commit pasa a `(id, entidad, component, subject)` y la nota de los
+  campos reservados los explica **juntos y por el mismo motivo**, con el aviso de que el ejecutor
+  **no viaja ahí**. **§5.4 punto 1**: queda tachado —decía que el mensaje *«no tiene dónde poner el
+  primero»*— con su resolución al lado. **§11**: fila nueva en la tabla de votos, y la tabla de la
+  enmienda de la tercera rama pasa de «4 decisiones sin votar» a **2**. **[APLICADO 2026-08-25]**
+
+- PARCHE 3 — docs(interact): ⚠ **se escribe lo que hay que decir pase lo que pase, porque leído de
+  afuera parece un bug.** En el «segundo caso» de §8.bis —apuntar a un miembro y darle una orden
+  individual— **el NPC ya viaja en el campo `ent` que existe**, así que `ent` significa **DESTINO**
+  en una orden de escuadra y **SUJETO** en una individual. No es ambiguo para el server (el `id` de
+  la acción sabe cuál de los dos es), pero sin decirlo se lee como una colisión de campos y el que
+  lo lea va a proponer separarlos. **[APLICADO 2026-08-25]**
+
+### Lo que este voto destraba, y lo que NO
+
+**Destraba la tanda 2 entera** — el commit, las tres puertas del server y el `corpus_interact_dump`
+de realm CLIENT. Nada de eso dependía de `command`: dependía de saber la **forma del mensaje**.
+
+**No destraba `command`**, y el motivo no cambió: el escuadrón todavía no está diseñado, y ése es
+el bloque que Cortex abrió el 2026-08-24. De las cuatro decisiones de §8.bis quedan **dos** —qué es
+una «puerta» para el sistema, y si las formaciones son de la orden o del escuadrón— y las dos son
+**enteramente de `command`**: no frenan ni el dibujado de la tanda 3 ni las acciones de la tanda 4.
+
+**Sin código en esta entrada.** El registro pelado no manda mensajes, así que el voto no toca una
+sola línea de `corpus_interact.lua` — se cobra cuando la tanda 2 escriba el net. `check-ids`
+limpio; harness y sabotaje sin cambios (456 checks, 53/53).

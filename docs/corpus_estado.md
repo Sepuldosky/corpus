@@ -35,7 +35,15 @@ padrón y lo restaura**: sin eso, tipear el comando con módulos cargados les bo
 acciones con todas las filas en OK. **No se abre planilla todavía** y el motivo está medido:
 ningún módulo registra acciones (mismo precedente que Cargo #60), el `REPLICATED` **no es
 corrible en listen server** —mismo proceso—, y el estado no es inspeccionable hasta el
-`corpus_interact_dump` de la tanda 2. La letra `AP` sigue **libre**. Contexto previo: **el
+`corpus_interact_dump` de la tanda 2. La letra `AP` sigue **libre**. ⭐⭐ **Y EL VOTO DEL EJECUTOR ESTÁ DADO** —era la decisión que más
+arrastraba del bloque y la única de las cuatro de §8.bis que frenaba a las **otras dos ramas**—:
+`B + C`, o sea que **el ejecutor es ESTADO del server** (llega por el net propio de Cortex, no por
+el commit del menú) **más un campo `subject` opaco de reserva**, gemelo de `component`. Con eso
+**la tanda 2 queda DESTRABADA** —el commit, las tres puertas del server y el `corpus_interact_dump`—
+y de las cuatro decisiones de `command` quedan **dos**, las dos enteramente suyas: qué es una
+«puerta» y dónde viven las formaciones. ⚠ Queda escrito además lo que **leído de afuera parece un
+bug**: `ent` significa **DESTINO** en una orden de escuadra y **SUJETO** en una individual, y el
+`id` de la acción es el que sabe cuál de los dos es. Contexto previo: **el
 framework tiene
 SIETE primitivas: nació
 `Corpus.Interact`, el registro del menú interactivo — y las seis viejas estrenan la cobertura

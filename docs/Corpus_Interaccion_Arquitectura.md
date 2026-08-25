@@ -218,11 +218,17 @@ El menú interactivo tiene exactamente esas dos mitades:
 ### El commit, y las tres puertas del server
 
 El cliente **no ejecuta nada**. Manda **un** mensaje de net nombrando
-`(id de acción, entidad objetivo, component)` y el server, antes de correr `run`:
+`(id de acción, entidad objetivo, component, subject)` y el server, antes de correr `run`:
 
-> El tercer campo, **`component`, va siempre `nil` hoy**: es el campo reservado que vota §5 para que el
-> anclaje a geometría del modelo no obligue nunca a migrar el protocolo. Se escribe desde el primer
-> día justamente porque agregarlo después es lo caro.
+> **Los dos últimos campos van siempre `nil` hoy, y los dos están por el mismo motivo:** son campos
+> reservados para que el protocolo no haya que migrarlo. **`component`** lo vota §5, para el anclaje
+> a geometría del modelo; **`subject`** lo vota §8.bis el 2026-08-25, para una orden cuyo ejecutor no
+> sea la selección vigente. El framework los **transporta y no los interpreta** — transportar un
+> opaco no es conocer su semántica, y por eso ninguno de los dos toca COR-1. Se escriben desde el
+> primer día justamente porque agregarlos después es lo caro.
+>
+> ⚠ **El ejecutor NO viaja acá**: es **estado del server** y llega por el net propio de Cortex
+> (§8.bis, voto `B + C`). `subject` es el seguro, no el mecanismo.
 
 1. **Re-chequea la perilla** (la maestra y la de la acción — §7).
 2. **Re-chequea `condition(ply, ent)`** con su propio estado.
@@ -362,8 +368,9 @@ Las otras dos **exponen acciones que ya existen o son chicas**. `command` no exp
 tendría que ejecutar no está escrita.** Y tiene tres propiedades que ninguna otra rama tiene:
 
 1. **Tiene DOS objetivos, no uno.** *Quién* actúa (la escuadra, o parte de ella) y *dónde* (un punto,
-   una puerta, una habitación). ⚠ **El mensaje de net de §4 lleva `(id, entidad, component)` y no tiene
-   dónde poner el primero.**
+   una puerta, una habitación). ~~⚠ **El mensaje de net de §4 lleva `(id, entidad, component)` y no
+   tiene dónde poner el primero.**~~ **RESUELTO 2026-08-25:** el ejecutor **no va en el mensaje** — es
+   estado del server, y el commit lleva un `subject` opaco de reserva (§8.bis, voto `B + C`).
 2. **Tiene ESTADO que sobrevive al menú.** El comando *delay* encadena acciones, y `stack` deja a la
    escuadra en una postura que dura. Eso es una **cola de órdenes por escuadra**, que el server guarda.
    Ninguna acción de las otras dos ramas guarda nada.
@@ -806,13 +813,55 @@ gris de §6**: allá el sistema existe y la **condición** dio `false`. Acá **n
 1. ~~**Fundar Cortex.**~~ **HECHO el 2026-08-24** — el repo tiene su `CLAUDE.md` (la sede de su familia
    de normas), estado, roadmap y arquitectura, y acuñó sus cinco primeras normas. El bloque de
    escuadrones está abierto del otro lado; lo que sigue de esta lista **no se destrabó con eso**.
-2. **Cómo se nombra al ejecutor.** El net de §4 no tiene campo para *quién*: ¿toda la escuadra, un
-   elemento, una selección? Es la decisión que más arrastra.
+2. ~~**Cómo se nombra al ejecutor.**~~ **VOTADO 2026-08-25 — ver abajo.** Era la decisión que más
+   arrastraba y **bloqueaba la tanda 2**, porque el mensaje se define ahí y agregar un campo al
+   protocolo después es lo caro.
 3. **Qué es una «puerta» para el sistema.** `prop_door_rotating` y `func_door` son entidades del
    engine; el mod *Immersive Door Openable* de `dev/other/` ya mapeó sus **siete keyvalues de sonido**
    en dos familias, y es la referencia.
 4. **Si las formaciones son de la orden o del escuadrón.** *Fall In* trae cuatro; si la formación es un
    estado persistente, es otra pieza de estado.
+
+### ✅ VOTADO 2026-08-25 — el ejecutor es ESTADO del server, más un campo OPACO de reserva
+
+**El voto es `B + C`:** el ejecutor **no viaja en el mensaje del menú**, y el commit se lleva
+igualmente un cuarto campo `subject`, **opaco**, que el framework transporta y **no interpreta**.
+
+**Por qué B es correcto por naturaleza, y no por costo.** §8.bis ya dice con estrella que la
+columna WHO *«no es un menú: es ESTADO, y no se cierra al elegir»*. La selección viaja por **su
+propio net de Cortex** cuando el jugador la cambia, y el commit del menú queda **idéntico**. El
+framework no se entera de que existen escuadras. Y **el estado hace falta IGUAL**: la columna WHO y
+la cola de Delay se dibujan fuera del menú. Meterlo *además* en el mensaje es duplicar un hecho, que
+es lo que §7.0 del flujo dice que **deriva siempre**.
+
+> **El costo de B, dicho:** son **dos mensajes**, así que hay carrera si el jugador selecciona y
+> ordena en el mismo frame. Se paga aceptando que **manda el server** — que es exactamente lo que
+> las tres puertas de §4 ya establecen. Un cliente que crea tener seleccionado al rojo y reciba la
+> orden con el azul vigente no es un bug del protocolo: es el server ganando, como corresponde.
+
+**Y por qué C igual, siendo B suficiente hoy.** `subject` es el **gemelo de `component`** y hereda
+su precedente escrito: *se reservó desde el día uno porque agregarlo después es lo caro*. Compra la
+salida el día que aparezca una orden cuyo sujeto **no** sea la selección vigente, y **no toca
+COR-1**: transportar un opaco no es conocer su semántica.
+
+> ⚠ **Lo que este voto DESCARTA, y con motivo.** **A** (un campo `actor` con semántica de escuadra,
+> en cualquiera de sus tres formas) le daba al framework un campo cuyo significado es **IA de
+> escuadra** — justo lo que el voto de §2 se comprometió a no hacer, y con criterio de reapertura
+> escrito. **D** (el ejecutor dentro del `id`, `command.move_to.red`) da 7 órdenes × 5
+> destinatarios = **35 ids**, y §7 crea **una convar por acción**: 35 perillas de admin.
+
+#### ⚠ Y esto hay que decirlo aunque no lo cambie el voto, porque leído de afuera parece un bug
+
+En el «segundo caso» de §8.bis —apuntar a un miembro y darle una orden individual— **el NPC ya
+viaja en el campo `ent` que existe**. O sea que:
+
+| Tipo de orden | Qué significa `ent` |
+|---|---|
+| De escuadra (*Move To*, *Deploy*, *Cover*) | el **DESTINO** — dónde |
+| Individual sobre un miembro apuntado | el **SUJETO** — quién |
+
+**No es ambiguo para el server**: el `id` de la acción sabe cuál de los dos es. Pero sin decirlo se
+lee como una colisión de campos, y el que lo lea sin este párrafo va a proponer separarlos.
 
 ---
 
@@ -1059,6 +1108,7 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | Espacio de nombres de las perillas | **DOS espacios separados**: `corpus_interact_*` es config del subsistema y `corpus_interact_action_*` la perilla por acción (§7) | 2026-08-25 |
 | Tamaño de la tanda alfabética | **Techo 12, reparto PAREJO** — no corte fijo; el 12 sale del régimen de columna (§6.bis) | 2026-08-25 |
 | Qué es un huérfano | **Todo lo que no se alcanza desde una raíz** — una regla que cubre parent ausente, rama cruzada y **ciclo** (§3.a) | 2026-08-25 |
+| **Cómo se nombra al EJECUTOR** | **`B + C`: es ESTADO del server** (llega por el net propio de Cortex) **más un campo `subject` opaco** de reserva en el commit (§8.bis) | 2026-08-25 |
 
 > **Los tres votos del 2026-08-25 salieron de ESCRIBIR EL CÓDIGO, no de discutirlo**, y los
 > tres son la misma clase de hallazgo: *el diseño había resuelto el caso y no la clase.*
@@ -1102,9 +1152,15 @@ El autor votó **tres ramas** en vez de dos (§5), y con eso **el alcance dejó 
 
 | | `interaction` + `self` | `command` |
 |---|---|---|
-| Estado del diseño | **cerrado**, las diez decisiones votadas | **abierto**: 4 decisiones sin votar (§8.bis) |
+| Estado del diseño | **cerrado**, las diez decisiones votadas | **abierto**: quedan **2** de 4 (§8.bis) — la puerta y las formaciones |
 | Lo que ejecuta | acciones que **ya existen** o son chicas | **no existe nada** |
-| Se puede escribir | **sí, ya** | **no** — antes hay que fundar Cortex |
+| Se puede escribir | **sí, ya** | **no** — el escuadrón no está diseñado (Cortex ya se fundó) |
+
+> ⚠ **Ojo con leer la columna derecha como un bloqueo general: no lo es.** De las cuatro, la que
+> frenaba a las OTRAS DOS ramas era **el ejecutor**, porque el mensaje de net se define en la tanda 2
+> y ahí hay que saber si lleva un campo más. **Se votó el 2026-08-25** (`B + C`) y con eso la tanda 2
+> quedó destrabada. Las dos que siguen abiertas —qué es una «puerta» y dónde viven las formaciones—
+> son **enteramente de `command`** y no frenan ni el dibujado ni las acciones de `interaction`/`self`.
 
 **Lo que sigue firme, y no lo tocó la enmienda:** el registro de §3, los realms de §4, la entrada de
 §6, las perillas de §7 y las dos decisiones de §9. La tercera rama **entra por la puerta que el
