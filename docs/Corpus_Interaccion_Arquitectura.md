@@ -4,8 +4,8 @@
 > acciones contextuales al estilo del menú interactivo de ACE3 (Arma 3) y las **tres ramas** que lo
 > dibujan. No se requiere el chat de diseño original para entenderlo.
 >
-> **Estado:** **diseño CERRADO — las diez decisiones están votadas** (§2, §5, §6, §7, §8, §9.1, §9.2,
-> §10 y la sede); el detalle está en **§11**. **El código no existe todavía**, y el primer parche que
+> **Estado:** **diseño CERRADO.** Todas las decisiones están votadas y **la arquitectura del mock v2
+> ya está plegada** acá — el mapa completo, con su fecha, está en **§11**. **El código no existe todavía**, y el primer parche que
 > lo escriba arrastra tres cosas que §11 enumera. Este documento **no acuña
 > ninguna norma `COR-nn` todavía**, a propósito: **FLU-30** manda que una norma nueva entre al registro
 > *en el mismo parche*, y acuñar invariantes de framework para código inexistente sólo inflaría
@@ -32,9 +32,8 @@
 > **Misma regla que el wheel de Cargo: el mock manda hasta que exista el código; en divergencia manda
 > el código.** Sus colores son **espejo de `T.PALETTES`** (`corpus_cargo_theme.lua:52-83`).
 >
-> ⚠⚠ **SU README TRAE DECISIONES QUE ESTA ARQUITECTURA TODAVÍA NO ABSORBIÓ** — umbrales de tamaño de
-> rama, `Delay` como modificador, la asimetría NPC/jugador, los cuatro grupos. Están listadas en §11.
-> **Hasta que se plieguen acá, el README es su sede.**
+> ✅ **Su arquitectura está PLEGADA en este documento** (§6, §6.bis, §8.bis, §8.ter; el mapa está en §11).
+> Lo que sigue viviendo sólo en el paquete son **las medidas** y **la tabla de motion**.
 >
 > La **v1** ([`corpus_interact_menu_mock_v1.html`](mockups/corpus_interact_menu_mock_v1.html)) se
 > conserva como registro: mostraba dos ramas y tenía elementos superpuestos.
@@ -51,7 +50,9 @@
 6. [La entrada: hold, cursor y commit](#6-la-entrada-hold-cursor-y-commit)
 7. [Las perillas de admin](#7-las-perillas-de-admin)
 8. [El catálogo de acciones pedidas](#8-el-catálogo-de-acciones-pedidas)
+6.bis. [Cuántos hijos aguanta una rama](#6bis-cuántos-hijos-aguanta-una-rama--votado-2026-08-24)
 8.bis. [El catálogo de órdenes de `command`](#8bis-el-catálogo-de-órdenes-de-command)
+8.ter. [La pantalla de administración de grupos](#8ter-la-pantalla-de-administración-de-grupos--y-no-es-parte-del-menú)
 9. [Lo que este bloque NO resuelve](#9-lo-que-este-bloque-no-resuelve)
 10. [Verificación](#10-verificación)
 11. [Estado del documento](#11-estado-del-documento)
@@ -138,6 +139,7 @@ Los tres precedentes vivos con esta forma exacta, que además dan el estilo de f
 | `parent` | string \| nil | no | `id` del nodo padre. `nil` = nodo raíz. Es lo que hace que el árbol sea un árbol |
 | `order` | number | no | Orden entre hermanos. Default 100, como `RegisterCategory` |
 | `icon` | string \| nil | no | Ruta de material. `nil` = sólo etiqueta |
+| `category` | string \| nil | no | Subcategoría, **para ramas de 13+ hijos** (§6.bis). Ausente ⇒ el árbol reparte alfabéticamente en tandas. **Lo que nunca hace es dibujar 34 en arco** |
 | `condition` | function \| nil | no | `condition(ply, ent) -> bool`. Ausente = siempre visible. **Se evalúa en vivo, en los dos realms** |
 | `range` | number \| nil | no | Distancia máxima en unidades. Sólo tiene sentido en `tree = "interaction"` |
 | `run` | function | sí | `run(ply, ent)`. **La acción.** Se registra en los dos realms, **corre sólo en server** — ver §4 |
@@ -460,10 +462,77 @@ juego:
 Lo que se estrena es el **árbol anidado** —desplegar un arco hacia afuera unido por una línea, y bajar
 varios niveles sin soltar— y el **anclaje a la entidad apuntada**.
 
-### LOD por distancia
+### El vocabulario visual — tres niveles de detalle y cuatro estados
 
-De lejos, un punto; de cerca, el ícono con etiqueta. **Fuera de `range`, la acción no aparece.** Es
-puramente cosmético salvo el corte por `range`, que además el server re-chequea (§4).
+*Plegado del mock v2, secciones A y B (2026-08-24).*
+
+**Los tres niveles los elige la DISTANCIA, no el estado**, y **tienen que distinguirse de un vistazo**:
+si el punto lejano y el cercano se ven igual, la decisión del LOD desaparece del dibujo.
+
+| Nivel | Qué se dibuja |
+|---|---|
+| **LOD 0 · lejos** | **Punto pelado.** Hay algo interactuable y nada más: sin ícono, sin nombre y **sin ancho de etiqueta que reservar** |
+| **LOD 1 · cerca** | **Chip con ícono y etiqueta.** Ya se sabe qué es. **La etiqueta se voltea al lado con espacio** en vez de salirse de pantalla — y la regla es *del lado libre, no del punto* |
+| **LOD 2 · bajo el cursor** | El **padre queda anclado** y sus hijos salen en arco, unidos por línea. Se baja de nivel sin soltar la tecla. **El arco punteado es el RADIO DE LA RAMA**: marca hasta dónde llega antes de tener que recorrerla con la rueda (§6.bis) |
+
+**Y los cuatro estados de una acción son tres causas distintas con tres consecuencias distintas:**
+
+| Estado | Cómo se dibuja | Qué significa |
+|---|---|---|
+| **Normal** | relleno `panel`, borde `border` | se dibuja y se ejecuta |
+| **Bajo el cursor** | relleno `cellHover`, borde `accent`, texto a **700** | es la que el click ejecuta |
+| **Gris** | atenuado, **pero presente** | su `condition(ply, ent)` dio `false`. **Se dibuja y no se ejecuta: el jugador ve que existe** |
+| **Ausente** | **no hay fila** | fuera de rango, o apagada por el admin. En pantalla **no hay nada** |
+
+> ⭐ **NINGUNO DE LOS CUATRO SE DISTINGUE SÓLO POR COLOR.** Cada uno cambia además de **relleno, de
+> borde o de presencia**. Es un invariante de legibilidad, no una preferencia — y sobrevive a que un
+> operador tiña la UI con DGL4.
+
+**Gris no es ausente**: *gris dice «no puedes ahora», ausente dice «no existe»*. Y hay un **quinto**
+tratamiento que no es un estado de acción sino de sistema — ver `data-ghost` en §8.bis.
+
+⚠ **El anillo punteado del `range` en el mock NO es un estado del HUD**: es el dibujo señalando algo
+que el HUD **no dibuja**. El `range` es por acción y el server lo re-chequea al ejecutar (§4).
+
+---
+
+## 6.bis Cuántos hijos aguanta una rama — VOTADO 2026-08-24
+
+*Plegado del mock v2, sección G. **Toca la API de §3**: sale de acá el campo `category`.*
+
+> ⭐ **Sí hay un máximo, y es DEL ARCO, no del árbol.** Seis hijos es lo que cabe alrededor de un punto
+> sin que las etiquetas se toquen. **Gestures con sus 34 no es un caso raro: es el caso que fija la
+> regla.**
+
+**Tres regímenes, y el nodo elige el suyo por la CUENTA DE HIJOS, no por quién sea:**
+
+| Hijos | Régimen |
+|---|---|
+| **1–6** | **Arco alrededor del padre** |
+| **7–12** | **Columna con espina, sin paginar.** Misma línea de padre y misma jerarquía; **sólo cambia la geometría**. La fila baja a 28 px de alto y 13 px de texto porque hay diez a la vez |
+| **13+** | **Subcategorías obligatorias**, y cada una es una columna |
+
+**De dónde sale el 6, y por qué importa que se sepa:** de la **geometría** — un chip de **218 × 36 px**
+alrededor de un punto sin que dos etiquetas se toquen. **Si cambia el ancho del chip, cambia el techo.**
+No es una preferencia y no se negocia por gusto.
+
+### Las tres reglas que cuelgan de esto
+
+**(a) El número ámbar cuenta HOJAS ALCANZABLES, no hijos directos.** En Gestures dice **34**, no los 4
+hijos que se ven, **así que el jugador sabe si vale la pena entrar**. Las subcategorías cantan el suyo
+igual.
+
+**(b) Las subcategorías las declara el MÓDULO que registra la acción, con un campo `category`.**
+
+> ⚠ **Esto agrega un campo a la firma de §3** — `category`, opcional, string. Y trae su propio
+> fallback: **si el módulo no lo declara, el árbol reparte alfabéticamente en tandas.** *Lo que el árbol
+> nunca hace es dibujar 34 en arco.*
+
+**(c) SIN PAGINADO.** El scroll es **discreto, una fila por tick**, así que **el blanco no se mueve
+mientras apuntas** y no hay una mecánica de páginas que aprender. **Cuántas filas se ven es
+CONFIGURACIÓN y no HUD**: sale de un **cvar, default 10**, y **no se toca desde el menú**.
+
+⚠ **El 10 no es un umbral**: los umbrales son **6 y 12**. El 10 es el default de una perilla.
 
 ---
 
@@ -587,6 +656,73 @@ posición original para no comerse el destello**.
 3. **Volver a la posición original** implica que la orden guarda un punto de retorno, o sea otra vez
    **estado por escuadra** (§5.4, punto 2).
 
+### La forma de la pantalla — plegada del mock v2, secciones E y F
+
+**Los dos objetivos parten la pantalla, y ninguna mitad se puede leer sin la otra:**
+
+- **WHO — la columna de escuadra, fija a la izquierda.** ⭐ **No es un menú: es ESTADO, y no se cierra
+  al elegir.** `ALL` es el grupo amarillo; los demás van por color. Cada miembro lleva **tecla,
+  callsign, rol, grupo, salud, distancia y la orden que está ejecutando**.
+- **WHERE — el árbol de órdenes, colgado del marcador de destino en el mundo.** ⚠ **El WHERE no es una
+  coordenada: es LO QUE ESTÁS TOCANDO** —un punto del suelo, una puerta o un NPC— **y el rótulo dice
+  cuál de los tres.**
+
+**Y la segunda columna es FUNCIÓN DEL TIPO DE OBJETIVO:**
+
+| Objetivo | Qué agrega |
+|---|---|
+| **Puerta** | sus cinco de puerta — **sólo si comunica dos lados navegables.** Decorativa, tapiada o sin sala detrás no las trae; **abierta o cerrada da igual** |
+| **NPC** | *Attack · Follow · Look at · Heal* |
+| **Punto del suelo** | **ninguna.** El destino es la posición y nada más |
+
+> **Las siete de `ORDERS` no cambian nunca.** Lo que varía es la segunda columna.
+
+**La selección se lee sin mirar el panel:** **relleno = seleccionado, contorno = no**, y la cifra del
+marcador **es la misma tecla de la columna**.
+
+### `Delay` es un MODIFICADOR, no una orden
+
+Con Delay armado, **cada orden que das se va a la cola en vez de ejecutarse**. Y ⭐ **la cola vive
+DEBAJO DE LA COLUMNA WHO, porque es estado de la ESCUADRA y no del árbol.** `Execute` las manda todas
+juntas: **es la única forma de que dos grupos entren al mismo tiempo.**
+
+⚠ **Cada fila guarda su PROPIO objetivo**, así que el destino **se resuelve cuando diste la orden, no
+cuando disparas**.
+
+### `Deploy` es un OBJETO, no una acción
+
+**Por terminología: se despliega *algo*, así que sus hijos son objetos y no verbos.** Y de ahí sale una
+consecuencia de dueño: **la lista de hijos la arma el módulo que registra cada objeto, no el árbol** —
+o sea que **`Deploy` no existe sin Corpus Cargo**: sin inventario no hay nada que sacar.
+
+Estado de sus seis hijos: **las tres granadas existen** en ARC9 EFT · el **chemlight** viene de
+Phantasmagoria y está en desarrollo · el **breach charge** queda pendiente hasta saber para qué se
+usaría · y **`Cover` salió de acá**: ya está en `ORDERS` y **es una acción, no un objeto**.
+
+> ⚠ **El `Ammo box` es el único de los seis que depende de una decisión de SIMULACIÓN y no de
+> inventario**, y es **pregunta abierta para Cortex**: si los NPC de HL2 y VJ pasan a tener munición
+> finita —y a depender de la tuya o de un **Ammo Bearer** del grupo— el `Ammo box` y una orden de
+> reabastecer **se justifican solos**. Sin eso, no tiene para qué existir.
+
+### El segundo caso: apuntar a un MIEMBRO
+
+Con un NPC apuntado, **el mismo árbol resuelve sobre ese NPC**: gestión rápida del grupo y órdenes
+individuales, **sin pasar por la columna**. Es el atajo; la administración completa vive en §8.ter.
+
+**Y ahí aparece una frontera que vale la pena nombrar:**
+
+- *Sacar, unir, designar, transferir* son **acciones sobre ese NPC** ⇒ resuelven **por anclaje**, como
+  cualquier entidad. El chip padre es el NPC, con su grupo y su rol en la etiqueta.
+- *Crear, fusionar, renombrar, disolver* **no tienen entidad apuntada ni destino** ⇒ **no son órdenes,
+  son administración**, y por eso viven en otra pantalla.
+
+### El tratamiento `data-ghost`, y por qué NO es el gris
+
+**Borde punteado y trama diagonal = el sistema que ejecutaría esto no existe.** ⚠ **Es otra cosa que el
+gris de §6**: allá el sistema existe y la **condición** dio `false`. Acá **no hay sistema**.
+
+**Toda la escena de `command` está en fantasma.** *La escena dibuja el objetivo, no el alcance.*
+
 ### Lo que hay que decidir antes de escribir una línea de `command`
 
 1. **Fundar Cortex.** Sin `corpus-cortex/CLAUDE.md` no se puede acuñar su primera norma, y el checker
@@ -598,6 +734,33 @@ posición original para no comerse el destello**.
    en dos familias, y es la referencia.
 4. **Si las formaciones son de la orden o del escuadrón.** *Fall In* trae cuatro; si la formación es un
    estado persistente, es otra pieza de estado.
+
+---
+
+## 8.ter La pantalla de administración de grupos — y NO es parte del menú
+
+*Plegado del mock v2, sección H.*
+
+> ⭐ **No es un árbol contextual, y la diferencia es de naturaleza:** no hay entidad apuntada, no hay
+> destino, **la cámara no está congelada y el mouse es un mouse**. Es una pantalla de administración,
+> **y por eso vive FUERA del menú.**
+
+**Lo que se hace acá es lo que no cabe en un arco:** crear, fusionar, renombrar, disolver y **mover NPC
+entre grupos de a varios**.
+
+| Pieza | Cómo funciona |
+|---|---|
+| **Los cuatro grupos** | Amarillo, rojo, azul y verde: **los cuatro colores señalizables que hay en la paleta**. Un quinto **no tendría color propio** — el techo es del **theme**, no de la UI. ⚠ Y llevan **letra R·B·G·Y además del color**, porque **`olive` no declara `green`**: cae en `accent` y GREEN colisionaría con BLUE |
+| **La fila** | **Cuatro casillas**; la rellena es la actual y **la última saca del grupo**. Un clic mueve al NPC |
+| **⚠ La asimetría** | **Sobre un JUGADOR el mismo clic manda INVITACIÓN, no lo mueve.** *Al NPC se lo asigna, al jugador se lo invita* |
+| **`Unassigned`** | Lista lo que hay **en rango** y no es de nadie: **NPC por clase, jugadores por nombre**. Es el *Add to group* del árbol, **en lote** |
+
+> ⭐ **Y un detalle de honestidad que el dibujo codifica:** la tabla **se dibuja SÓLIDA porque el estado
+> que muestra YA EXISTE en el juego** (quién hay en rango, su clase, su nombre). **El punteado y la
+> trama están sólo en lo que ejecutaría el sistema que falta.** El mock distingue *«esto todavía no se
+> escribió»* de *«esto no existe»* — y esa distinción es la que hay que mantener al implementar.
+
+**Abierto:** el **binding** para abrir esta pantalla.
 
 ---
 
@@ -813,25 +976,33 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | Instrumento de verificación | **Los dos**: `dev/harness_corpus.py` nuevo para la lógica + el selftest para el motor, **sin factorizar los stubs** (§10) | 2026-08-24 |
 | La masa como peso de inventario | **`GetMass()` crudo con piso propio** para los clavados en el piso de Source (§9.2) | 2026-08-24 |
 
-### ⚠⚠ LO QUE EL MOCK v2 DECIDIÓ Y ESTE DOCUMENTO TODAVÍA NO ABSORBIÓ
+### ✅ EL MOCK v2, PLEGADO — 2026-08-24
 
-El paquete del mock v2 (2026-08-24) trae **votos que no están en el cuerpo de esta arquitectura**.
-Mientras no se plieguen, **su README es la sede de cada uno**:
+Las decisiones que el paquete del mock trajo **ya están en el cuerpo de este documento**, no en una
+lista de pendientes:
 
-| Decisión | Qué dice |
+| Decisión | Dónde quedó |
 |---|---|
-| **Umbrales de tamaño de rama** | **1-6 arco · 7-12 columna · 13+ subcategorías obligatorias.** El padre canta el total real. **Sin paginado**: la rueda corre fila por fila, y cuántas se ven sale de un **cvar** (default 10) que **no se toca desde el HUD**. El 6 no es gusto: sale de la geometría del chip (218 × 36 px alrededor de un punto) |
-| **`Delay` es un MODIFICADOR, no una orden** | Con Delay armado, cada orden se va a una cola con su propio objetivo; `Execute` las manda todas juntas |
-| **La asimetría NPC / jugador** | **Al NPC se lo asigna, al jugador se lo invita.** Y un jugador **no ejecuta órdenes: las recibe** como marcador y aviso — por eso su columna de orden va vacía |
-| **Cuatro grupos, con letra ADEMÁS de color** | Son cuatro porque son los cuatro colores señalizables de la paleta: el techo es **del theme, no de la UI**. Y llevan letra porque **`olive` no declara `green`**, y ahí Blue y Green colisionan |
-| **La puerta trae sus cinco acciones** | Sólo si **comunica dos lados navegables**. Decorativa, tapiada o sin sala detrás no las trae; abierta o cerrada da igual |
-| **`Deploy` depende de Cargo** | Sin inventario no hay nada que desplegar, y **la lista de hijos la arma el módulo que registra cada objeto**, no el árbol |
+| Tres niveles de LOD y **cuatro estados de acción** (ninguno distinguido sólo por color) | **§6** |
+| Umbrales de rama **1-6 / 7-12 / 13+**, el 6 derivado de la geometría del chip, sin paginado, el cvar de filas | **§6.bis** |
+| El campo **`category`** y su fallback alfabético | **§3** y §6.bis |
+| WHO como **estado** y WHERE como **lo que tocas**; la segunda columna función del tipo de objetivo | **§8.bis** |
+| **`Delay` como modificador**, con su cola bajo WHO y el objetivo resuelto al dar la orden | **§8.bis** |
+| **`Deploy` como objeto** y su dependencia de Cargo; el `Ammo box` como pregunta de simulación | **§8.bis** |
+| El tratamiento **`data-ghost`**, distinto del gris | **§8.bis** |
+| La **pantalla de administración**, que NO es parte del menú, y la asimetría NPC/jugador | **§8.ter** |
+| La puerta que trae sus cinco sólo si **comunica dos lados navegables** | **§8.bis** |
 
-**Y lo que el propio README declara pendiente:** `Breach charge` (para qué se usaría), `Chemlight`
-(viene de Phantasmagoria), el binding de la pantalla de administración, y la **munición finita de NPC
-HL2/VJ + el rol *Ammo Bearer***, que es lo que justificaría el `Ammo box` y **es pregunta para Cortex**.
+**Lo que sigue viviendo sólo en el paquete del mock** son las MEDIDAS (el chip de 218 × 36, la fila de
+28 px) y la **tabla de motion** de su sección I — beats, duraciones, easings y stagger. Sus dos reglas
+duras sí conviene tenerlas acá: **nada pasa de 260 ms** (el jugador tiene la tecla abajo esperando para
+actuar, no mirando una animación) y **cada cosa entra o sale DESDE SU ANCLA** — el punto del mundo, el
+hub del jugador, el borde de la pantalla —, que es *lo que hace legible que el criterio de anclaje
+cambió al pasar de rama*.
 
----
+**Y lo que el mock declara pendiente:** `Breach charge` (para qué se usaría), `Chemlight` (viene de
+Phantasmagoria), el **binding** de la pantalla de administración, y la **munición finita de NPC HL2/VJ
++ el rol *Ammo Bearer*** — pregunta para Cortex.
 
 ### ⚠ ENMIENDA DEL 2026-08-24 — la tercera rama
 
