@@ -1959,6 +1959,7 @@ ids:
     evidencia:
       - { tipo: harness, ref: "dev/harness_coagulant.py — 86 filas nuevas, 85 de ellas citando COA-52, por familia (DOL-F/Z/A/S/N/I/C): la producción de tres ejes derivada, el reparto por estado de la herida, los pisos de D6 como max(), el clamp de la agregación FABRICADO (tres zonas destrozadas, Σ = 300 → 100), el percibido medido SIEMPRE con supresión puesta, el decaimiento en TICKS con el esperado derivado, el `p` y el percibido global en el snapshot, la ausencia de NW2 medida sobre las claves realmente escritas, y el cliente leyendo un `p` FABRICADO que contradice a sus propias heridas — la única fila que separa «lee» de «deriva»" }
       - { tipo: harness, ref: "dev/sabotaje_coagulant_dolor.py — 30 sabotajes, cada uno DECLARANDO qué familias tiene que teñir, con falla en las dos direcciones (el control no llega / el control se pasa), más 3 no-detectables declarados que se corren exigiendo VERDE" }
+      - { tipo: planilla, ref: "Coagulant — el dolor baja a código (COA-52), ronda 1 (2026-08-25): 12/12, 0 falla, 0 sin correr. La fila ★★ midió EN JUEGO el 0.35 del dolor contra el 0.5 del score —los dos repartos VECINOS de core.lua— sobre la misma zona (score 3.0 → 1.5, dolor 38 → 13), que es lo que la trampa de COA-35 le prohíbe a un check derivado; y la puerta del analgésico se desgatilló con el PERCIBIDO en 4-6 teniendo el crudo en 24, la única medición que separa GetPain de GetRawPain. El crudo NO se movió con la pastilla encima (D5). Los dos votos delegados quedaron EN PIE" }
     nota: >
       Acuñada el 2026-08-17 por voto del autor en seis puntos, antes de una línea de Lua
       (COA-28). UNA norma con partes y no seis IDs: ninguna de sus partes rige a otro
@@ -1982,8 +1983,11 @@ ids:
       con una zona cuyo único contenido sea frac. Corre como no-detectable declarado en el
       sabotaje, exigiendo verde. Lo que SÍ sostiene la equivalencia es otro check —PAIN_TYPE cubre
       todo WOUND_TYPES—, sin el cual un tipo de herida nuevo sacaría su zona del snapshot en
-      silencio. FALTA la pasada en juego (planilla dev/checks/coagulant-dolor-r1.html): para
-      código de addon GMod, «verificado» = confirmado en juego.
+      silencio. CERRÓ EN JUEGO EL 2026-08-25, 12/12 y sin un solo defecto (planilla
+      dev/checks/coagulant-dolor-r1.html): para código de addon GMod, «verificado» =
+      confirmado en juego, y esto lo está. Los dos votos delegados del tramo —que el
+      analgésico entre y que la silueta NO cambie de insumo— quedaron EN PIE: el autor no
+      vetó ninguno.
       EL DISPARADOR FUE QUE EL DOLOR YA SE CONSUMÍA SIN HABERSE ESCRITO — cinco consumidores con
       número exacto (bpm +pain*0.22, StaminaCap -pain*0.35, DAZED con pain>80, irregularidad del
       ECG con pain>85, y la puerta de la morfina pain>10) y CERO productores; medido EL DÍA DEL
