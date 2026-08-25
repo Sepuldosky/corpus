@@ -3417,8 +3417,9 @@ salud:
   total: 269
   intencion: 76          # 28% — la métrica que hay que bajar (§7.4)
   # Copiado de la corrida del checker del 2026-08-25b (el DOLOR de Coagulant baja a código): CERO
-  # altas y UNA baja de INTENCION — COA-52 pasa a evidencia `harness` (el harness con 63 filas que
-  # la citan por familia, y el sabotaje que declara el alcance de cada defecto). El porcentaje baja
+  # altas y UNA baja de INTENCION — COA-52 pasa a evidencia `harness` (86 filas nuevas en el
+  # harness, 85 de ellas citando la norma, prefijadas por familia; mas el sabotaje que declara el
+  # alcance de cada defecto). El porcentaje baja
   # de 29% a 28% y esta vez SÍ es virtud, a diferencia de las subidas anteriores: no se acuñó nada,
   # se ejerció algo que estaba escrito. Y el bloque venía en 269/77, que es exactamente lo que el
   # checker reportaba antes de tocar nada — segunda tanda seguida sin drift.
