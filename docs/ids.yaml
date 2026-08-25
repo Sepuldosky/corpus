@@ -72,6 +72,7 @@ familias_excluidas:
   R: "ídem P — tercera sección de planilla de Cargo (R1-R5), tanda B4: el savegame de GMod. Registrada ANTES de usarse (FLU-30); S sigue presupuestada para B5"
   S: "ídem P — cuarta sección de planilla de Cargo (S1-S5), tanda B5: el export/import LAN. Registrada ANTES de usarse (FLU-30). Con ella el plan de persistencia agota su presupuesto de planilla (P=B1, Q=B3, R=B4, S=B5); B6 quedó diferido a Cortex y no reserva letra"
   J: "IDs de check de planilla de CALIBER (J1-J13) — PRIMERA sección del módulo, tramo 0 del Block 3: la medición del reparto de ply:Armor(). Registrada el 2026-08-23, DESPUÉS de su primera corrida y no antes (FLU-30 incumplida, y queda dicho). ⚠ La J estaba en la tabla de arriba como ejemplo INVENTADO del handoff ('planilla Caliber, check J4') y se había sacado por no existir en ningún repo; ahora existe, y la letra que el ejemplo citaba es la que el módulo estrena. Las filas nacieron etiquetadas P-1/P-2/Q1..Q6 —CHOCANDO con P y Q, que son secciones de Cargo ya registradas— y se renombraron a J1..J13 antes de la segunda corrida: un ref 'Q4' habría sido ambiguo entre dos módulos. Los rótulos Q1..Q6 siguen vivos DENTRO del texto, pero como las seis PREGUNTAS del tramo, no como ids de check."
+  K: "ídem J — SEGUNDA sección de planilla de CALIBER (K1-…), Block 3 paso 2: el mapeo ply:Armor() = pool del escudo y la anulación del goteo. Registrada ANTES de usarse (FLU-30), que es lo que la J no hizo — la J se registró a posteriori y quedó dicho. Una letra NO SE RECICLA: la J es el registro de una corrida cerrada (el tramo 0, dos rondas) y reusarla confundiría dos mediciones distintas en el mismo espacio de nombres"
   T: "IDs de check de la PRIMERA planilla de corpus (T1-…) — el framework no tenía ninguna; se abre con la tanda que le suma List/Delete/scope a Corpus.Data. Registrada ANTES de usarse (FLU-30). No se toma Q/R/S: están presupuestadas para Cargo"
   U: "ídem P — quinta sección de planilla de Cargo (U1-U6, cerrada 6/6 el 2026-07-27), roadmap #47: las NVG de Neosun como ítems (la señal genérica de equipamiento, los defs derivados y la captura de la entidad de mundo). Registrada ANTES de usarse (FLU-30); nació con cinco checks y la 2.ª pasada le sumó el U6, sin reciclar números (FLU-07). Es la primera de Cargo que NO es del plan de persistencia — ése agotó su presupuesto en P/Q/R/S. La T no se recicla: es de corpus y es otra planilla"
   V: "ídem P — sexta sección de planilla de Cargo (V1-V9), roadmap #46: las luces en el wheel (el tercer grupo de chips — linterna por intent propio, NVG con tránsito CRG-64, dispositivos ARC9 por ToggleStat/PostModify, el empuje de anclaje y la negativa de ausencia). Registrada ANTES de usarse (FLU-30), en el mismo parche que la acuña (entry 53); nació con seis checks y la planilla entregada le sumó V7-V9, los candidatos del USO, sin reciclar números (FLU-07 — la lección de #47: la planilla mide lo que se propuso medir, el uso mide lo que falta; V7 lleva además la medición pendiente de la diferida (h)). Es la otra mitad del frente de #47: aquella planilla midió POSEER, ésta mide ACCIONAR"
@@ -916,6 +917,41 @@ ids:
       CONSTRUCCIÓN y Cargo no cambia una línea — salvo el tope, que hoy es un 100 literal y
       tiene que pasar a ser el max_hp del escudo activo, o una batería sobre un `hev` de 50
       cargaría hasta el doble de lo que el escudo puede tener.
+
+  CAL-27:
+    titulo: "EN EL JUGADOR, `ply:Armor()` **ES EL ALMACÉN** DEL POOL DEL ESCUDO, NO UN ESPEJO. `sh.hp` no existe para un jugador: el pool se lee y se escribe con Armor()/SetArmor(), y un solo estado gobierna el número. La regen, el drain y el FX operan sobre ese almacén a través de PoolGet/PoolSet, y el discriminante es `sh.onArmor`, NUNCA `ent:IsPlayer()`."
+    sede: "corpus-caliber/docs/Caliber_Architecture.md §13.9"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_shields.lua — PoolGet/PoolSet/SeedPool, y el campo `hp` que NO se declara cuando onArmor" }
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_core.lua — hook EntityTakeDamage `Caliber_Core_Player`, el punto de entrada de daño del jugador" }
+      - { tipo: planilla, ref: "Caliber K — dev/checks/caliber-b3-paso2.html, SIN CORRER al escribirse esto" }
+    nota: >
+      Votada por el autor el 2026-08-25, sobre las dos opciones de la §3 del prompt del paso 2.
+      LO QUE LA DECIDIÓ es que el pool del engine absorbe 1:1 (ARMOR_BONUS = 1,0 medido, §13.0):
+      ply:Armor() y los puntos de escudo están en la MISMA unidad, así que el almacén único NO
+      PIERDE PRECISIÓN. Y a cambio la barra del StatusPanel, la batería cargo_hl2_battery y
+      cualquier tercero que lea o escriba ply:Armor() quedan correctos SIN SABER NADA de Caliber.
+      La opción descartada (sh.hp de almacén y ply:Armor() de espejo) tenía cero divergencia de
+      código con el lado NPC, pero exigía interceptar TODA escritura ajena al pool o perderla en
+      silencio — el modo de falla que CRG-78 nombra, y acá con más escritores.
+      ⚠ EL COSTO QUE LA §3 LE CARGABA A ESTA OPCIÓN ERA DOS Y ES UNO. El "techo de 100 del engine"
+      NO ES DEL ENGINE: es PLAYER.MaxArmor del gamemode base
+      (gamemodes/base/gamemode/player_class/player_default.lua:19), que player_manager.SetPlayerClass
+      aplica con ply:SetMaxArmor() en CADA spawn. Es Lua — el mismo hallazgo de forma que §13.0 hizo
+      con el escalado de hitgroup — y por eso SeedPool lo mueve al max_hp del escudo y RemoveShield
+      lo devuelve. Queda UN costo real: SetArmor guarda un ENTERO, y por eso `sh.frac` lleva el resto
+      sub-unitario. frac NO es una segunda copia del pool: vale siempre < 1, la autoridad sigue
+      siendo Armor(), y una escritura de un tercero se toma en el acto con un error residual de
+      menos de un punto. Sin frac la regen se rompe en silencio: rate 15 con think 0,1 deposita 1,5
+      por tick, el int trunca a 1, y el escudo carga a 10/s en vez de 15/s.
+      ⚠⚠ COROLARIO SOBRE LA LISTA DE BYPASS: como el pool del jugador ES el pool del engine, la
+      LISTA DE EXCLUSIÓN DEL ENGINE es parte del contrato de ese pool y no una excepción para
+      jugadores. Por eso el escudo del jugador salta además DMG_FALL (medido, §13.0) y la lista
+      viaja en `sh.bypass` en vez de en un if sobre el tipo de entidad. Los otros tres tipos que
+      HL2 excluye (DMG_DROWN, DMG_POISON, DMG_RADIATION) NO SE MIDIERON en este build y NO están
+      en la lista: hoy drenan el escudo del jugador, y está declarado.
 
   CRG-77:
     titulo: "UN HITGROUP TIENE **UN SOLO DUEÑO**. Cada ítem declara qué hitgroups reclama, el SLOT da el default (Head -> 1, Body -> 2..7), y el chequeo AL EQUIPAR rechaza un segundo ítem que reclame uno ya tomado. Un traje cerrado que reclame la cabeza es LEGAL y bloquea el slot Head mientras esté puesto: la trampa se vuelve MECÁNICA en vez de una regla que alguien tiene que recordar."
