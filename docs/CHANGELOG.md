@@ -1632,3 +1632,23 @@ y las carpetas de bases de NPC se listaron en `dev/other/`. **Ninguna afirmació
 Base o los `npc_*` de HL2 exponen entró a ningún doc**: esa lectura es el próximo paso del bloque
 y se hace contra el árbol, no contra la memoria. Sin superficie de runtime en esta tanda. No
 commiteado ni pusheado (GIT-7).
+
+---
+
+## PARCHES DE sesión Cortex acuña CTX-6 y CTX-7 tras el censo de bases — 2026-08-24
+
+Segunda tanda del día del lado de Cortex (la suya está en `../../corpus-cortex/docs/CHANGELOG.md`).
+Del lado del framework sólo arrastra el registro.
+
+- PARCHE 1 — **`docs/ids.yaml` acuña CTX-6 y CTX-7.** CTX-6: el escuadrón de Cortex corre **en
+  paralelo** al squad del engine —votado por el autor sobre el censo—, porque **son el mismo campo**
+  y el del engine es un **bando** (46 de 60 defs de NPC de HL2 nacen en siete nombres globales de
+  facción). CTX-7: la cola de órdenes **sondea**, porque el engine **no emite** ningún evento de
+  «orden terminada» — 40 usos de `IsCurrentSchedule` contra cero callbacks. CTX-6 nace `INTENCION`;
+  CTX-7 nace con evidencia `codigo` (el stool de guard de ZBase, que sondea para re-emitir la orden).
+  **[APLICADO 2026-08-24]**
+- PARCHE 2 — **`docs/ids.yaml` · bloque `salud` refrescado** con la corrida real. **[APLICADO
+  2026-08-24]**
+
+**Verificación:** `check-ids` corrido antes y después. Sin superficie de runtime; ningún doc del
+framework cambió de contenido en esta tanda. No commiteado ni pusheado (GIT-7).

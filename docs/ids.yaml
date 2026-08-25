@@ -3012,6 +3012,43 @@ ids:
       medido, R5 dio cero rojos. El check no puede reclamar que prueba el ORDEN: prueba el
       RESULTADO, y hacen falta las dos guardas caídas para ponerlo en rojo.
 
+  CTX-6:
+    titulo: "El escuadrón de Cortex corre en PARALELO al squad del engine: no se pisa SetSquad, y el squad original se guarda desde el día uno."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Votada por el autor el 2026-08-24, sobre el censo de bases de NPC (Cortex_Architecture.md §7).
+      SON EL MISMO CAMPO: un NPC tiene UN solo squad, y el del engine es un BANDO y no una escuadra —
+      de las 60 defs de NPC de HL2, 46 nacen en siete nombres globales de facción (overwatch con 18,
+      resistance con 12, zombies con 7...), y a cuál pertenece cada uno es un accidente del orden de
+      spawn, con desborde a overwatch0/overwatch1 al pasar el tope de 16. Meter un combine en "el grupo
+      rojo del jugador" le sacaría la coordinación con los otros combines, que el engine hace en C++ y
+      nadie reimplementa desde Lua.
+      COROLARIO QUE NO ES OPCIONAL: Cortex lleva su PROPIA lista de miembros, porque
+      ai.GetSquadMemberCount sólo CUENTA por un nombre que hay que conocer de antemano — no existe API
+      para listar los miembros de un squad.
+      EL COSTO ACEPTADO, dicho en voz alta: los miembros de un grupo NO se coordinan entre sí por el
+      C++; esa coordinación la escribe Cortex. Y guardar el squad original cuesta un campo y es lo único
+      que permite después pisarlo, o pisarlo sólo durante una orden, sin migración — que es exactamente
+      el opt-out que ZBase mantiene (DontAutoSetSquad) por la misma razón.
+  CTX-7:
+    titulo: "La cola de órdenes SONDEA: el engine no emite ningún evento de «orden terminada»."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "dev/other/zbase/lua/weapons/gmod_tool/stools/zbase_guard.lua:77 — sondea IsCurrentSchedule para re-emitir la orden" }
+    nota: >
+      MEDIDO el 2026-08-24 sobre tres bases de terceros: 40 usos de IsCurrentSchedule contra CERO de
+      cualquier callback de fin de schedule. El único tell de que un SCHED_ nativo terminó es sondearlo.
+      LA TRAMPA, y por eso la norma existe: TaskComplete() tiene 185 usos y NO SIRVE para esto. Es algo
+      que un NPC se llama A SÍ MISMO adentro de un schedule *custom* para señalar que su task terminó,
+      no un callback que el engine le entregue a un tercero — confirmado abriendo sus call-sites en VJ
+      (ai/core.lua:782, npc_vj_human_base/init.lua:2688): siempre self:TaskComplete(), desde adentro.
+      Quien lo lea por el nombre va a diseñar la cola por eventos y la cola no va a avanzar nunca.
+
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
   STK-1:
@@ -3187,9 +3224,10 @@ salud:
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 262
-  intencion: 74          # 28% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-08-24 (fundación de corpus-cortex: alta de
+  total: 264
+  intencion: 75          # 28% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-08-24, SEGUNDA tanda del día (censo de bases de NPC:
+  # alta de CTX-6 en INTENCION y CTX-7 con evidencia `codigo`). Antes en esa misma fecha (fundación de corpus-cortex: alta de
   # CTX-1..CTX-5, tres en INTENCION y dos con evidencia tipo `codigo` — la línea de OwnerKey de
   # Cargo que CTX-4 mide, y el git log conforme que CTX-5 cita). Y ojo con lo que encontró la
   # corrida: ESTE BLOQUE VENÍA CON DRIFT DE OTRA TANDA. Decía 244/76 (31%) cuando el checker,
