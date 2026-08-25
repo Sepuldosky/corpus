@@ -44,13 +44,15 @@ familias:
   CRG: { dominio: cargo,      sede: "corpus-cargo/CLAUDE.md" }
   COA: { dominio: coagulant,  sede: "corpus-coagulant/CLAUDE.md" }
   CRV: { dominio: craving,    sede: "corpus-craving/CLAUDE.md" }
-  # `pendiente: true` = el prefijo está RESERVADO pero su sede todavía no existe (Cortex
-  # tiene LICENSE, README y docs/Cortex_ContratosEntrantes.md, pero no CLAUDE.md).
-  # Reservar no es acuñar: el checker deja pasar la sede
-  # inexistente MIENTRAS la familia no tenga entradas, y se pone rojo el día que alguien
-  # acuñe CTX-1 sin haber creado el CLAUDE.md. Lo destapó el acta del piloto v3: la sede
-  # apuntaba a un archivo fantasma y nadie lo veía porque el checker no miraba las familias.
-  CTX: { dominio: cortex,     sede: "corpus-cortex/CLAUDE.md", pendiente: true }
+  # `pendiente: true` = el prefijo está RESERVADO pero su sede todavía no existe. Reservar
+  # no es acuñar: el checker deja pasar la sede inexistente MIENTRAS la familia no tenga
+  # entradas, y se pone rojo el día que alguien acuñe la primera sin haber creado el archivo.
+  # Lo destapó el acta del piloto v3: la sede de CTX apuntaba a un archivo fantasma y nadie
+  # lo veía porque el checker no miraba las familias.
+  # NINGUNA familia lleva la clave hoy: CTX la tuvo del 2026-07-19 al 2026-08-24, y la perdió
+  # cuando Cortex se fundó y nació su CLAUDE.md. La clave sigue soportada para la próxima
+  # familia que se reserve antes de tener sede.
+  CTX: { dominio: cortex,     sede: "corpus-cortex/CLAUDE.md" }
   STK: { dominio: stalker,    sede: "corpus-stalker/CLAUDE.md" }
 
 # Prefijo listado acá = PROHIBIDO registrarlo o reusarlo como familia normativa.
@@ -3085,11 +3087,92 @@ ids:
       Los siete alcances RESERVADOS se declaran antes de tener contenido a propósito:
       el día que nazca la primera anomalía, el alcance ya existe y nadie lo improvisa.
 
-  # ── CTX — Cortex ────────────────────────────────────────────────────────────
-  # Sin entradas: el repo todavía no tiene su CLAUDE.md, que es la sede de la familia.
-  # Su README es descriptivo, no normativo, y su único doc de diseño
-  # —docs/Cortex_ContratosEntrantes.md— CITA normas ajenas y se declara sin autoridad:
-  # no acuña un solo CTX-. La familia queda declarada para que su Block la use al abrirse.
+  # ── CTX — Cortex (módulo de IA de NPC) ──────────────────────────────────────
+  # FUNDADA el 2026-08-24. Hasta ese día la familia estaba reservada SIN entradas porque su
+  # sede —corpus-cortex/CLAUDE.md— no existía, y acuñar la primera contra un archivo fantasma
+  # es exactamente lo que el CHECK 2a del checker existe para impedir. El repo se fundó al
+  # abrir el autor el bloque de escuadrones, y estas cinco son las primeras normas del módulo.
+  # Las cinco nacen INTENCION a propósito: no hay una línea de Lua en ese repo, y acuñarlas
+  # con una evidencia que no existe sería lo deshonesto.
+
+  CTX-1:
+    titulo: "Cortex es una CAPA de comportamiento sobre bases de NPC que ya existen (VJ Base y HL2), no una base de NPC; DRG y ZBase quedan diferidas."
+    sede: "corpus-cortex/CLAUDE.md §Qué es (Regla cardinal)"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Alcance votado por el autor el 2026-08-24 al abrir el bloque de escuadrones. NO deroga a
+      CortexBase —la base de SNPC propia que toma lo mejor de VJ/DRG/ZBase, decisión vieja
+      registrada fuera del repo—: las dos conviven, la capa se escribe primero y la base
+      después, DEBAJO. El error que esta norma previene es que el bloque de la capa se
+      convierta calladamente en el bloque de la base: son trabajos de tamaño muy distinto y
+      sólo uno está votado. Corolario de licencia: VJ y HL2 son COMPAT-RUNTIME y no RECICLAR
+      (dev/mods_workshop_mapa.md) — si el módulo termina copiando el código de VJ adentro,
+      dejó de ser una capa.
+  CTX-2:
+    titulo: "El módulo tiene DOS mitades con gates independientes: el afecto está gated por los eventos de daño/extremidad de Caliber, la táctica y el escuadrón NO."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 2"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Cita CAL-22 y el contrato entrante #4. Lo único que Caliber emite hoy es
+      hook.Run("Caliber_LimbsUpdated", npc, reason), heredado verbatim de ADS: payload SIN zona,
+      SIN magnitud y SIN dmginfo, o sea un aviso de refresh y no un evento de daño. Con eso el
+      afecto no puede distinguir un rasguño de una pierna destrozada.
+      LA MITAD QUE IMPORTA DE ESTA NORMA ES LA SEGUNDA: corpus/docs/corpus_roadmap.txt enuncia
+      el gate SIN partirlo —dice que Cortex entero arranca cuando Caliber exponga esa
+      superficie— y leído así bloquea trabajo que no está bloqueado. La partición vive acá, y
+      es lo que permite que el bloque de escuadrones abra con el Block 3 de Caliber en su
+      tramo 0.
+  CTX-3:
+    titulo: "El escuadrón vive en Cortex —su estado, su cola de órdenes y su formación— y el menú interactivo de Corpus es sólo su FRONT-END."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 3"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Cita COR-1 y COR-10 desde el lado del módulo. El registro de acciones del framework
+      dibuja el árbol y transporta el commit; no guarda una línea de estado de escuadra.
+      corpus/docs/Corpus_Interaccion_Arquitectura.md §5.4 adjudica la frontera y la argumenta
+      —la rama command tiene dos objetivos, tiene estado que sobrevive al menú, y su lógica es
+      dominio puro de IA— pero ese documento NO ACUÑA NINGÚN ID (sólo cita 14 ajenos), así que
+      la adjudicación estaba enunciada y sin sede hasta esta entrada.
+  CTX-4:
+    titulo: "Cortex no parchea la propiedad de inventario de Cargo: toda orden que exija que un NPC PORTE ítems queda diferida hasta que Cargo vote."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 4"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua:101-104 — OwnerKey llama a SteamID64" }
+    nota: >
+      Está MEDIDO, no supuesto: OwnerKey hace ply:SteamID64() or ("bot" .. ply:EntIndex()), y
+      SteamID64 es un método de Player y no de Entity — con un NPC NO cae en el `or`: revienta.
+      La puerta no está entornada, no existe, y abrirla es una decisión de Cargo (¿el dueño de
+      un inventario deja de ser un jugador?) y no un parche de una línea desde Cortex.
+      Bloquea la orden Deploy —que además no existe sin Cargo, porque sus hijos son OBJETOS que
+      registra el módulo dueño de cada uno— y la secuencia "throw flashbang and clear" que pidió
+      el autor, la cual arrastra dos cosas más: el efecto de flash sobre NPCs es pobre (medido en
+      juego: quedan ciegos unos pocos segundos) y volver a la posición original exige guardar un
+      punto de retorno, que es otra vez estado por escuadra.
+  CTX-5:
+    titulo: "Los alcances de commit de corpus-cortex son los de §3 de su doc de convenciones (assets y docs EN USO; base, core, escuadra, tactica, afecto, facciones, caliber, config, dev e init RESERVADOS); el CLAUDE.md los resume y el doc manda."
+    sede: "corpus-cortex/docs/cortex_convenciones_commits.txt §3"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "git log de corpus-cortex: docs(docs), chore(assets) — conformes" }
+    nota: >
+      Acuñada el 2026-08-24 al fundarse el repo. Aplica GIT-6: la §3 es por-repo y jamás se
+      hereda del framework. Es el gemelo exacto de STK-9, y por el mismo motivo: la §3 de ese
+      doc existía desde el 2026-07-22 pero NO PODÍA llevar ID, porque la familia no tenía sede
+      — el propio doc lo dejó anotado en prosa mientras esperaba. `escuadra` es el único alcance
+      que se suma en esta tanda, por voto del autor al abrir el bloque: el escuadrón tiene
+      estado propio (cola de órdenes, grupos, formaciones) que no es ni táctica de combate ni
+      plumbing, y meterlo en `tactica` haría indistinguible un commit de formación de uno de
+      supresión. Los diez RESERVADOS se declaran antes de tener contenido a propósito: el día
+      que nazca la primera línea, el alcance ya existe y nadie lo improvisa.
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MÉTRICA DE SALUD (§7.4 · SDD-3 en Kontrol) — línea base 2026-07-16.
@@ -3097,16 +3180,24 @@ ids:
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-08-17
+  fecha: 2026-08-24
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 244
-  intencion: 76          # 31% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-08-17 (sesión de diseño del DOLOR en Coagulant:
+  total: 262
+  intencion: 74          # 28% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-08-24 (fundación de corpus-cortex: alta de
+  # CTX-1..CTX-5, tres en INTENCION y dos con evidencia tipo `codigo` — la línea de OwnerKey de
+  # Cargo que CTX-4 mide, y el git log conforme que CTX-5 cita). Y ojo con lo que encontró la
+  # corrida: ESTE BLOQUE VENÍA CON DRIFT DE OTRA TANDA. Decía 244/76 (31%) cuando el checker,
+  # ANTES de tocar nada acá, ya reportaba 257/71 (28%) — o sea que alguien acuñó trece IDs sin
+  # refrescarlo, que es exactamente lo que el comentario de abajo prohíbe, y van tres veces.
+  # El 28% de hoy no es mérito de esta tanda: el porcentaje ya estaba ahí y estas cinco altas
+  # apenas lo sostienen.
+  # Antes venía de la corrida del checker del 2026-08-17 (sesión de diseño del DOLOR en Coagulant:
   # alta de COA-52, en INTENCION — no hay una línea de Lua que la ejerza y el porcentaje no se
   # mueve del 31%). Antes venía de la corrida del 2026-08-08 (enmienda §17 de Coagulant: alta de
   # COA-41..COA-48, las OCHO en INTENCION — es una sesión de DISEÑO y no hay una línea de
@@ -3382,6 +3473,10 @@ deuda:
       cruza entre sí por primera vez — no se contradicen. Ese doc no acuña ningún CTX:
       la familia sigue reservada sin entradas, y su primera entrada exige antes crear el
       CLAUDE.md de Cortex.
+      [ACTUALIZACIÓN 2026-08-24 — el párrafo de arriba es la foto del 2026-07-19 y no se
+      reescribe: era cierto entonces. Lo que cambió es que el CLAUDE.md de Cortex YA
+      EXISTE y la familia acuñó CTX-1..CTX-5. Cortex_ContratosEntrantes.md sigue sin
+      acuñar ninguna, que era el punto.]
       (d) GATE — taxonomía a 18 buckets (entran compat-terceros, ciclo-de-vida-del-jugador,
       config-y-balance y rendimiento); fase nueva ContratoArbol (un agente por CLAUDE.md,
       contrato por contrato contra el Lua, sin adjudicación adversarial porque el Lua es

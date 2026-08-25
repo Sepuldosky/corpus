@@ -342,21 +342,25 @@ tendría que ejecutar no está escrita.** Y tiene tres propiedades que ninguna o
    suprimir. **`COR-1` y `COR-10` la dejan afuera del framework sin discusión.**
 
 > **⇒ El registro de §3 sirve como FRONT-END de `command`, y nada más. La escuadra vive en Cortex.**
-> Ese bloque **no existe**: `corpus-cortex` tiene `LICENSE`, `README` y
-> `docs/Cortex_ContratosEntrantes.md`, pero **no tiene `CLAUDE.md`**.
->
-> ⚠ **Y eso es un bloqueante medible, no una formalidad:** `ids.yaml` declara la familia `CTX` con
-> `pendiente: true`, y su propio comentario dice que el checker **se pone rojo el día que alguien acuñe la
-> primera norma de esa familia sin haber creado el `CLAUDE.md`**. O sea que la primera norma de la
-> escuadra **exige fundar Cortex primero**.
->
-> ⚠ **Y no es teoría: se comprobó al escribir esta sección.** La primera redacción citaba el ID literal
-> como ejemplo y `check-ids` la rechazó con `HUERFANO_DOC` ×2 — el checker **no distingue citar de
-> acuñar**. Por eso acá la familia se nombra en prosa y nunca por su token.
+> Eso **ya no es sólo una adjudicación de esta sección: es CTX-3**, con sede en
+> `../../corpus-cortex/CLAUDE.md`. Hasta el 2026-08-24 la frontera estaba enunciada acá y **sin sede**,
+> porque el repo que la recibe no tenía dónde acuñarla.
+
+> ⚠ **Ese bloqueante existió y se pagó, y conviene dejarlo escrito porque es la clase de trampa que
+> vuelve.** Mientras `corpus-cortex` no tuvo `CLAUDE.md`, `ids.yaml` declaraba su familia con
+> `pendiente: true` y el checker **se ponía rojo el día que alguien acuñara la primera norma sin haber
+> creado ese archivo**. Y no era teoría: la primera redacción de esta sección **citaba el ID literal como
+> ejemplo** y `check-ids` la rechazó con `HUERFANO_DOC` ×2 — **el checker no distingue citar de acuñar**,
+> y no debería. Por eso durante meses la familia se nombró en prosa y nunca por su token.
+> **El repo se fundó el 2026-08-24**, la familia tiene sede y cinco entradas, y desde entonces citarla
+> —como hace el párrafo de arriba— no dispara nada.
 
 **Consecuencia de alcance, y hay que decirla:** `interaction` y `self` se pueden escribir ya.
-**`command` no.** Su rama puede nacer **vacía y registrada** —para que el árbol tenga su tercer nodo y
-la forma quede probada— pero sus órdenes son un bloque aparte, del tamaño del Workbench.
+**`command` no**, y el motivo cambió de forma: ya no es que Cortex no tenga dónde acuñar una norma —eso
+se resolvió—, sino que **el escuadrón todavía no está diseñado**. Su rama puede nacer **vacía y
+registrada** —para que el árbol tenga su tercer nodo y la forma quede probada— pero sus órdenes son un
+bloque aparte, del tamaño del Workbench, y **es el bloque que Cortex abrió el 2026-08-24**
+(→ `../../corpus-cortex/docs/cortex_roadmap.txt`).
 
 ### El anclaje — VOTADO 2026-08-24: entidad, descubrimiento por proximidad, campo reservado
 
@@ -725,8 +729,9 @@ gris de §6**: allá el sistema existe y la **condición** dio `false`. Acá **n
 
 ### Lo que hay que decidir antes de escribir una línea de `command`
 
-1. **Fundar Cortex.** Sin `corpus-cortex/CLAUDE.md` no se puede acuñar su primera norma, y el checker
-   de IDs se pone rojo (§5.4).
+1. ~~**Fundar Cortex.**~~ **HECHO el 2026-08-24** — el repo tiene su `CLAUDE.md` (la sede de su familia
+   de normas), estado, roadmap y arquitectura, y acuñó sus cinco primeras normas. El bloque de
+   escuadrones está abierto del otro lado; lo que sigue de esta lista **no se destrabó con eso**.
 2. **Cómo se nombra al ejecutor.** El net de §4 no tiene campo para *quién*: ¿toda la escuadra, un
    elemento, una selección? Es la decisión que más arrastra.
 3. **Qué es una «puerta» para el sistema.** `prop_door_rotating` y `func_door` son entidades del

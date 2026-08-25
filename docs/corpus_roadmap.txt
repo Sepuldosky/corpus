@@ -82,14 +82,22 @@ La tabla §9 de CORPUS_Architecture.md es el plan de referencia, pero manda la d
 real: el orden NO es rígido, y el patrón mock-first de corpus_flujo_trabajo.txt §3 cubre
 construir contra un peer que aún no cerró. De los cinco módulos, falta UNO:
 
-  [5] Cortex — táctica de combate NPC + afecto (dolor, miedo). Era el otro medio del
-      Block 2 (junto a Caliber) y sigue sin empezar: el repo es semilla (README +
-      LICENSE, sin código). Su único doc de diseño es docs/Cortex_ContratosEntrantes.md
-      — los contratos que Cortex recibirá de sus peers; no acuña IDs y su sede CTX
-      (el CLAUDE.md de Cortex) todavía no existe. Gated por la superficie de eventos
-      daño/limb de Caliber: arranca cuando el Block 3 de Caliber la exponga. Cargo ya
-      construyó contra él mock-first (cortex.GetFactionInfo, hoy sin implementar del
-      otro lado).
+  [5] Cortex — escuadrones + táctica de combate NPC + afecto (dolor, miedo). Era el otro
+      medio del Block 2 (junto a Caliber). EL REPO SE FUNDÓ EL 2026-08-24: dejó de ser
+      semilla, tiene su CLAUDE.md —la sede de la familia CTX, que hasta ese día estaba
+      reservada sin entradas y por eso no podía acuñar ni una norma— más sus docs de
+      estado, roadmap y arquitectura. SIGUE SIN CÓDIGO: lo que abrió es un bloque de
+      DISEÑO, el de escuadrones, con alcance votado por el autor ese día: una CAPA sobre
+      NPCs de VJ Base y HL2, no una base de NPC nueva (CTX-1); DRG y ZBase diferidas.
+
+      OJO CON EL GATE, QUE ESTE ROADMAP VENÍA ENUNCIANDO SIN PARTIR: los eventos
+      daño/limb del Block 3 de Caliber gatean el AFECTO, no el módulo entero. La táctica
+      y el escuadrón no dependen de esa superficie, y por eso el bloque pudo abrir con el
+      Block 3 de Caliber todavía en su tramo 0. La partición es CTX-2 y su sede es el
+      CLAUDE.md de Cortex.
+
+      Cargo ya construyó contra él mock-first (cortex.GetFactionInfo, hoy sin implementar
+      del otro lado). Rumbo del módulo: corpus-cortex/docs/cortex_roadmap.txt.
 
 
 3. AL CERRAR CADA BLOQUE DE MÓDULO

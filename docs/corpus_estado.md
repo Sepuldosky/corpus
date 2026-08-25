@@ -100,7 +100,13 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   ratificado + código + tres rondas de verificación en juego — decay/umbrales, puente
   mock-first a Coagulant, 6 consumibles contra Cargo, entity de mundo con WALK+USE,
   barras; los 12 entries de su CHANGELOG en `[APLICADO]`, ya commiteados y pusheados).
-  **Cortex sigue sin código**, pero desde el 2026-07-19 tiene
+  **Cortex se FUNDÓ el 2026-08-24** —dejó de ser repo semilla: nació su
+  [`CLAUDE.md`](../../corpus-cortex/CLAUDE.md), o sea la sede de la familia `CTX`, que hasta
+  ese día estaba reservada **sin poder acuñar una sola norma**, más su estado, roadmap y
+  arquitectura— pero **sigue sin código**: lo que abrió es un bloque de DISEÑO, el de
+  escuadrones. ⚠ Y el gate que este framework venía enunciando sin partir (*«Cortex arranca
+  cuando Caliber exponga los eventos daño/limb»*) cubre **el afecto y no el módulo entero**:
+  la táctica y el escuadrón no dependen de esa superficie. Desde el 2026-07-19 tiene además
   [`docs/Cortex_ContratosEntrantes.md`](../../corpus-cortex/docs/Cortex_ContratosEntrantes.md):
   las **seis** firmas que otros repos ya le congelaron, juntas y cruzadas entre sí por primera
   vez (no se contradicen). Es doc de RECEPCIÓN, no su diseño. Cada

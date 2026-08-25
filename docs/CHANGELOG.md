@@ -1564,3 +1564,71 @@ Criterio: las cuatro entradas presentes de una. El diagnóstico ya está confirm
 corrió `spawnmenu_reload` y las entradas aparecieron—, pero eso acredita la CAUSA, no el parche:
 lo que falta medir es que el rebuild automático dispare solo. Y si aparecen, mirar que **no
 parpadee dos veces** ni queden dos categorías: sería la señal de que el debounce no agrupó.
+
+---
+
+## PARCHES DE sesión Fundación de corpus-cortex — barrido de ratificación — 2026-08-24
+
+El autor abre el bloque de **escuadrones** de Cortex y funda ese repo (su tanda propia está en
+`../../corpus-cortex/docs/CHANGELOG.md`). Esta entrada registra lo que la fundación **arrastró
+del lado del framework**: el barrido de ratificación de §7.3, hecho **por el VALOR y no por la
+lista de destinos** que traía el plan. Los valores barridos sobre las siete raíces fueron *«repo
+semilla»*, *«sin `CLAUDE.md`»*, *«familia sin entradas»* y *«pendiente: true»*.
+
+Sólo prosa y registro; ninguna línea de Lua del framework se tocó.
+
+- PARCHE 1 — **`docs/ids.yaml` · la familia `CTX` pierde su reserva y acuña cinco entradas.**
+  La clave `pendiente: true` sale (su sede ya existe) y el comentario que la explicaba se
+  reescribe: describía la reserva **como si Cortex la tuviera hoy**, y ahora **ninguna familia la
+  lleva** — la clave queda documentada para la próxima que se reserve. Nacen CTX-1 (Cortex es una
+  CAPA sobre bases de NPC que ya existen, no una base), CTX-2 (las dos mitades con gates
+  independientes), CTX-3 (el escuadrón vive en Cortex; el menú es su front-end), CTX-4 (Cortex no
+  parchea la propiedad de inventario de Cargo) y CTX-5 (los alcances de commit). Tres nacen
+  `INTENCION` **a propósito**: no hay una línea de Lua en ese repo, y acuñarlas con una evidencia
+  que no existe sería lo deshonesto. **[APLICADO 2026-08-24]**
+- PARCHE 2 — **`docs/ids.yaml` · el bloque `salud`, y un drift que la corrida destapó.** Decía
+  `244/76 (31%)`. El checker, corrido **antes** de tocar nada en esta sesión, ya reportaba
+  `257/71 (28%)`: **trece IDs se acuñaron sin refrescar este bloque**, que es exactamente lo que su
+  propio comentario prohíbe — y van tres veces. Queda en la cifra real de hoy, `262/74 (28%)`, con
+  el hallazgo anotado en sitio. ⚠ **El 28% no es mérito de esta tanda**: ya estaba ahí, y estas
+  cinco altas apenas lo sostienen. **[APLICADO 2026-08-24]**
+- PARCHE 3 — **`docs/corpus_roadmap.txt` · el punto [5] decía tres cosas que dejaron de ser
+  ciertas** (*«sigue sin empezar»*, *«el repo es semilla (README + LICENSE, sin código)»*, *«su
+  sede CTX todavía no existe»*). Y una cuarta que **nunca fue exacta y ésta es la que importaba**:
+  enunciaba el gate de Caliber sobre **Cortex entero**. Los eventos daño/limb gatean el **afecto**;
+  la táctica y el escuadrón no dependen de esa superficie. Leído sin partir, ese gate **bloqueaba
+  trabajo que no estaba bloqueado** — es la razón por la que el bloque pudo abrir con el Block 3 de
+  Caliber todavía en su tramo 0. La partición es CTX-2 y su sede es el CLAUDE.md de Cortex; acá se
+  cita. **[APLICADO 2026-08-24]**
+- PARCHE 4 — **`docs/corpus_estado.md`** — *«Cortex sigue sin código»* seguía siendo cierto, pero
+  la foto omitía la fundación y repetía el gate sin partir. Refrescada en sitio. **[APLICADO
+  2026-08-24]**
+- PARCHE 5 — **`CLAUDE.md` §Git** — decía que cinco repos llevaban commits y que *«Cortex sigue con
+  el repo semilla: README + LICENSE, sin código»*. Los siete llevan commits; Cortex es el único sin
+  código. **[APLICADO 2026-08-24]**
+- PARCHE 6 — **`docs/CORPUS_Architecture.md` §9, fila del Block 2** — *«Cortex: pendiente — sin
+  código todavía (repo semilla)»*. Pasa a **EN DISEÑO**, con el alcance votado y la partición del
+  gate. **[APLICADO 2026-08-24]**
+- PARCHE 7 — **`docs/Corpus_Interaccion_Arquitectura.md` §5.4 y §8.bis.** §5.4 afirmaba que
+  `corpus-cortex` *«no tiene `CLAUDE.md`»* y que por eso la primera norma de la escuadra exigía
+  fundarlo. Las dos mitades se resolvieron, y **la adjudicación que esa sección enunciaba sin sede
+  —«la escuadra vive en Cortex, el registro es su front-end»— ahora tiene una: CTX-3**, que el doc
+  pasa a citar. ⚠ Ese documento **no acuña un solo ID** (cita 15, todos ajenos — CTX-3 incluida desde esta tanda), o sea que sigue siendo
+  **NO-AUDITABLE por el gate de coherencia** en el sentido de §7.6 — deuda preexistente, no de esta
+  tanda, y se declara acá porque el barrido la vio. Del punto 1 de «lo que hay que decidir antes de
+  escribir `command`» se tacha *«fundar Cortex»*; **los otros tres siguen abiertos**, y el que más
+  arrastra —cómo se nombra al ejecutor en el mensaje de net— **no se destrabó con esto**.
+  **[APLICADO 2026-08-24]**
+- PARCHE 8 — **`docs/ids.yaml` · la deuda D-13 NO se reescribe.** Su párrafo (c) dice que *«la
+  familia sigue reservada sin entradas»* — era la foto del 2026-07-19 y **era cierta entonces**.
+  Se le agrega una línea de actualización fechada en vez de corregir el registro histórico, misma
+  disciplina con la que se trataron las semillas de Coagulant. **[APLICADO 2026-08-24]**
+
+**Verificación.** `check-ids` corrió **antes** (`257/71`, limpio) y **después** (`262/74`, limpio,
+155 archivos escaneados contra 151 — los cuatro docs nuevos de Cortex). Las citas cruzadas se
+adjudicaron **abriendo el archivo citado** y no copiándolas entre docs (§7.3.b): la línea de
+`OwnerKey` que CTX-4 mide se leyó en `corpus-cargo/lua/corpus_cargo/server/corpus_cargo_inventory.lua`,
+y las carpetas de bases de NPC se listaron en `dev/other/`. **Ninguna afirmación sobre lo que VJ
+Base o los `npc_*` de HL2 exponen entró a ningún doc**: esa lectura es el próximo paso del bloque
+y se hace contra el árbol, no contra la memoria. Sin superficie de runtime en esta tanda. No
+commiteado ni pusheado (GIT-7).
