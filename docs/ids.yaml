@@ -3012,43 +3012,6 @@ ids:
       medido, R5 dio cero rojos. El check no puede reclamar que prueba el ORDEN: prueba el
       RESULTADO, y hacen falta las dos guardas caídas para ponerlo en rojo.
 
-  CTX-6:
-    titulo: "El escuadrón de Cortex corre en PARALELO al squad del engine: no se pisa SetSquad, y el squad original se guarda desde el día uno."
-    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 6"
-    fuerza: INVARIANTE
-    estado: VIGENTE
-    evidencia: INTENCION
-    nota: >
-      Votada por el autor el 2026-08-24, sobre el censo de bases de NPC (Cortex_Architecture.md §7).
-      SON EL MISMO CAMPO: un NPC tiene UN solo squad, y el del engine es un BANDO y no una escuadra —
-      de las 60 defs de NPC de HL2, 46 nacen en siete nombres globales de facción (overwatch con 18,
-      resistance con 12, zombies con 7...), y a cuál pertenece cada uno es un accidente del orden de
-      spawn, con desborde a overwatch0/overwatch1 al pasar el tope de 16. Meter un combine en "el grupo
-      rojo del jugador" le sacaría la coordinación con los otros combines, que el engine hace en C++ y
-      nadie reimplementa desde Lua.
-      COROLARIO QUE NO ES OPCIONAL: Cortex lleva su PROPIA lista de miembros, porque
-      ai.GetSquadMemberCount sólo CUENTA por un nombre que hay que conocer de antemano — no existe API
-      para listar los miembros de un squad.
-      EL COSTO ACEPTADO, dicho en voz alta: los miembros de un grupo NO se coordinan entre sí por el
-      C++; esa coordinación la escribe Cortex. Y guardar el squad original cuesta un campo y es lo único
-      que permite después pisarlo, o pisarlo sólo durante una orden, sin migración — que es exactamente
-      el opt-out que ZBase mantiene (DontAutoSetSquad) por la misma razón.
-  CTX-7:
-    titulo: "La cola de órdenes SONDEA: el engine no emite ningún evento de «orden terminada»."
-    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 7"
-    fuerza: REGLA
-    estado: VIGENTE
-    evidencia:
-      - { tipo: codigo, ref: "dev/other/zbase/lua/weapons/gmod_tool/stools/zbase_guard.lua:77 — sondea IsCurrentSchedule para re-emitir la orden" }
-    nota: >
-      MEDIDO el 2026-08-24 sobre tres bases de terceros: 40 usos de IsCurrentSchedule contra CERO de
-      cualquier callback de fin de schedule. El único tell de que un SCHED_ nativo terminó es sondearlo.
-      LA TRAMPA, y por eso la norma existe: TaskComplete() tiene 185 usos y NO SIRVE para esto. Es algo
-      que un NPC se llama A SÍ MISMO adentro de un schedule *custom* para señalar que su task terminó,
-      no un callback que el engine le entregue a un tercero — confirmado abriendo sus call-sites en VJ
-      (ai/core.lua:782, npc_vj_human_base/init.lua:2688): siempre self:TaskComplete(), desde adentro.
-      Quien lo lea por el nombre va a diseñar la cola por eventos y la cola no va a avanzar nunca.
-
   # ── STK — corpus-stalker (addon de contenido, consumidor puro) ──────────────
 
   STK-1:
@@ -3128,9 +3091,17 @@ ids:
   # FUNDADA el 2026-08-24. Hasta ese día la familia estaba reservada SIN entradas porque su
   # sede —corpus-cortex/CLAUDE.md— no existía, y acuñar la primera contra un archivo fantasma
   # es exactamente lo que el CHECK 2a del checker existe para impedir. El repo se fundó al
-  # abrir el autor el bloque de escuadrones, y estas cinco son las primeras normas del módulo.
-  # Las cinco nacen INTENCION a propósito: no hay una línea de Lua en ese repo, y acuñarlas
-  # con una evidencia que no existe sería lo deshonesto.
+  # abrir el autor el bloque de escuadrones, y CTX-1..CTX-5 fueron las primeras normas del módulo.
+  # Nacieron mayormente INTENCION a propósito: no hay una línea de Lua en ese repo, y acuñarlas
+  # con una evidencia que no existe sería lo deshonesto. Lo que SÍ pueden llevar evidencia `codigo`
+  # es lo que se midió en OTRO repo — la línea de OwnerKey de Cargo que CTX-4 mide es el precedente,
+  # y CTX-8/CTX-9/CTX-11 lo siguen apuntando a Caliber y a VJ Base.
+  #
+  # 2026-08-25 — el bloque de escuadrones contestó el contrato entrante #6 y las tres preguntas
+  # abiertas del diseño: entran CTX-8..CTX-12. ⚠ Y en el mismo parche se CORRIGIÓ UNA UBICACIÓN:
+  # CTX-6 y CTX-7 habían quedado escritas dentro del bloque CRG (el checker no mira dónde vive una
+  # clave del mapa, así que el registro estaba "limpio" con la familia partida en dos lugares).
+  # Se movieron acá sin tocarles una letra.
 
   CTX-1:
     titulo: "Cortex es una CAPA de comportamiento sobre bases de NPC que ya existen (VJ Base y HL2), no una base de NPC; DRG y ZBase quedan diferidas."
@@ -3211,22 +3182,209 @@ ids:
       supresión. Los diez RESERVADOS se declaran antes de tener contenido a propósito: el día
       que nazca la primera línea, el alcance ya existe y nadie lo improvisa.
 
+  CTX-6:
+    titulo: "El escuadrón de Cortex corre en PARALELO al squad del engine: no se pisa SetSquad, y el squad original se guarda desde el día uno."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 6"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Votada por el autor el 2026-08-24, sobre el censo de bases de NPC (Cortex_Architecture.md §7).
+      SON EL MISMO CAMPO: un NPC tiene UN solo squad, y el del engine es un BANDO y no una escuadra —
+      de las 60 defs de NPC de HL2, 46 nacen en siete nombres globales de facción (overwatch con 18,
+      resistance con 12, zombies con 7...), y a cuál pertenece cada uno es un accidente del orden de
+      spawn, con desborde a overwatch0/overwatch1 al pasar el tope de 16. Meter un combine en "el grupo
+      rojo del jugador" le sacaría la coordinación con los otros combines, que el engine hace en C++ y
+      nadie reimplementa desde Lua.
+      COROLARIO QUE NO ES OPCIONAL: Cortex lleva su PROPIA lista de miembros, porque
+      ai.GetSquadMemberCount sólo CUENTA por un nombre que hay que conocer de antemano — no existe API
+      para listar los miembros de un squad.
+      EL COSTO ACEPTADO, dicho en voz alta: los miembros de un grupo NO se coordinan entre sí por el
+      C++; esa coordinación la escribe Cortex. Y guardar el squad original cuesta un campo y es lo único
+      que permite después pisarlo, o pisarlo sólo durante una orden, sin migración — que es exactamente
+      el opt-out que ZBase mantiene (DontAutoSetSquad) por la misma razón.
+  CTX-7:
+    titulo: "La cola de órdenes SONDEA: el engine no emite ningún evento de «orden terminada»."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 7"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "dev/other/zbase/lua/weapons/gmod_tool/stools/zbase_guard.lua:77 — sondea IsCurrentSchedule para re-emitir la orden" }
+    nota: >
+      MEDIDO el 2026-08-24 sobre tres bases de terceros: 40 usos de IsCurrentSchedule contra CERO de
+      cualquier callback de fin de schedule. El único tell de que un SCHED_ nativo terminó es sondearlo.
+      LA TRAMPA, y por eso la norma existe: TaskComplete() tiene 185 usos y NO SIRVE para esto. Es algo
+      que un NPC se llama A SÍ MISMO adentro de un schedule *custom* para señalar que su task terminó,
+      no un callback que el engine le entregue a un tercero — confirmado abriendo sus call-sites en VJ
+      (ai/core.lua:782, npc_vj_human_base/init.lua:2688): siempre self:TaskComplete(), desde adentro.
+      Quien lo lea por el nombre va a diseñar la cola por eventos y la cola no va a avanzar nunca.
+
+  CTX-8:
+    titulo: "El scavenger-pickup ES comportamiento de NPC y queda bajo la autoridad de Cortex sobre el cuerpo del NPC, pero NO se re-homea: se queda entero en Caliber como primer cliente del arbitraje."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 8"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_scavenger.lua — 783 líneas, 17 convars, tres concerns en un archivo" }
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_limbs.lua:57,58,70,75,76 — los 5 call-sites hacia el scavenger, todos guardados" }
+    nota: >
+      Votada por el autor el 2026-08-25, contestando el contrato entrante #6, que su sede
+      (Caliber_Architecture.md §9.c) había dejado explícitamente abierto "a decidir en el diseño de
+      Cortex". ES UNA ADJUDICACIÓN DE AUTORIDAD Y NO DE HOSTING, y leer las dos como una sola es lo que
+      tenía la pregunta trabada.
+      LO QUE LA MEDICIÓN DIO VUELTA: el archivo no es una cosa, son TRES — valuación de armas (pesos,
+      overrides, su persistencia, 3 concommands, 2 net y la pestaña del browser), contabilidad de armas
+      tiradas (marcado, ventanas de vida y de propiedad, tres hooks de detección) y el comportamiento
+      (tick, elección de target, movimiento, animación, equip). Sólo la tercera es behavior.
+      Y EL ACOPLAMIENTO VA AL REVÉS de lo que decía la frase heredada "acoplado al drop de Limbs": el
+      scavenger NO llama a limbs ni una vez — cero referencias de código, las seis menciones de limb son
+      comentarios — es limbs quien lo llama, y ya con forma de contrato entre pares. Su única
+      dependencia hacia Caliber que él no define es CALIBER.IsUserBlacklisted, de core.
+      EL COSTO QUE MATÓ AL RE-HOME, medido y no estimado: 14 de las 17 convars son de comportamiento y
+      TODAS son FCVAR_ARCHIVE, así que renombrarlas resetea en silencio la config de todo servidor ya
+      instalado (y FCVAR_REPLICATED es invisible para el harness: eso se verifica por comportamiento).
+      Y peor: Caliber SOLO perdería la feature entera, o sea una regresión real en una configuración
+      real a cambio de prolijidad de propiedad.
+      LO QUE ESTA NORMA NO DICE: no dice que el comportamiento esté bien escrito donde está, ni que
+      nunca se mueva. Si algún día Cortex tiene primitiva propia de animación y el scavenger queda
+      duplicándola, la conversación se reabre — pero MIDIENDO la duplicación, no citando la prolijidad.
+      Sede del detalle: Cortex_Escuadrones_Arquitectura.md §1.
+
+  CTX-9:
+    titulo: "La conducción del cuerpo de un NPC se ARBITRA: un solo dueño a la vez, y la orden de un jugador siempre gana."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 9"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_scavenger.lua — MoveNPCToWeapon hace SetLastPosition + SCHEDULE_GOTO_POSITION/SCHED_FORCED_GO_RUN, el mismo canal que Cortex" }
+      - { tipo: codigo, ref: "corpus-caliber/lua/corpus_caliber/server/corpus_caliber_scavenger.lua — TryPickupAnimation rama VJ corre con lockAnim=true, que hace StopMoving + ClearSchedule" }
+    nota: >
+      Votada por el autor el 2026-08-25 junto con CTX-8. La superficie: Cortex.Body.Claim/Release/Holder,
+      con holder string namespaced ("cortex.order", "caliber.scavenger") y claim con vencimiento — un
+      volante que se puede quedar trabado para siempre es peor que no tener volante.
+      HACE FALTA HOY, Y HOY YA SE ROMPE SIN DAR UN ERROR. Tres colisiones medidas, ninguna ruidosa: el
+      scavenger le reescribe LastPosition a una orden en vuelo; su animación de pickup en VJ le BORRA el
+      schedule; y la peor es sobre CTX-7 — el sondeo lee un schedule que Cortex NO puso y puede acreditar
+      "orden terminada" cuando el NPC se fue a buscar una escopeta. Un falso verde que sólo se descubre
+      en el juego y que mientras tanto acredita.
+      POR QUÉ EL GATE DE HOY NO ALCANZA, y es honesto que no alcance: ProcessScavengerNPC sólo mira
+      combate (GetEnemy más la convar interrupt_combat). No hay gate de "este NPC está bajo órdenes"
+      porque cuando se escribió no existía nadie que diera órdenes.
+      LAS DOS COSAS QUE UN CLAIM NO ES, y hay que escribirlas o la norma se lee de más: (1) NO es un lock
+      del engine — nada impide que VJ, otro addon o el propio FSM lo muevan igual; coordina a los módulos
+      de Corpus entre sí y no puede prometer más que eso. (2) NO reemplaza al sondeo de CTX-7: "¿me toca
+      a mí?" y "¿ya llegó?" son dos preguntas distintas, y confundirlas deja una orden colgada esperando
+      un evento que no existe.
+      Sede del detalle: Cortex_Escuadrones_Arquitectura.md §2.
+
+  CTX-10:
+    titulo: "El roster de un escuadrón es estado VOLÁTIL de runtime: no se persiste."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 10"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Contesta la mitad "dónde" de la pregunta abierta del roadmap ("qué estado guarda, y dónde"), que
+      venía anotada con la cita a COR-3 como si persistir fuera el default.
+      NO ES UNA ELECCIÓN DE DISEÑO: ES LO QUE EL ESTADO ES. Los miembros NPC son ENTIDADES y no
+      sobreviven a un cambio de mapa ni a un cleanup; la cola guarda destinos en coordenadas de ESTE
+      mapa; los callsigns y los roles cuelgan de miembros que no van a existir. Y el EntIndex no sirve
+      de sustituto: los índices se reciclan, cosa que el propio scavenger de Caliber ya documenta en su
+      código ("entity reference, never EntIndex", en el comentario de RecordOwnWeaponDrop).
+      LO ÚNICO QUE CALIFICA para Corpus.Data, porque sobrevive a un mapa por naturaleza: los nombres de
+      los grupos, y la membresía de un JUGADOR — que se referencia por SteamID64. Va con
+      opts = { scope = "save" } (cita COR-19), no "config": es estado de partida y muere con ella. Hoy
+      los dos scopes resuelven a la misma carpeta a propósito, así que declararlo no mueve un archivo y
+      evita la migración del día que llegue el layout de perfiles.
+      COROLARIO: guardar un derivado (salud, distancia, clase, la pertenencia al amarillo) es fabricarse
+      una segunda fuente de verdad que se desincroniza sin avisar.
+      Sede del detalle: Cortex_Escuadrones_Arquitectura.md §5.
+
+  CTX-11:
+    titulo: "La formación es estado del ESCUADRÓN, no argumento de la orden; pero su APLICACIÓN es condicional y la suspenden el combate y las órdenes que fijan posición."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 11"
+    fuerza: INVARIANTE
+    estado: VIGENTE
+    evidencia:
+      - { tipo: codigo, ref: "dev/other/VJ Base/lua/vj_base/ai/core.lua:1798 — FollowData.MinDist = FollowMinDistance + las dos OBBMaxs, con FollowMinDistance = 100 por defecto: la tolerancia es un ANILLO" }
+      - { tipo: codigo, ref: "dev/other/VJ Base/lua/entities/npc_vj_human_base/init.lua:2694 — NextUpdateT = curTime + 0.5, la cadencia con la que la propia base re-emite su follow" }
+    nota: >
+      Votada por el autor el 2026-08-25, y CONTRA la opción barata: la contraria (formación como
+      argumento de Fall In) costaba una colocación de una vez, y ésta cuesta un subsistema — asignación
+      de slot por miembro, un ancla con rumbo, y re-emisión periódica del destino de cada uno.
+      DE DÓNDE NO SALIÓ: el mock v2 NO lo decide. No dibuja ni una formación — sus dos apariciones de
+      "Wedge" son la orden de PUERTA — y Fall In es una hoja sin hijos. Leer su silencio como "entonces
+      no es estado" habría sido un argumento por ausencia sobre un dibujo que nunca cubrió el tema.
+      LA REGLA DE SUSPENSIÓN NO ES UN DETALLE: el estado persiste, su aplicación es condicional. La
+      suspenden sin borrarla el combate (la IA de la base gana: cubrirse y disparar antes que mantener
+      el slot), Hold, Cover y Stack Up. Sin eso, la escuadra entra en cuña a un tiroteo.
+      MEDIDO QUE ENT:Follow DE VJ NO SIRVE para mantenerla, y se midió antes de escribir el mecanismo
+      porque el censo lo había anotado como punto de extensión: su tolerancia es un anillo de ~2,5 m
+      (el NPC para al ENTRAR, en cualquier punto de él, y eso es más ancho que la separación entre
+      slots), sigue ENTIDADES y no posiciones, y sólo existe en VJ — delegarle sería escribir DOS
+      implementaciones cuando el canal compartido de LastPosition permite UNA.
+      TRES TRAMPAS DE Follow QUE QUEDAN ESCRITAS porque muerden si alguien lo usa para el Follow
+      individual, que sí está en el catálogo: le imprime al jugador en el chat en cinco sitios
+      (HUD_PRINTTALK, gateado por CanChatMessage — con una escuadra de seis, seis líneas por reagrupe);
+      un NPC de VJ sigue a UNA entidad a la vez (código de fallo 2), o sea que colisiona con cualquier
+      otro sistema que use Follow, incluido el menú del propio VJ; y pisa SetTarget y resetea GuardData.
+      LA CADENCIA NO SE INVENTA: VJ re-emite su propio follow cada 0,5 s y le alcanza. Es el punto de
+      partida medido, NO el resultado — a qué cadencia se puede re-emitir un schedule forzado sin romper
+      combate ni animaciones se mide EN JUEGO.
+      Sede del detalle: Cortex_Escuadrones_Arquitectura.md §6.
+
+  CTX-12:
+    titulo: "El amarillo es la UNIÓN de la escuadra, no un cuarto elemento: los elementos son TRES (rojo, azul, verde)."
+    sede: "corpus-cortex/CLAUDE.md §Contratos que no debes romper · 12"
+    fuerza: REGLA
+    estado: VIGENTE
+    evidencia: INTENCION
+    nota: >
+      Votada por el autor el 2026-08-25, resolviendo una CONTRADICCIÓN ENTRE DOS FUENTES que nadie había
+      cruzado: la columna WHO del mock v2 rotula la primera fila "ALL · YELLOW GROUP" y le pone EL TOTAL
+      al lado (5, contra RED 2 y BLUE 2 — su propia aritmética dice que es la unión), mientras la prosa
+      de Corpus_Interaccion_Arquitectura.md §8.ter habla de "los cuatro grupos: amarillo, rojo, azul y
+      verde". Gana la unión.
+      POR QUÉ HABÍA QUE DECIDIRLO: decide el modelo de datos. El campo group de un miembro vale red,
+      blue, green o nil — "en la escuadra, en ningún elemento" — y NUNCA yellow: el amarillo no se
+      guarda, se CALCULA. ALL (tecla 0) selecciona el roster entero, incluidos los de group = nil.
+      El techo de tres elementos no es de la UI sino del THEME, y por eso los grupos llevan letra
+      R·B·G·Y además del color: olive no declara green.
+      DEUDA DECLARADA, y es de la otra sede: la frase "los cuatro grupos" de §8.ter queda desactualizada
+      y se corrige del lado del framework, no desde este repo — corpus/ está siendo trabajado por otra
+      sesión en paralelo, y la sede del estado de escuadra es Cortex (cita CTX-3).
+      Sede del detalle: Cortex_Escuadrones_Arquitectura.md §4.
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MÉTRICA DE SALUD (§7.4 · SDD-3 en Kontrol) — línea base 2026-07-16.
 # El checker la reporta en cada corrida (§7.7): no se recuenta a mano.
 # Referencia de Kontrol al backfillear: 159 INTENCION de 214 IDs (74%).
 # ══════════════════════════════════════════════════════════════════════════════
 salud:
-  fecha: 2026-08-24
+  fecha: 2026-08-25
   # NO se escribe a mano: se COPIA de la corrida del checker (§7.7), que es quien cuenta.
   # El piloto del gate cazó este bloque con CUATRO cifras distintas para el mismo hecho
   # (178 acá, 43/178 en un PARCHE del CHANGELOG, 184 en el estado, 189 real): se editaba
   # a mano en cada tanda y nadie lo ratificaba. Es una norma que ENUMERA — se deriva del
   # árbol, no de la prosa (FLU-27). Y `por_familia` se quitó por la misma razón: era otra
   # lista a mano que se desincronizaba sola; el checker la imprime en cada corrida.
-  total: 264
-  intencion: 75          # 28% — la métrica que hay que bajar (§7.4)
-  # Copiado de la corrida del checker del 2026-08-24, SEGUNDA tanda del día (censo de bases de NPC:
+  total: 269
+  intencion: 76          # 28% — la métrica que hay que bajar (§7.4)
+  # Copiado de la corrida del checker del 2026-08-25b (el DOLOR de Coagulant baja a código): CERO
+  # altas y UNA baja de INTENCION — COA-52 pasa a evidencia `harness` (el harness con 63 filas que
+  # la citan por familia, y el sabotaje que declara el alcance de cada defecto). El porcentaje baja
+  # de 29% a 28% y esta vez SÍ es virtud, a diferencia de las subidas anteriores: no se acuñó nada,
+  # se ejerció algo que estaba escrito. Y el bloque venía en 269/77, que es exactamente lo que el
+  # checker reportaba antes de tocar nada — segunda tanda seguida sin drift.
+  # Antes venía de la corrida del 2026-08-25 (bloque de escuadrones de Cortex: alta de
+  # CTX-8..CTX-12, DOS en INTENCION y TRES con evidencia `codigo` — el scavenger y los limbs de
+  # Caliber, y las dos constantes de VJ Base que CTX-11 mide). El porcentaje sube de 28% a 29% y
+  # eso es honesto: es una sesión de DISEÑO y no hay una línea de Lua en corpus-cortex que las
+  # ejerza. Las cinco convierten a `codigo` en el punto [5] del roadmap del módulo, que es cuando
+  # el escuadrón baja a código. Y esta corrida NO encontró drift: el bloque venía en 264/75, que
+  # es exactamente lo que el checker reportaba antes de tocar nada — la primera vez en cuatro
+  # tandas que la cifra de acá coincide con la del árbol al abrir.
+  # Antes venía de la corrida del 2026-08-24, SEGUNDA tanda del día (censo de bases de NPC:
   # alta de CTX-6 en INTENCION y CTX-7 con evidencia `codigo`). Antes en esa misma fecha (fundación de corpus-cortex: alta de
   # CTX-1..CTX-5, tres en INTENCION y dos con evidencia tipo `codigo` — la línea de OwnerKey de
   # Cargo que CTX-4 mide, y el git log conforme que CTX-5 cita). Y ojo con lo que encontró la
