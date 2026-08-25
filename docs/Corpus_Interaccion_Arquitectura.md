@@ -21,12 +21,23 @@
 > **Origen:** propuesto por el autor el 2026-08-23. La semilla con su pedido textual y el cruce contra
 > el árbol vive en `dev/HANDOFF_menu_interactivo.md` (fuera de git).
 >
-> **Mock visual:** [`docs/mockups/corpus_interact_menu_mock_v1.html`](mockups/corpus_interact_menu_mock_v1.html)
-> — el anclaje por entidad, los tres niveles de LOD y el segundo nivel desplegado, con las **dos
-> paletas runtime conmutables**. ⚠ **Es de la v1 y muestra DOS ramas: quedó desfasado con la enmienda
-> de §5 (tres ramas) y tiene elementos que se superponen.** Rehacerlo es trabajo pendiente. Sus colores son **espejo de `T.PALETTES`**
-> (`corpus_cargo_theme.lua:52-83`) y su fuente es la que declara el theme. **Misma regla que el wheel de
-> Cargo: el mock manda hasta que exista el código; en divergencia manda el código.**
+> **Mock visual — v2, y es la que manda:**
+> [`docs/mockups/corpus_interact_menu_mock_v2.html`](mockups/corpus_interact_menu_mock_v2.html), con su
+> compañero [`corpus_interact_menu_v2_README.md`](mockups/corpus_interact_menu_v2_README.md),
+> **15 fotocapturas** en `mockups/screenshots/` y **48 íconos** en `materials/corpus/icons/`.
+> Cubre las **tres ramas**, la pantalla de administración de grupos, los tres niveles de LOD, los
+> cuatro estados de acción y la tabla de motion. Sus escenas son `<div>` de **1280 px con todo en px
+> absolutos**, así que **las medidas del dibujo son las medidas de la spec**.
+>
+> **Misma regla que el wheel de Cargo: el mock manda hasta que exista el código; en divergencia manda
+> el código.** Sus colores son **espejo de `T.PALETTES`** (`corpus_cargo_theme.lua:52-83`).
+>
+> ⚠⚠ **SU README TRAE DECISIONES QUE ESTA ARQUITECTURA TODAVÍA NO ABSORBIÓ** — umbrales de tamaño de
+> rama, `Delay` como modificador, la asimetría NPC/jugador, los cuatro grupos. Están listadas en §11.
+> **Hasta que se plieguen acá, el README es su sede.**
+>
+> La **v1** ([`corpus_interact_menu_mock_v1.html`](mockups/corpus_interact_menu_mock_v1.html)) se
+> conserva como registro: mostraba dos ramas y tenía elementos superpuestos.
 
 ---
 
@@ -801,6 +812,26 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | El bullet 9 (puertas de Glide) | **Reescrito como el LOCK de Glide** — las puertas no existen (§8) | 2026-08-24 |
 | Instrumento de verificación | **Los dos**: `dev/harness_corpus.py` nuevo para la lógica + el selftest para el motor, **sin factorizar los stubs** (§10) | 2026-08-24 |
 | La masa como peso de inventario | **`GetMass()` crudo con piso propio** para los clavados en el piso de Source (§9.2) | 2026-08-24 |
+
+### ⚠⚠ LO QUE EL MOCK v2 DECIDIÓ Y ESTE DOCUMENTO TODAVÍA NO ABSORBIÓ
+
+El paquete del mock v2 (2026-08-24) trae **votos que no están en el cuerpo de esta arquitectura**.
+Mientras no se plieguen, **su README es la sede de cada uno**:
+
+| Decisión | Qué dice |
+|---|---|
+| **Umbrales de tamaño de rama** | **1-6 arco · 7-12 columna · 13+ subcategorías obligatorias.** El padre canta el total real. **Sin paginado**: la rueda corre fila por fila, y cuántas se ven sale de un **cvar** (default 10) que **no se toca desde el HUD**. El 6 no es gusto: sale de la geometría del chip (218 × 36 px alrededor de un punto) |
+| **`Delay` es un MODIFICADOR, no una orden** | Con Delay armado, cada orden se va a una cola con su propio objetivo; `Execute` las manda todas juntas |
+| **La asimetría NPC / jugador** | **Al NPC se lo asigna, al jugador se lo invita.** Y un jugador **no ejecuta órdenes: las recibe** como marcador y aviso — por eso su columna de orden va vacía |
+| **Cuatro grupos, con letra ADEMÁS de color** | Son cuatro porque son los cuatro colores señalizables de la paleta: el techo es **del theme, no de la UI**. Y llevan letra porque **`olive` no declara `green`**, y ahí Blue y Green colisionan |
+| **La puerta trae sus cinco acciones** | Sólo si **comunica dos lados navegables**. Decorativa, tapiada o sin sala detrás no las trae; abierta o cerrada da igual |
+| **`Deploy` depende de Cargo** | Sin inventario no hay nada que desplegar, y **la lista de hijos la arma el módulo que registra cada objeto**, no el árbol |
+
+**Y lo que el propio README declara pendiente:** `Breach charge` (para qué se usaría), `Chemlight`
+(viene de Phantasmagoria), el binding de la pantalla de administración, y la **munición finita de NPC
+HL2/VJ + el rol *Ammo Bearer***, que es lo que justificaría el `Ammo box` y **es pregunta para Cortex**.
+
+---
 
 ### ⚠ ENMIENDA DEL 2026-08-24 — la tercera rama
 

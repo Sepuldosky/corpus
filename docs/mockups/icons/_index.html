@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Corpus - iconos del menu interactivo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:#080A0C;color:#DFE2E5;font:400 13px/1.55 "IBM Plex Sans",sans-serif;padding:32px 40px 60px;}
+h1{font:600 21px "IBM Plex Sans";margin:0 0 6px;}
+p{color:#8B9299;max-width:88ch;margin:0 0 12px;}
+code{font-family:"IBM Plex Mono",monospace;color:#DFE2E5;font-size:.93em;}
+h2{font:400 10px "IBM Plex Mono";letter-spacing:.16em;text-transform:uppercase;color:#4F9BD6;border-bottom:1px solid #2C3237;padding-bottom:7px;margin:30px 0 14px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:1px;background:#2C3237;border:1px solid #2C3237;}
+.cell{background:#0E1013;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+.cell img{width:48px;height:48px;}
+.n{font:500 11px "IBM Plex Mono";color:#DFE2E5;}
+.a{font:400 10.5px "IBM Plex Sans";color:#6B7278;}
+.tints{display:flex;gap:30px;padding:18px;background:#0E1013;border:1px solid #2C3237;}
+.tc{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.tc span{width:36px;height:36px;-webkit-mask:url(breach.png) center/contain no-repeat;mask:url(breach.png) center/contain no-repeat;}
+.tc em{font:400 10px "IBM Plex Mono";color:#6B7278;font-style:normal;}
+</style></head><body>
+<div style="font:400 10px 'IBM Plex Mono';letter-spacing:.16em;color:#6B7278;">CORPUS · ICONOS DEL MENU INTERACTIVO · 2026-08-24</div>
+<h1>Set de iconos — 48 PNG</h1>
+<p><strong>64 × 64, trazo blanco sobre transparente.</strong> Blancos a propósito: el color lo pone el runtime, no el archivo. Se tinta con <code>surface.SetDrawColor(Theme.text)</code> antes de <code>surface.DrawTexturedRect</code>, así que el mismo PNG sirve en las dos paletas y en el estado gris (<code>Theme.textDim</code>).</p>
+<p>Cargar con <code>Material("corpus/icons/&lt;nombre&gt;.png", "smooth")</code>. Salieron del mock v2, así que la forma es exactamente la que dibuja la spec. Son vectoriales de origen: si hace falta otro tamaño (32, 128, 256) se re-exportan sin perder nitidez.</p>
+<h2>Los 48 iconos</h2>
+<div class="grid">
+<div class="cell"><img src="add_to_group.png" alt="add_to_group"><div class="n">add_to_group.png</div></div>
+<div class="cell"><img src="arrow_up.png" alt="arrow_up"><div class="n">arrow_up.png</div><div class="a">signals · wave</div></div>
+<div class="cell"><img src="bandage.png" alt="bandage"><div class="n">bandage.png</div></div>
+<div class="cell"><img src="body.png" alt="body"><div class="n">body.png</div><div class="a">search body · cadáver</div></div>
+<div class="cell"><img src="breach.png" alt="breach"><div class="n">breach.png</div><div class="a">rol: breacher</div></div>
+<div class="cell"><img src="cheer.png" alt="cheer"><div class="n">cheer.png</div></div>
+<div class="cell"><img src="come_here.png" alt="come_here"><div class="n">come_here.png</div></div>
+<div class="cell"><img src="condition.png" alt="condition"><div class="n">condition.png</div><div class="a">condition false · no disponible</div></div>
+<div class="cell"><img src="cover.png" alt="cover"><div class="n">cover.png</div></div>
+<div class="cell"><img src="crate.png" alt="crate"><div class="n">crate.png</div></div>
+<div class="cell"><img src="create_group.png" alt="create_group"><div class="n">create_group.png</div><div class="a">plus · add</div></div>
+<div class="cell"><img src="delay.png" alt="delay"><div class="n">delay.png</div></div>
+<div class="cell"><img src="deploy.png" alt="deploy"><div class="n">deploy.png</div></div>
+<div class="cell"><img src="designate_leader.png" alt="designate_leader"><div class="n">designate_leader.png</div><div class="a">rol: leader</div></div>
+<div class="cell"><img src="disband.png" alt="disband"><div class="n">disband.png</div></div>
+<div class="cell"><img src="door.png" alt="door"><div class="n">door.png</div></div>
+<div class="cell"><img src="emote.png" alt="emote"><div class="n">emote.png</div></div>
+<div class="cell"><img src="enter_seat.png" alt="enter_seat"><div class="n">enter_seat.png</div></div>
+<div class="cell"><img src="equipment.png" alt="equipment"><div class="n">equipment.png</div></div>
+<div class="cell"><img src="facepalm.png" alt="facepalm"><div class="n">facepalm.png</div></div>
+<div class="cell"><img src="fall_in.png" alt="fall_in"><div class="n">fall_in.png</div></div>
+<div class="cell"><img src="gestures.png" alt="gestures"><div class="n">gestures.png</div></div>
+<div class="cell"><img src="group.png" alt="group"><div class="n">group.png</div><div class="a">escuadra</div></div>
+<div class="cell"><img src="hold.png" alt="hold"><div class="n">hold.png</div></div>
+<div class="cell"><img src="inventory.png" alt="inventory"><div class="n">inventory.png</div></div>
+<div class="cell"><img src="lock.png" alt="lock"><div class="n">lock.png</div></div>
+<div class="cell"><img src="medical.png" alt="medical"><div class="n">medical.png</div><div class="a">rol: medic</div></div>
+<div class="cell"><img src="merge_groups.png" alt="merge_groups"><div class="n">merge_groups.png</div></div>
+<div class="cell"><img src="move_to.png" alt="move_to"><div class="n">move_to.png</div><div class="a">point · directions</div></div>
+<div class="cell"><img src="pose.png" alt="pose"><div class="n">pose.png</div></div>
+<div class="cell"><img src="regroup.png" alt="regroup"><div class="n">regroup.png</div></div>
+<div class="cell"><img src="remove_from_group.png" alt="remove_from_group"><div class="n">remove_from_group.png</div></div>
+<div class="cell"><img src="rename.png" alt="rename"><div class="n">rename.png</div></div>
+<div class="cell"><img src="salute.png" alt="salute"><div class="n">salute.png</div></div>
+<div class="cell"><img src="scan.png" alt="scan"><div class="n">scan.png</div></div>
+<div class="cell"><img src="search_secure.png" alt="search_secure"><div class="n">search_secure.png</div></div>
+<div class="cell"><img src="stack_up.png" alt="stack_up"><div class="n">stack_up.png</div></div>
+<div class="cell"><img src="stop.png" alt="stop"><div class="n">stop.png</div></div>
+<div class="cell"><img src="syringe.png" alt="syringe"><div class="n">syringe.png</div></div>
+<div class="cell"><img src="thumbs_up.png" alt="thumbs_up"><div class="n">thumbs_up.png</div></div>
+<div class="cell"><img src="transfer_command.png" alt="transfer_command"><div class="n">transfer_command.png</div></div>
+<div class="cell"><img src="trunk.png" alt="trunk"><div class="n">trunk.png</div></div>
+<div class="cell"><img src="type_ai.png" alt="type_ai"><div class="n">type_ai.png</div></div>
+<div class="cell"><img src="type_player.png" alt="type_player"><div class="n">type_player.png</div></div>
+<div class="cell"><img src="vehicle.png" alt="vehicle"><div class="n">vehicle.png</div></div>
+<div class="cell"><img src="weapon.png" alt="weapon"><div class="n">weapon.png</div><div class="a">rol: rifleman</div></div>
+<div class="cell"><img src="wedge.png" alt="wedge"><div class="n">wedge.png</div></div>
+<div class="cell"><img src="wheel.png" alt="wheel"><div class="n">wheel.png</div></div>
+</div>
+<h2>Tintado — el mismo PNG en cuatro estados</h2>
+<div class="tints"><div class="tc"><span style="background:#DFE2E5;"></span><em>normal - Theme.text</em></div><div class="tc"><span style="background:#8B9299;"></span><em>gris - Theme.textDim</em></div><div class="tc"><span style="background:#4F9BD6;"></span><em>activo - Theme.accent</em></div><div class="tc"><span style="background:#9DC04B;"></span><em>olive - Theme.accent</em></div></div>
+</body></html>
