@@ -1917,3 +1917,92 @@ pasadas. `python dev/sabotaje_corpus_interact.py` → **50/50 en rojo**, cada un
 familias que declaró, y **5/5 no-detectables** verdes. Los tres harnesses hermanos siguen en exit
 0 y el árbol quedó restaurado byte a byte. `check-ids` limpio. Sigue **sin superficie en juego**,
 así que sigue sin nacer ningún check de planilla (FLU-37). No commiteado ni pusheado (GIT-7).
+
+---
+
+## PARCHES DE sesión El selftest audita Interact — la mitad de motor, sin gastar planilla — 2026-08-25
+
+Voto del autor tras preguntar si correspondía abrir planilla ahora que hay código. **No
+corresponde todavía, y el motivo son cuatro hechos y no una impresión:**
+
+1. **Ningún módulo registra acciones** — COR-1 dice que son de cada módulo y la tanda 4 es la que
+   las cablea. El árbol en juego está vacío *por diseño*, así que una planilla sobre él mediría el
+   harness y no el juego. **El precedente es de esta semana y está en `ids.yaml`:** Cargo dejó la
+   pasada en juego de su #60 diferida *«hasta que exista el área hospital, por ser su único
+   consumidor»*.
+2. **La única fila que valdría de verdad no es corrible en listen server.** Lo que el harness no
+   puede ver es que `FCVAR_REPLICATED` **replique**, y en un listen server el cliente y el server
+   son el mismo proceso: una convar replicada y una normal se leen igual. Pide dedicado o un
+   segundo cliente.
+3. **El estado no es inspeccionable en juego** (`lua_run_cl` gateado por `sv_allowcslua`), la misma
+   deuda que `Corpus.UI._tabs`. Sin el `corpus_interact_dump` de la tanda 2 no se pueden contar
+   nodos ni ver un huérfano.
+4. **`AP` está libre y no se recicla** (FLU-07). Gastarla en las dos filas triviales que hoy son
+   corribles es caro para lo que compra.
+
+**Lo que sí se hizo, que es el paso 2 de §10 del doc y no gasta letra.**
+
+- PARCHE 1 — feat(interact): `lua/autorun/corpus_selftest.lua` gana su **bloque 6, Interact** —
+  once checks en los dos realms. Cubre la fila de guardas rechazando **con motivo**, el árbol
+  contado contra un esperado (4 nodos · 1 raíz · 2 hijos · 1 huérfano), el orden de hermanos, el
+  régimen de arco, la rama `command` naciendo vacía **con un número**, y las perillas.
+
+  **Lo que este bloque acredita y el harness no puede:** que las convars **existan en la consola
+  de verdad** y que **las cree el registro**. Las cuatro `corpus_interact_action_selftest_*` que
+  aparecen al correrlo no están escritas en ninguna lista — son la huella de §7 regla 1 en el
+  motor, no en un stub.
+
+  ⚠⚠ **CORRE SOBRE UN PADRÓN PRESTADO Y RESTAURA EL REAL.** El bloque necesita un árbol limpio;
+  sin devolverlo, tipear `corpus_selftest` con módulos ya cargados **les borraría sus acciones** —
+  un test que destruye lo que audita, sin un solo error y con todas sus filas en OK. Se guarda por
+  referencia y se restaura pase lo que pase, incluso si el bloque revienta (va en `pcall`).
+  **[APLICADO 2026-08-25]**
+
+- PARCHE 2 — feat(interact): **`Corpus._SelfTest()` devuelve su veredicto** (`true` = sin fallas).
+  Hasta hoy no devolvía nada, así que un instrumento sólo podía preguntarle al `pcall`
+  *«¿corrió?»* y jamás *«¿salió bien?»*. **Es el nº 60 del catálogo de controles, y ya costó una
+  vez:** en `harness_cargo.py` el veredicto caía en el segundo valor del `pcall` y **179 checks
+  podían estar en rojo mientras el arnés imprimía `ALL GREEN`**. Los tres módulos hermanos ya
+  devuelven el suyo; el framework era el desviado de los cuatro. **[APLICADO 2026-08-25]**
+
+- PARCHE 3 — docs: `CLAUDE.md` — el mapa de archivos gana la fila de `corpus_interact.lua` y la
+  línea de conteo pasa a **7 primitivas**; la sección de Verificación nombra los dos instrumentos
+  offline. ⚠ **`CORPUS_Architecture.md` §3 sigue diciendo «Seis primitivas» a propósito**: ahí no
+  es un índice sino una tesis de diseño con su propio párrafo, y el argumento de por qué la séptima
+  pasa el filtro de COR-10 vive en §2 del doc de interacción sin bajar todavía. Queda **declarado
+  en el propio `CLAUDE.md`** y es decisión del autor. **[APLICADO 2026-08-25]**
+
+- PARCHE 4 — docs: `corpus_convenciones_commits.txt` — se acuña el alcance de commit
+  **`interact`**. La sección 3 lleva uno por primitiva y la séptima no tenía el suyo; no se puede
+  commitear con un alcance que no existe. **[APLICADO 2026-08-25]**
+
+- PARCHE 5 — test(harness): bloque **P7** en `dev/harness_corpus.py` — el harness pasa de 440 a
+  **456 checks** y el sabotaje de 50 a **53**. **[APLICADO 2026-08-25]**
+
+### Lo que la corrida del sabotaje volvió a destapar, y es el mismo método
+
+**Ocho sabotajes pasaron a «EL CONTROL SE PASA», y el arnés tenía razón.** Al meter Interact dentro
+del selftest, el selftest **pasó a auditar Interact**, así que un defecto de Interact ahora tiñe
+también la familia `P` — y mi alcance declarado envejeció **en el mismo acto de escribir el
+bloque**. El arreglo fue del alcance, no del instrumento; y los ocho que se pasaron son
+**exactamente** los que el bloque 6 cubre, o sea que la corrección es además la **confirmación
+cruzada** de que ese bloque mide lo que dice medir.
+
+**Los tres sabotajes nuevos que no pueden faltar:**
+
+- **El veredicto que desaparece** — reinyecta el nº 60. Sin retorno, el selftest puede estar en
+  rojo entero y nadie enterarse.
+- **El padrón que no se restaura** — el defecto que **no se ve nunca en una pasada verde**: todas
+  las filas del selftest salen OK mientras borra las acciones de los módulos.
+- **El bloque de Interact que desaparece del selftest** — la huella que lo delata es la convar de
+  prueba que deja de existir.
+
+**Y un defecto de higiene, mío:** `CLAUDE.md` quedó con **una línea en LF dentro de un archivo
+CRLF** porque un reemplazo insertó `\n` crudo. Git lo normaliza al commitear y el diff salía
+limpio, así que **no se veía por ahí**: lo cazó auditar los once archivos tocados con un contador.
+Es el nº 98 del catálogo, en su versión barata.
+
+**Verificación:** `python dev/harness_corpus.py` → exit 0, **456 checks**, 0 fallos.
+`python dev/sabotaje_corpus_interact.py` → **53/53 en rojo** con alcance correcto, **5/5**
+no-detectables verdes. El selftest corrido en los dos realms devuelve `true` y sus 11 filas de
+Interact salen OK. `check-ids` limpio; los tres harnesses hermanos en exit 0.

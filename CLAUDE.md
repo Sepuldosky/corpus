@@ -38,7 +38,7 @@ Hay además una carpeta `dev/` en la raíz del workspace (fuera de todos los rep
 
 ## Mapa de archivos
 
-Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada archivo es autosuficiente — ver **COR-9** en los contratos, más abajo.
+Las **7** primitivas de la API están implementadas. Cada archivo es autosuficiente — ver **COR-9** en los contratos, más abajo. ⚠ **§3 de la arquitectura sigue diciendo «Seis primitivas»**: la séptima nació el 2026-08-24 y el argumento de por qué pasa el filtro de COR-10 vive en §2 de [`docs/Corpus_Interaccion_Arquitectura.md`](docs/Corpus_Interaccion_Arquitectura.md), sin bajar todavía al doc general — deuda declarada, decisión del autor.
 
 | Archivo | Realm | Rol |
 |---|---|---|
@@ -48,7 +48,8 @@ Las 6 primitivas de la API (§3 de la arquitectura) están implementadas. Cada a
 | [`lua/autorun/corpus_ready.lua`](lua/autorun/corpus_ready.lua) | shared | Ready barrier: `Corpus.OnReady`, dispara **una vez, con la primera de varias señales** — `InitPostEntity` o, en cliente, el primer `Think` con `LocalPlayer()` válido, porque está **medido** que ese evento no llega al realm CLIENTE (§3 de la arquitectura) |
 | [`lua/autorun/corpus_log.lua`](lua/autorun/corpus_log.lua) | shared | Log: `Corpus.Log` con prefijo `[Corpus:<module>]` |
 | [`lua/autorun/client/corpus_ui.lua`](lua/autorun/client/corpus_ui.lua) | client | UI shell: `Corpus.UI.RegisterTab` — categoría única "Corpus" en el menú Q (Utilities) |
-| [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo). En **listen server** ese nombre corre el realm SERVER; para el CLIENT está el alias `corpus_selftest_cl` |
+| [`lua/autorun/corpus_interact.lua`](lua/autorun/corpus_interact.lua) | shared | Menu interactivo: `Corpus.Interact.Register` / `Resolve` / `Enabled` — el **protocolo** por el que un módulo cuelga una acción contextual, jamás una acción (COR-1). Diseño: [`docs/Corpus_Interaccion_Arquitectura.md`](docs/Corpus_Interaccion_Arquitectura.md). **Hoy es sólo DATO**: no dibuja, no manda net y no ejecuta — eso son las tandas 2 a 4 |
+| [`lua/autorun/corpus_selftest.lua`](lua/autorun/corpus_selftest.lua) | shared | Comando `corpus_selftest`: auto-test en consola de las primitivas (PASO 4 del flujo). En **listen server** ese nombre corre el realm SERVER; para el CLIENT está el alias `corpus_selftest_cl`. **Devuelve su veredicto** (`true` = sin fallas), para que un instrumento pueda preguntar «¿salió bien?» y no sólo «¿corrió?» |
 
 ## Contratos que no debes romper
 
@@ -79,7 +80,7 @@ el consumo) y **COR-14** (ningún módulo de dominio necesita Cargo) en §5, el 
 
 ## Verificación
 
-No hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4). El comando de consola `corpus_selftest` valida las primitivas del framework en el realm donde corre; el tab de UI se confirma visual en el menú Q.
+No hay test runner automatizado (es un addon GMod) — el patrón es el mismo que se usó en ADS/Kontrol: cargar el mapa, confirmar en consola/juego, no asumir. Ver [`corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) §1 (Paso 4). El comando de consola `corpus_selftest` valida las **siete** primitivas del framework en el realm donde corre y **devuelve `true` si no hubo fallas**; el tab de UI se confirma visual en el menú Q. Además hay cobertura offline: [`../dev/harness_corpus.py`](../../dev/harness_corpus.py) (456 checks en tres pasadas, la tercera con el orden de carga **invertido** para ejercer COR-9) y su verificación en negativo [`../dev/sabotaje_corpus_interact.py`](../../dev/sabotaje_corpus_interact.py) (53 sabotajes, 53 en rojo). Los dos viven fuera de git.
 
 **Cómo llegar a cada realm en un listen server** (pagado en juego el 2026-07-25, planilla T4, dos rondas): el archivo del selftest es shared, así que `corpus_selftest` queda registrado en los dos realms y **gana el del SERVER** — tipearlo en la consola del host nunca llega al cliente. `lua_run_cl` tampoco sirve: lo gatea `sv_allowcslua`, que viene en 0 y no se cambia por correr un test. Por eso hay dos nombres: **`corpus_selftest`** (o `lua_run Corpus._SelfTest()`) para SERVER, y **`corpus_selftest_cl`** para CLIENT.
 

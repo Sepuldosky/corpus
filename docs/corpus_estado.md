@@ -24,10 +24,19 @@ colgara debajo**, con `orphans` diciendo **0** — el defecto exacto que §3.a e
 entrando por la puerta de al lado. ⚠ **Y actualizar el instrumento destapó que DOS de los tres
 votos no se podían distinguir con los checks que ya había**: el reparto parejo y el corte fijo
 daban 3 grupos, 34 ítems y máximo 12 en los dos, y el check del ciclo era `pcall ok` + un conteo
-que salía verde con las dos conductas. El harness va en **440 checks** y el sabotaje en
-**50/50 en rojo**, más **5 no-detectables declarados** —dos de ellos con etiqueta `[movido]`,
+que salía verde con las dos conductas. El harness va en **456 checks** y el sabotaje en
+**53/53 en rojo**, más **5 no-detectables declarados** —dos de ellos con etiqueta `[movido]`,
 sabotajes viejos que la regla nueva **absorbió** y que se conservan porque el día que alguien
-saque la alcanzabilidad vuelven a ser lo único que queda—. Contexto previo: **el framework tiene
+saque la alcanzabilidad vuelven a ser lo único que queda—. ⭐ **Y `corpus_selftest` AUDITA AHORA
+A INTERACT** —once filas en los dos realms— **y devuelve su veredicto**, que hasta hoy no
+hacía: sin retorno, un instrumento sólo podía preguntarle al `pcall` «¿corrió?» y jamás «¿salió
+bien?», que es el nº 60 del catálogo y ya costó 179 checks en Cargo. El bloque **presta el
+padrón y lo restaura**: sin eso, tipear el comando con módulos cargados les borraría sus
+acciones con todas las filas en OK. **No se abre planilla todavía** y el motivo está medido:
+ningún módulo registra acciones (mismo precedente que Cargo #60), el `REPLICATED` **no es
+corrible en listen server** —mismo proceso—, y el estado no es inspeccionable hasta el
+`corpus_interact_dump` de la tanda 2. La letra `AP` sigue **libre**. Contexto previo: **el
+framework tiene
 SIETE primitivas: nació
 `Corpus.Interact`, el registro del menú interactivo — y las seis viejas estrenan la cobertura
 offline que hasta hoy era CERO.** Tanda 1 de cuatro, y su objetivo era chico a propósito: que el
@@ -39,10 +48,10 @@ por `Corpus.Log` todo lo que rechaza y todo lo que queda huérfano** — una aus
 como «el menú no funciona». Las perillas de admin las crea **el registro** y no una lista, heredado
 del roadmap #61 de Cargo. La rama `command` **nace vacía y su árbol resuelve con un número**, que es
 lo que prueba la forma sin comprometer nada: su escuadra vive en Cortex. **Instrumento nuevo:
-`dev/harness_corpus.py`, el primero cuyo SUJETO es el framework** —440 checks en tres pasadas, y la
+`dev/harness_corpus.py`, el primero cuyo SUJETO es el framework** —456 checks en tres pasadas, y la
 tercera carga las siete primitivas en **orden alfabético INVERSO**, que es lo que ejerce COR-9 por
 primera vez—, más `dev/sabotaje_corpus_interact.py`, que nació con **49 sabotajes, 49 en rojo**
-(hoy van 50), y **cada uno
+(hoy van 53), y **cada uno
 declara qué familias de checks tiene que teñir**, así que el arnés también falla cuando el rojo se
 PASA. Esa segunda mitad se pagó sola: de los 49, seis salieron mal en la primera corrida y **cuatro
 eran defectos del instrumento, no del código** —entre ellos un sabotaje que no rompía lo que decía
@@ -92,7 +101,7 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   implementadas en `lua/autorun/` — registro (con invariante by-ref, anotado en §3),
   persistencia, net, UI shell, ready barrier, log + comando `corpus_selftest`. Mapa
   archivo → rol en [`CLAUDE.md`](../CLAUDE.md). Todo shared salvo la UI (client).
-  Verificación: **440 checks offline con stubs de GMod, en tres pasadas**
+  Verificación: **456 checks offline con stubs de GMod, en tres pasadas**
   ([`dev/harness_corpus.py`](../../dev/harness_corpus.py), 2026-08-24 — el número "46 checks" que
   este doc citó hasta esa fecha **no tenía archivo que lo respaldara**, y por eso se reemplaza por
   el de un instrumento que existe) +
@@ -114,13 +123,13 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   exacto**), `Resolve(tree)` (árbol, huérfanos, regímenes, hojas alcanzables) y `Enabled(id)` (la
   composición maestra × acción en **una** función). **No dibuja, no manda net y no ejecuta nada:**
   el commit y las tres puertas del server son la tanda 2, el dibujado la 3 y las acciones la 4.
-- **Cobertura offline del framework: de CERO a 440 checks (2026-08-24/25).**
+- **Cobertura offline del framework: de CERO a 456 checks (2026-08-24/25).**
   [`dev/harness_corpus.py`](../../dev/harness_corpus.py) es el primer instrumento cuyo **sujeto** es
   el framework — los tres harnesses de módulo ya lo cargaban, pero como **andamio**, sin assertearle
   nada. Cubre las siete primitivas en SERVER y CLIENT, más una tercera pasada con el **orden de
   carga invertido** que ejerce COR-9, más un **gate de fuentes presencial** para lo único que el
   comportamiento offline no puede ver: el `FCVAR_REPLICATED`. Su otra mitad es
-  [`dev/sabotaje_corpus_interact.py`](../../dev/sabotaje_corpus_interact.py) — **50/50 en rojo**,
+  [`dev/sabotaje_corpus_interact.py`](../../dev/sabotaje_corpus_interact.py) — **53/53 en rojo**,
   cada uno **sólo en las familias que declara**. ⚠ La capa de stubs **no se factorizó** y es la
   cuarta copia a propósito: mover o renombrar rompe las anclas de los sabotajes **en silencio**.
   Gatillo declarado para factorizar: *el día que el mismo bug de stub aparezca en dos harnesses.*
@@ -251,7 +260,7 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
    **sigue** abierto de esa lista es el **gate de admin reutilizable que pide Cargo** (CRG-45,
    su sesión de diseño propia): mientras no exista, el comando de purga de Cargo va con
    dry-run por default. De las dos deudas que dejó la tanda, **el `dev/harness_corpus.py` propio
-   se CERRÓ el 2026-08-24** (440 checks + 50 sabotajes; con él se cayó también el número fantasma
+   se CERRÓ el 2026-08-24** (456 checks + 53 sabotajes; con él se cayó también el número fantasma
    de "46 checks" que no tenía archivo detrás); sigue abierta la de los dos sidecars JSON del caché
    de íconos de Cargo (nota de COR-18 en `ids.yaml`, con su motivo). **Nuevo desde el 2026-08-24:**
    la séptima primitiva pide sus tandas 2 a 4 —el commit y las tres puertas del server, el dibujado

@@ -114,6 +114,91 @@ function Corpus._SelfTest()
     -- 5) Log: check visual del prefijo en la línea siguiente
     Corpus.Log("selftest", "línea de prueba — el prefijo [Corpus:selftest] es el contrato")
 
+    -- 6) Interact (primitiva 7). Es la MITAD DE MOTOR de §10 del doc de
+    -- interacción: la lógica pura la cubre dev/harness_corpus.py con 440 checks, y
+    -- lo que sólo se puede ver acá es que el archivo cargue de verdad en el
+    -- engine, que las convars EXISTAN en la consola del jugador y que el registro
+    -- las cree al vuelo.
+    --
+    -- ⚠⚠ CORRE SOBRE UN PADRÓN PRESTADO Y RESTAURA EL REAL. Sin esto, tipear
+    -- `corpus_selftest` con módulos ya cargados les BORRARÍA sus acciones — un
+    -- test que rompe el juego para medirlo. Se guarda por referencia y se
+    -- devuelve al terminar, pase lo que pase con los checks de abajo.
+    local padronReal = Corpus.Interact._nodes
+    local logueadosReal = Corpus.Interact._orphansLogged
+    local accionesDeModulos = 0
+    for _ in pairs(padronReal) do accionesDeModulos = accionesDeModulos + 1 end
+    Corpus.Interact._nodes = {}
+    Corpus.Interact._orphansLogged = {}
+
+    local okInteract, errInteract = pcall(function()
+        -- (a) la fila de guardas rechaza con MOTIVO, no con un nil pelado. Los
+        -- rechazos son además lo BARATO de probar en juego: no llegan a crear una
+        -- convar, así que no dejan nada atrás.
+        local nodo, motivo = Corpus.Interact.Register("selftest",
+            { id = "x", label = "X", tree = "no_existe", run = function() end })
+        check(r, "interact: un tree invalido se rechaza CON motivo",
+            nodo == nil and isstring(motivo) and motivo:find("'tree'", 1, true) ~= nil,
+            "motivo=" .. tostring(motivo))
+        check(r, "interact: un run ausente se rechaza",
+            select(1, Corpus.Interact.Register("selftest",
+                { id = "y", label = "Y", tree = "self" })) == nil)
+
+        -- (b) el árbol, CONTADO contra un esperado. Un árbol vacío tiene que ser
+        -- una medición: preguntar "¿resolvió?" saldría verde con cero nodos.
+        Corpus.Interact.Register("selftest", { id = "selftest_root", label = "Root",
+            tree = "interaction", run = function() end })
+        Corpus.Interact.Register("selftest", { id = "selftest_a", label = "A",
+            tree = "interaction", parent = "selftest_root", order = 20, run = function() end })
+        Corpus.Interact.Register("selftest", { id = "selftest_b", label = "B",
+            tree = "interaction", parent = "selftest_root", order = 10, run = function() end })
+        Corpus.Interact.Register("selftest", { id = "selftest_orphan", label = "Orphan",
+            tree = "interaction", parent = "no_existe_jamas", run = function() end })
+
+        local t = Corpus.Interact.Resolve("interaction")
+        check(r, "interact: el arbol resuelve 4 nodos, 1 raiz, 2 hijos y 1 huerfano",
+            t.count == 4 and #t.roots == 1 and t.children["selftest_root"] ~= nil
+                and #t.children["selftest_root"] == 2 and #t.orphans == 1,
+            "count=" .. t.count .. " roots=" .. #t.roots
+                .. " hijos=" .. (t.children["selftest_root"] and #t.children["selftest_root"] or 0)
+                .. " huerfanos=" .. #t.orphans)
+        check(r, "interact: los hermanos salen ordenados por order",
+            t.children["selftest_root"][1].id == "selftest_b",
+            "primero=" .. tostring(t.children["selftest_root"][1].id) .. " (esperado selftest_b)")
+        check(r, "interact: el huerfano es el que cuelga de la nada",
+            t.orphans[1] ~= nil and t.orphans[1].id == "selftest_orphan")
+        check(r, "interact: 2 hijos ⇒ regimen de arco",
+            t.regime["selftest_root"] == "arc", "regimen=" .. tostring(t.regime["selftest_root"]))
+        check(r, "interact: la rama command nace VACIA y lo dice con un numero",
+            Corpus.Interact.Resolve("command").count == 0)
+
+        -- (c) LAS PERILLAS, y esto es lo que SÓLO se puede acreditar acá. El
+        -- harness offline guarda nombre y valor y no mira los flags, así que el
+        -- FCVAR_REPLICATED le es invisible por construcción. Lo que esta pasada
+        -- prueba es lo de al lado y no es poco: que las convars EXISTEN en la
+        -- consola de verdad y que las crea el REGISTRO — las cuatro
+        -- `corpus_interact_action_selftest_*` no están escritas en ninguna lista.
+        local maestra = GetConVar("corpus_interact_enabled")
+        check(r, "interact: la perilla maestra existe en la consola",
+            maestra ~= nil, "corpus_interact_enabled")
+        local propia = GetConVar("corpus_interact_action_selftest_a")
+        check(r, "interact: el REGISTRO creo la perilla de la accion",
+            propia ~= nil, "corpus_interact_action_selftest_a")
+        check(r, "interact: Enabled compone maestra x accion",
+            Corpus.Interact.Enabled("selftest_a") == true
+                and Corpus.Interact.Enabled("no_registrada") == false)
+    end)
+    if not okInteract then
+        check(r, "interact: el bloque reventó", false, tostring(errInteract))
+    end
+
+    -- Restaurar SIEMPRE, haya reventado o no: el padrón de los módulos no puede
+    -- quedar como daño colateral de un test.
+    Corpus.Interact._nodes = padronReal
+    Corpus.Interact._orphansLogged = logueadosReal
+    check(r, "interact: el selftest devolvio el padron real intacto",
+        Corpus.Interact._nodes == padronReal)
+
     local fallas = 0
     print("[Corpus] ===== selftest (" .. realm .. ") =====")
     for _, res in ipairs(r) do
@@ -124,7 +209,23 @@ function Corpus._SelfTest()
     if CLIENT then
         print("[Corpus]  [--] ui: check visual — menú Q → Utilities → categoría Corpus")
     end
+
+    -- DATO y no criterio, a propósito: hoy tiene que dar CERO porque ningún módulo
+    -- cablea acciones hasta la tanda 4 (COR-1: las acciones son de cada módulo, no
+    -- del framework). Un cero acá no es una falla, y ponerlo como check lo
+    -- volvería un rojo permanente sobre un mecanismo sano. El día que un módulo
+    -- registre la primera, esta línea es lo que lo delata sin tocar nada.
+    print("[Corpus]  [--] interact: " .. accionesDeModulos
+        .. " accion(es) registradas por módulos (0 es lo esperado hasta la tanda 4)")
+
     print("[Corpus] ===== " .. (fallas == 0 and "todo OK" or (fallas .. " falla(s)")) .. " =====")
+
+    -- DEVUELVE EL VEREDICTO, y no es cosmético: sin retorno, un instrumento que
+    -- llame a esta función sólo puede preguntar "¿corrió?" —que es lo que contesta
+    -- el primer valor de un pcall— y jamás "¿salió bien?". Son la misma palabra en
+    -- castellano y dos preguntas distintas, y la barata es la que el código
+    -- termina haciendo. Es lo que hacen los tres módulos hermanos.
+    return fallas == 0
 end
 
 concommand.Add("corpus_selftest", function(ply)
