@@ -1911,7 +1911,7 @@ ids:
       comprueba dueño, así que el área ensancha de 160 u a la sala el radio en que cualquiera
       abre cualquier contenedor — el dueño de ese permiso es Cargo, no Coagulant.
   COA-51:
-    titulo: "El área de suministro necesita AreaHas/AreaCount/AreaTake de Cargo, y hasta que Cargo las RATIFIQUE el tramo no baja a código; leer _byId sería la segunda deuda silenciosa."
+    titulo: "El área de suministro se apoya SOLO en superficie pública de Cargo: se pide y se espera la ratificación del dueño, nunca se lee _byId. Pedida el 2026-08-09 (AreaHas/AreaCount/AreaTake), RATIFICADA Y ENTREGADA por Cargo el 2026-08-22 — y son CUATRO: la medición del dueño encontró AreaTakeUnique, que el pedido no había visto."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
     fuerza: INVARIANTE
     estado: VIGENTE
@@ -1930,19 +1930,65 @@ ids:
       lección de qué pasa cuando una firma vive un mes en un solo lado. Si Cargo la rechaza o
       la devuelve con otra forma, manda Cargo: la superficie es suya.
 
+      CUMPLIDA EL 2026-08-22, y la norma sale reforzada por donde no se la esperaba. Cargo
+      ratificó el pedido y lo escribió (su roadmap #60, CHANGELOG 80, commit 63c784f,
+      corpus_cargo_containers.lua:646-741, server-only), pero entregó CUATRO y no tres:
+      AreaTakeUnique, gemela de Inventory.TakeUnique. La cuarta no salió de una preferencia
+      del dueño sino de MEDIR el lua/ del pedidor — treatment.lua:163 gatea con HasItem y
+      :170 consume con TakeUnique porque el torniquete es unique —, o sea que las tres
+      pedidas habrían reproducido G4 en el área con el mismo síntoma, movido del lado de la
+      presencia al del take: exactamente el defecto que esta norma invoca para justificar la
+      tercera. La lección se volvió a cobrar dentro del texto escrito para evitarla, y la
+      cazó contando llamadores, no leyendo la doc. Semántica entregada: AreaCount cuenta solo
+      stacks (los unique son invisibles, por eso existe AreaHas), AreaTake es todo o nada y
+      drena entre contenedores de fábrica antes que gastados (CRG-7), y cada contenedor
+      tocado se guarda con Containers.Save y se re-sincroniza con sus espectadores.
+
+      Y LA DEPENDENCIA SE DIO VUELTA: Cargo dejó la pasada EN JUEGO de su #60 diferida hasta
+      que exista el área hospital, por ser su único consumidor — una planilla sobre un
+      llamador que no existe mide el harness y no el juego. El bloqueante externo del tramo
+      está caído; el que bloquea hoy es Coagulant, y cuando el área baje a código las filas
+      de Cargo se corren desde acá. La evidencia de esta norma sigue en INTENCION porque
+      sigue sin una línea de Lua de este lado, que es otra cosa que estar bloqueada.
+
   COA-52:
     titulo: "El dolor es estado POR ZONA derivado de las heridas más un agregado global SATURADO en 0..100; no se almacena y no tiene reloj propio — lo único almacenado es la supresión, y el decaimiento del dolor es el reloj de curación de COA-49."
     sede: "corpus-coagulant/docs/Coagulant_Architecture.md §17"
     fuerza: INVARIANTE
     estado: VIGENTE
-    evidencia: INTENCION
+    evidencia:
+      - { tipo: harness, ref: "dev/harness_coagulant.py — 86 filas nuevas, 85 de ellas citando COA-52, por familia (DOL-F/Z/A/S/N/I/C): la producción de tres ejes derivada, el reparto por estado de la herida, los pisos de D6 como max(), el clamp de la agregación FABRICADO (tres zonas destrozadas, Σ = 300 → 100), el percibido medido SIEMPRE con supresión puesta, el decaimiento en TICKS con el esperado derivado, el `p` y el percibido global en el snapshot, la ausencia de NW2 medida sobre las claves realmente escritas, y el cliente leyendo un `p` FABRICADO que contradice a sus propias heridas — la única fila que separa «lee» de «deriva»" }
+      - { tipo: harness, ref: "dev/sabotaje_coagulant_dolor.py — 30 sabotajes, cada uno DECLARANDO qué familias tiene que teñir, con falla en las dos direcciones (el control no llega / el control se pasa), más 3 no-detectables declarados que se corren exigiendo VERDE" }
     nota: >
       Acuñada el 2026-08-17 por voto del autor en seis puntos, antes de una línea de Lua
-      (COA-28). UNA norma con partes y no seis IDs: ninguna de sus partes rige a otro módulo.
-      EL DISPARADOR ES QUE EL DOLOR YA SE CONSUMÍA SIN HABERSE ESCRITO — cinco consumidores con
+      (COA-28). UNA norma con partes y no seis IDs: ninguna de sus partes rige a otro
+      módulo. BAJADA A CÓDIGO EL 2026-08-25 y por eso deja INTENCION: la tabla de balance vive
+      en corpus-coagulant/lua/corpus_coagulant/shared/corpus_coagulant_config.lua (bloque «Dolor
+      (§17, COA-52)», con PainFromWound y PainFrac como las dos funciones puras);
+      ZonePain/GetRawPain/GetPain/AddPainSuppression en server/corpus_coagulant_core.lua; el
+      decaimiento de painSuppress y el `p` + el percibido global del snapshot en
+      server/corpus_coagulant_bleeding.lua; HUD.ZonePain/HUD.Pain en client/corpus_coagulant_hud.lua,
+      que SÓLO LEEN. Entró además su primer consumidor en juego —el analgésico oral, quinta def
+      médica, `pain > PAIN_ANALGESIC_AT` sobre el PERCIBIDO— porque un stat sin nada que lo mueva
+      deja la ronda midiendo el harness y no el juego (la lección que Cargo declaró en su #60).
+      DOS COSAS QUE LA BAJADA MIDIÓ Y EL DISEÑO NO PODÍA SABER. (1) LA TRAMPA DE COA-35: un check
+      que DERIVA su esperado de la constante NO PUEDE AUDITAR ESA CONSTANTE — ZonePain(tratada) ==
+      base × PAIN_TREATED_MULT sigue verde con el mult en 1.0, y el decaimiento derivado sigue
+      verde con la tasa en 0; lo que los caza son las filas de PROPIEDAD (vendar ALIVIA, el efecto
+      SE PASA), y las dos se vieron fallar. Regla que queda: por cada constante de balance, una
+      fila derivada y una fila de propiedad. (2) EL CAMBIO DE PREDICADO DEL EMISOR NO PUEDE FALLAR
+      HOY y se DECLARA en vez de acreditarse: «aporta dolor ≠ 0» y «#wounds > 0» seleccionan el
+      MISMO conjunto mientras todo tipo de herida produzca dolor, y la diferencia aparece recién
+      con una zona cuyo único contenido sea frac. Corre como no-detectable declarado en el
+      sabotaje, exigiendo verde. Lo que SÍ sostiene la equivalencia es otro check —PAIN_TYPE cubre
+      todo WOUND_TYPES—, sin el cual un tipo de herida nuevo sacaría su zona del snapshot en
+      silencio. FALTA la pasada en juego (planilla dev/checks/coagulant-dolor-r1.html): para
+      código de addon GMod, «verificado» = confirmado en juego.
+      EL DISPARADOR FUE QUE EL DOLOR YA SE CONSUMÍA SIN HABERSE ESCRITO — cinco consumidores con
       número exacto (bpm +pain*0.22, StaminaCap -pain*0.35, DAZED con pain>80, irregularidad del
-      ECG con pain>85, y la puerta de la morfina pain>10) y CERO productores; medido: 0 hits de
-      `pain` en los 13 archivos del lua/, con `blood` en 64 como control positivo. Es por zona Y
+      ECG con pain>85, y la puerta de la morfina pain>10) y CERO productores; medido EL DÍA DEL
+      VOTO y conservado como registro: 0 hits de `pain` en los 13 archivos del lua/, con `blood`
+      en 64 como control positivo. Es por zona Y
       global porque las dos cosas son requisito ya votado: COA-44 pinta la silueta con dolor por
       zona bajo niebla y el síntoma gratis de COA-49 es el dolor de una zona TRATADA.
       LA AGREGACIÓN ES SUMA CON CLAMP y eso es lo que salva las cuatro fórmulas: suma cruda da
