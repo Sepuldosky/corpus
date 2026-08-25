@@ -7,7 +7,50 @@
 > Cita **FLU-15**, cuya sede es [`corpus_flujo_trabajo.txt`](corpus_flujo_trabajo.txt)
 > §1 PASO 5 — este doc la aplica, no la define.
 
-**Última actualización:** 2026-08-09 (**arco B ronda 2: el cierre del 2026-08-08 estaba MAL y
+**Última actualización:** 2026-08-25 (**los TRES huecos de diseño que dejó la tanda 1 están
+VOTADOS Y BAJADOS a código, doc e instrumento** — y los tres eran la misma clase de defecto: *el
+diseño había resuelto el caso y no la clase*. (1) Las perillas pasan a **dos espacios de nombres
+separados** —`corpus_interact_*` para la config del subsistema y `corpus_interact_action_<id>`
+para la acción—, porque el prefijo por acción **contenía** al nombre de la maestra y ya había
+**tres** colisiones nombrables (`enabled`, el cvar de filas de §6.bis, el `dump` de la tanda 2);
+Cargo se salva de esto **por accidente**, que es por qué la #61 no lo enseñó al transferirse. Y
+el guard **se borró**: no puede dispararse, y *un guard que no puede dispararse vuelve
+inejercitable al check que lo cubre*. (2) El reparto alfabético es **parejo con techo 12** y no
+un corte fijo: la misma cantidad de tandas (`ceil(n/12)` en los dos) sin fabricar una
+subcategoría de **un solo ítem** al cruzar el umbral —13 hijos daban `[12, 1]` y ahora dan
+`[7, 6]`—. (3) **Huérfano es todo lo que no se alcanza desde una raíz**, una regla donde había
+dos y media: medido, un **ciclo** hacía desaparecer del menú a sus nodos **y a todo lo sano que
+colgara debajo**, con `orphans` diciendo **0** — el defecto exacto que §3.a existe para impedir,
+entrando por la puerta de al lado. ⚠ **Y actualizar el instrumento destapó que DOS de los tres
+votos no se podían distinguir con los checks que ya había**: el reparto parejo y el corte fijo
+daban 3 grupos, 34 ítems y máximo 12 en los dos, y el check del ciclo era `pcall ok` + un conteo
+que salía verde con las dos conductas. El harness va en **440 checks** y el sabotaje en
+**50/50 en rojo**, más **5 no-detectables declarados** —dos de ellos con etiqueta `[movido]`,
+sabotajes viejos que la regla nueva **absorbió** y que se conservan porque el día que alguien
+saque la alcanzabilidad vuelven a ser lo único que queda—. Contexto previo: **el framework tiene
+SIETE primitivas: nació
+`Corpus.Interact`, el registro del menú interactivo — y las seis viejas estrenan la cobertura
+offline que hasta hoy era CERO.** Tanda 1 de cuatro, y su objetivo era chico a propósito: que el
+árbol del menú **exista como DATO** —poblable, resoluble e inspeccionable— **sin dibujar nada y sin
+ejecutar nada**. `Register` valida un spec, `Resolve` arma el árbol al ABRIRLO (el `parent` es un
+`id` y no una referencia, así que un módulo puede colgar de un nodo que todavía no se registró),
+ordena hermanos, reparte por régimen de rama (1-6 arco · 7-12 columna · 13+ subcategorías) y **dice
+por `Corpus.Log` todo lo que rechaza y todo lo que queda huérfano** — una ausencia silenciosa se lee
+como «el menú no funciona». Las perillas de admin las crea **el registro** y no una lista, heredado
+del roadmap #61 de Cargo. La rama `command` **nace vacía y su árbol resuelve con un número**, que es
+lo que prueba la forma sin comprometer nada: su escuadra vive en Cortex. **Instrumento nuevo:
+`dev/harness_corpus.py`, el primero cuyo SUJETO es el framework** —440 checks en tres pasadas, y la
+tercera carga las siete primitivas en **orden alfabético INVERSO**, que es lo que ejerce COR-9 por
+primera vez—, más `dev/sabotaje_corpus_interact.py`, que nació con **49 sabotajes, 49 en rojo**
+(hoy van 50), y **cada uno
+declara qué familias de checks tiene que teñir**, así que el arnés también falla cuando el rojo se
+PASA. Esa segunda mitad se pagó sola: de los 49, seis salieron mal en la primera corrida y **cuatro
+eran defectos del instrumento, no del código** —entre ellos un sabotaje que no rompía lo que decía
+romper y un check de idempotencia que salía verde con y sin el mecanismo—. **Sin pasada en juego, y
+no es una deuda: la tanda no tiene superficie de runtime.** ⚠ Dejó **tres huecos de diseño**
+—la colisión del `id` `enabled` con la perilla maestra, el tamaño de la tanda del reparto
+alfabético y los ciclos de `parent`—, **votados y cerrados el 2026-08-25** (arriba).
+Contexto previo: **arco B ronda 2: el cierre del 2026-08-08 estaba MAL y
 queda REFUTADO. `InitPostEntity` SÍ se dispara en el realm CLIENTE** — lo que no corre es
 **nuestro callback**, que no es la misma afirmación. Lo mide el `console.log` del autor, nueve
 arranques: el callback CLIENTE de `InitPostEntity` de Quick Loadouts corre 11-12 líneas **antes**
@@ -49,15 +92,38 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
   implementadas en `lua/autorun/` — registro (con invariante by-ref, anotado en §3),
   persistencia, net, UI shell, ready barrier, log + comando `corpus_selftest`. Mapa
   archivo → rol en [`CLAUDE.md`](../CLAUDE.md). Todo shared salvo la UI (client).
-  Verificación: harness offline con stubs de GMod (46 checks, ambos realms) +
+  Verificación: **440 checks offline con stubs de GMod, en tres pasadas**
+  ([`dev/harness_corpus.py`](../../dev/harness_corpus.py), 2026-08-24 — el número "46 checks" que
+  este doc citó hasta esa fecha **no tenía archivo que lo respaldara**, y por eso se reemplaza por
+  el de un instrumento que existe) +
   `corpus_selftest` en juego el 2026-07-09 (realm SERVER, todo OK) + check visual de
   UI cerrado el mismo día con el primer tab real (Caliber en menú Q → Utilities →
   Corpus). **Las 6 primitivas verificadas de punta a punta por un consumidor real.**
-  **Persistencia ampliada el 2026-07-25** (siguen siendo **6** primitivas: Data es UNA, con
+  **Persistencia ampliada el 2026-07-25** (Data es UNA, con
   más superficie): `Corpus.Data.Save/Load/List/Delete` + `opts.scope` — **COR-19** separa
   config de servidor de estado de partida y **COR-18** cierra la puerta a `file.*` para
   estado propio. Los dos scopes resuelven a la misma carpeta **a propósito**: el gancho
   está puesto, no activado.
+- **La SÉPTIMA primitiva, `Corpus.Interact` (2026-08-24), y existe como DATO y nada más.**
+  `lua/autorun/corpus_interact.lua`: el registro de acciones contextuales del menú estilo ACE3
+  ([`Corpus_Interaccion_Arquitectura.md`](Corpus_Interaccion_Arquitectura.md), diseño cerrado y
+  votado). **Lo que sube es el PROTOCOLO por el que un módulo cuelga una acción, jamás una acción**
+  — es COR-12 una capa más arriba y hereda su criterio de reapertura textual: el día que la API
+  mencione un ítem, un peso, una herida, un vehículo o un contenedor, bajó dominio al framework.
+  Superficie: `Register(module, spec)` (valida, normaliza, devuelve el spec o `nil` **más el motivo
+  exacto**), `Resolve(tree)` (árbol, huérfanos, regímenes, hojas alcanzables) y `Enabled(id)` (la
+  composición maestra × acción en **una** función). **No dibuja, no manda net y no ejecuta nada:**
+  el commit y las tres puertas del server son la tanda 2, el dibujado la 3 y las acciones la 4.
+- **Cobertura offline del framework: de CERO a 440 checks (2026-08-24/25).**
+  [`dev/harness_corpus.py`](../../dev/harness_corpus.py) es el primer instrumento cuyo **sujeto** es
+  el framework — los tres harnesses de módulo ya lo cargaban, pero como **andamio**, sin assertearle
+  nada. Cubre las siete primitivas en SERVER y CLIENT, más una tercera pasada con el **orden de
+  carga invertido** que ejerce COR-9, más un **gate de fuentes presencial** para lo único que el
+  comportamiento offline no puede ver: el `FCVAR_REPLICATED`. Su otra mitad es
+  [`dev/sabotaje_corpus_interact.py`](../../dev/sabotaje_corpus_interact.py) — **50/50 en rojo**,
+  cada uno **sólo en las familias que declara**. ⚠ La capa de stubs **no se factorizó** y es la
+  cuarta copia a propósito: mover o renombrar rompe las anclas de los sabotajes **en silencio**.
+  Gatillo declarado para factorizar: *el día que el mismo bug de stub aparezca en dos harnesses.*
 - **Workspace multi-root + metodología:** **siete raíces** (`corpus/` + cinco módulos +
   `corpus-stalker/`, el addon de **contenido** de la Zona — consumidor puro, no un módulo)
   + `dev/` fuera de git; set de docs vivos portado de ADS/Kontrol, con el patrón doc
@@ -184,10 +250,14 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
    scope (2026-07-25), y subió cuando el consumo lo justificó — framework delgado (§1). Lo que
    **sigue** abierto de esa lista es el **gate de admin reutilizable que pide Cargo** (CRG-45,
    su sesión de diseño propia): mientras no exista, el comando de purga de Cargo va con
-   dry-run por default. Deudas que dejó la tanda: los dos sidecars JSON del caché de íconos de
-   Cargo (nota de COR-18 en `ids.yaml`, con su motivo) y un `dev/harness_corpus.py` propio —
-   hoy la primitiva se acredita contra `harness_cargo.py`, que ya carga el framework real, y
-   los "46 checks" que este doc cita más arriba no tienen archivo que los respalde.
+   dry-run por default. De las dos deudas que dejó la tanda, **el `dev/harness_corpus.py` propio
+   se CERRÓ el 2026-08-24** (440 checks + 50 sabotajes; con él se cayó también el número fantasma
+   de "46 checks" que no tenía archivo detrás); sigue abierta la de los dos sidecars JSON del caché
+   de íconos de Cargo (nota de COR-18 en `ids.yaml`, con su motivo). **Nuevo desde el 2026-08-24:**
+   la séptima primitiva pide sus tandas 2 a 4 —el commit y las tres puertas del server, el dibujado
+   contra el mock v2, y las acciones baratas—, y **la 2 arrastra un voto del autor que no se puede
+   tomar por él**: cómo se nombra al EJECUTOR en el mensaje de net (§8.bis del doc de interacción,
+   cuatro opciones levantadas). La tanda 1 no lo tocó porque el registro pelado no manda mensajes.
 4. **Anti-drift: LISTO PARA EL 2.º COMPLETO (2026-07-19).** El 1.er COMPLETO corrió ÍNTEGRO
    (29/29 docs, Opus 4.8, 8,3M tokens; acta:
    [`auditorias/2026-07-19_coherencia_docs.md`](auditorias/2026-07-19_coherencia_docs.md)),
@@ -219,12 +289,16 @@ STK-2); Cargo y Craving ya lo consumen, **confirmado en juego el 2026-07-24**. F
    primitiva 4** del 2026-08-17 (el rebuild automático del spawnmenu; la CAUSA ya está
    confirmada a mano con `spawnmenu_reload`, falta que dispare solo) — Coagulant quedó
    sin ninguna (ronda 7, mini-ronda 8 y check N1, todo ✓).
-5. **La primitiva 4 es la única sin check, y ahí vivió un bug** (2026-08-17): la categoría
+5. **La primitiva 4 ya NO es la única sin check, y ahí vivió un bug** (2026-08-17): la categoría
    "Corpus" salía vacía porque el spawnmenu se arma en `OnGamemodeLoaded`, antes de que los
    módulos booteen en `Initialize`. El header de `corpus_ui.lua` afirmaba lo contrario **sin
-   medición**, y el `corpus_selftest` declara que el tab "se verifica visual". Además
-   `Corpus.UI._tabs` **no es inspeccionable en juego** (`lua_run_cl` gateado por
-   `sv_allowcslua`): un `corpus_ui_dump` de realm CLIENT cierra las dos deudas.
+   medición**, y el `corpus_selftest` declara que el tab "se verifica visual". **Desde el
+   2026-08-24 tiene cobertura offline** —el orden alfabético de las entradas, el debounce del
+   rebuild, que el tab tardío lo agende y el `pcall` del `buildFn`, los cuatro verificados en
+   negativo—, así que **el bug de aquel día hoy saldría rojo antes de llegar al juego**. Lo que
+   sigue sin cerrar es la mitad de MOTOR: `Corpus.UI._tabs` **no es inspeccionable en juego**
+   (`lua_run_cl` gateado por `sv_allowcslua`), y un `corpus_ui_dump` de realm CLIENT la cierra —
+   es hermano del `corpus_interact_dump` que la tanda 2 del menú ya tiene presupuestado.
 
 ---
 

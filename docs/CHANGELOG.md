@@ -1652,3 +1652,268 @@ Del lado del framework sólo arrastra el registro.
 
 **Verificación:** `check-ids` corrido antes y después. Sin superficie de runtime; ningún doc del
 framework cambió de contenido en esta tanda. No commiteado ni pusheado (GIT-7).
+
+---
+
+## PARCHES DE sesión Menú interactivo, tanda 1: el registro como DATO — 2026-08-24
+
+Primera tanda de las cuatro del menú interactivo. Su objetivo es que **el árbol del menú EXISTA
+como dato**: un registro de acciones que se puede poblar, resolver e inspeccionar — **sin dibujar
+nada y sin ejecutar nada**. El diseño estaba cerrado y votado desde el 2026-08-24
+([`Corpus_Interaccion_Arquitectura.md`](Corpus_Interaccion_Arquitectura.md), 11 secciones); lo que
+esta tanda hace es **bajarlo**, y por eso no acuña una sola norma: no apareció ninguna regla dura
+que el doc no tuviera ya. Lo que sí apareció son **tres huecos de diseño**, y los tres están abajo,
+sin resolver, para el autor.
+
+**Lo que NO entró, y está dicho porque la columna que no trabaja es la que se olvida:** ni dibujo
+(wheel, chips, LOD, motion — es la tanda 3), ni acciones concretas (son de cada módulo por COR-1 y
+COR-10 — tanda 4), ni el mensaje de net ni las tres puertas del server (tanda 2), ni la consulta de
+proximidad. La rama `command` **no se pobló**: existe como el tercer valor de `tree` y su árbol
+resuelve vacío, que es lo que prueba la forma sin comprometer nada.
+
+- PARCHE 1 — feat(interact): `lua/autorun/corpus_interact.lua` — **la séptima primitiva**, shared,
+  autosuficiente (COR-9). Superficie:
+  - **`Corpus.Interact.Register(module, spec) -> spec | nil, motivo`.** Valida los diez campos de
+    §3, normaliza (`module` estampado, `order` con default 100 como `RegisterCategory`) y devuelve
+    el spec. Rechaza devolviendo `nil` —no con `error()`, y ahí se aparta de sus cinco hermanas a
+    propósito: la firma del doc es `-> spec | nil`, y un módulo que registra treinta acciones no
+    debe caerse entero por una mal formada— **y siempre lo dice por `Corpus.Log`**: una ausencia
+    silenciosa se lee como «el menú no funciona». El segundo retorno es el **motivo exacto**, y
+    existe para que un check pueda comparar *cuál* guarda contestó y no sólo *que* hubo rechazo.
+  - **`Corpus.Interact.Resolve(tree)`** — el árbol se resuelve **al abrirlo, no al registrar**
+    (§3.a): agrupa por `parent`, ordena hermanos por `order` con el `id` de desempate, lista y
+    **loguea** los huérfanos, elige régimen por cuenta de hijos (§6.bis: 1-6 arco · 7-12 columna ·
+    13+ subcategorías) y cuenta **hojas alcanzables** para el número ámbar. Devuelve **siempre** una
+    tabla, también para una rama sin un solo nodo.
+  - **`Corpus.Interact.Enabled(id)`** — la composición maestra × acción en **una sola función**
+    (§7 regla 2). Las perillas (`corpus_interact_enabled` y `corpus_interact_<id>`) las crea **el
+    registro** y no una lista, se entrega el **objeto** ConVar y no el nombre, y re-registrar reusa
+    el objeto ya construido. Las seis reglas se heredan del roadmap #61 de Cargo, que resolvió este
+    problema exacto para las categorías de ítem. **[APLICADO 2026-08-24]**
+
+- PARCHE 2 — test(harness): [`../../dev/harness_corpus.py`](../../dev/harness_corpus.py) — **el
+  primer instrumento offline cuyo sujeto es el framework**, sembrado desde `harness_craving.py`
+  (720 líneas, el más chico) y no desde las 10.836 de Cargo. **378 checks** en tres pasadas
+  (SERVER, CLIENT y una tercera con el **orden de carga invertido**, que es lo que ejerce COR-9 por
+  primera vez) más un gate de fuentes. Su otra mitad es
+  [`../../dev/sabotaje_corpus_interact.py`](../../dev/sabotaje_corpus_interact.py): **49 sabotajes,
+  49 en rojo**. **[APLICADO 2026-08-24]**
+
+  **La capa de stubs NO se factorizó, y es la cuarta copia a propósito** (§10 del doc): mover o
+  renombrar rompe las anclas de los sabotajes **en silencio** —imprimen `ANCLA x0` y no revientan—
+  y eso pasó cuatro veces en una sola tanda. Deuda con gatillo concreto: *el día que el mismo bug
+  de stub aparezca en dos harnesses, se factoriza.*
+
+  **Y estrena una cosa que las suites de sabotaje de este taller no tenían: cada sabotaje declara
+  QUÉ FAMILIAS de checks tiene que teñir**, y el arnés falla en las dos direcciones — `EL CONTROL
+  NO LLEGA` si una familia declarada no se pone roja, y `EL CONTROL SE PASA` si se pone roja una
+  que ese defecto no toca. La segunda es la que se olvida, porque el rojo de más se lee como celo,
+  y es la que audita al que escribió el sabotaje. **Se pagó sola en la primera corrida**: de los
+  49, seis salieron mal y **cuatro de los seis eran defectos del instrumento, no del código**.
+
+### Los seis hallazgos de la primera corrida del sabotaje, porque son el método
+
+1. **Un sabotaje que no rompía lo que decía romper.** El del dedup de huérfanos reasignaba la
+   **local** `huerfanos` después de que `resuelto.orphans` ya apuntaba a la tabla, así que no
+   cambiaba nada y salía verde. *Un sabotaje inerte acredita al check por no tocarlo, y se lee
+   exactamente igual que un check flojo.*
+2. **Un check que no podía fallar: `List` devuelve `{}` y no `nil`.** El stub de `file.Find`
+   devolvía `{}` para toda carpeta, así que el guard `if archivos == nil` de `Corpus.Data.List`
+   era **inalcanzable**. Ahora el stub devuelve `nil` sobre una carpeta que no existe, como el
+   engine, y el check muerde.
+3. **Un check de idempotencia que no discriminaba.** «La segunda señal no vuelve a correr los
+   callbacks» sale verde **con y sin** el early return de `Fire`, porque pasada la barrera la cola
+   ya está vacía. Lo que separa las dos hipótesis es que la barrera vuelva a **hablar**: el check
+   pasó a mirar la segunda línea `ready barrier:` en el log.
+4. **Un alcance declarado que estaba mal, y el arnés tuvo razón.** Sacar `spec.module` sólo teñía
+   `R`, no `T` como estaba declarado — porque **ningún check miraba a quién nombra la línea del
+   huérfano**, que sin el campo imprime `[Corpus:nil]` y deja al operador sin a quién reclamar. El
+   arreglo fue del check, no del alcance.
+5. **Un stub que mataba la pasada en vez de medir.** `SetConVarValue` sobre una convar inexistente
+   indexaba `nil` y tumbaba el realm entero, así que el rojo no se podía repartir por familia. Es
+   tolerante y **ruidoso**: una perilla que no alcanza a su sujeto se lee como «el mecanismo no
+   existe», que es la conclusión inversa.
+6. **Un defecto cuyo rojo no se puede repartir, y que eso sea el dato.** Sin el `pcall` de la ready
+   barrier, el callback roto **propaga y mata la pasada entera** — lo que en juego deja a los
+   módulos de más abajo en la cola sin su wiring y sin un error atribuible a ellos. Queda declarado
+   con alcance `*` en vez de fingir un reparto.
+
+### Lo que este instrumento NO PUEDE VER, y va escrito antes de leer un verde
+
+- **`FCVAR_REPLICATED` es invisible por comportamiento.** El stub de convars guarda nombre y valor
+  y no mira los flags: sacarlo de las dos convars deja **las tres pasadas de realm en verde
+  enteras**. Lo único que lo caza offline es el **gate de fuentes**, que es **presencial** —cuenta
+  la expresión en el archivo, con denominador, para que borrar una de las dos no quede tapada por
+  la otra— y que **no prueba que replique**. Eso sólo se ve en juego.
+- **Tres defectos declarados como NO DETECTABLES** (el reuso del objeto ConVar al re-registrar, y
+  los dos rangos `0, 1`) se corren igual en la suite **exigiendo VERDE**. Si alguno se pusiera
+  rojo, el límite del instrumento habría cambiado y la nota que lo declara habría envejecido — que
+  es como una acreditación se vuelve falsa sin que nadie toque el texto.
+- **«Que los hooks devuelvan `nil` y no `true`» se queda SIN SUJETO**: esta tanda no agrega un solo
+  hook. No se escribió un check vacío — un verde sin sujeto es la forma barata de acreditar lo que
+  no se midió.
+
+### Tres huecos de diseño, al autor (§7.5, conducta DETENTE)
+
+1. ⚠ **Colisión del `id` `enabled` con la perilla maestra.** §7 fija los dos nombres
+   (`corpus_interact_enabled` y `corpus_interact_<id>`) y **no los cruza**: son el mismo string
+   cuando el id es `enabled`. Sin guard, esa acción se lleva el objeto de la maestra y apagarla
+   apaga el menú entero — sin error, sin romper el registro, y visible sólo el día que un admin
+   gira lo que cree que es una perilla de acción. **Se trató como el caso del id no tipeable** (sin
+   perilla y dicho en voz alta), porque es la misma familia de defecto y §7 regla 4 ya le escribió
+   la cura. Falta el voto sobre si eso alcanza o el `id` `enabled` debe rechazarse.
+2. ⚠ **El tamaño de la tanda del reparto alfabético.** §6.bis.b manda repartir «alfabéticamente en
+   tandas» y **no dice de cuántas**. Se derivó **12**: cada subcategoría del régimen 13+ «es una
+   columna», y una columna aguanta 12. Cualquier otro número fabricaría un tercer umbral que el
+   diseño no tiene — y el doc avisa que el 10 del cvar de filas **no** es un umbral. Es la única
+   cifra del archivo que el doc no escribe con todas las letras.
+3. ⚠ **Los ciclos de `parent`.** `parent` es un id y no una referencia, así que el registro **no
+   puede** impedir que A cuelgue de B y B de A: los dos se registran legalmente. Sin corte, contar
+   hojas es una recursión infinita que cuelga el juego. Se cortan con un set de visitados y el nodo
+   queda como hoja; el doc no menciona el caso.
+
+### Dos observaciones de menor peso
+
+- **§11 del doc dice que el primer parche «acuña las normas `COR-nn`» y toca
+  `CORPUS_Architecture.md` §3 («Seis primitivas»).** Ninguna de las dos entró: esta tanda no acuñó
+  ninguna norma —no apareció ninguna regla dura que el doc no tuviera— y `CORPUS_Architecture.md`
+  **no estaba en el alcance** de la tanda. Queda para el autor decidir cuándo.
+- **Se corrigió el «122» del catálogo de controles en §10 del doc — y quedó en 129, no en 127.**
+  El alcance de la tanda pedía llevarlo a 127, que era el número al escribirse el prompt; esta misma
+  tanda le sumó **dos entradas** al catálogo (el sabotaje que no rompía lo que decía romper, y las
+  tres formas de check-que-no-puede-fallar que salieron de la misma corrida), así que cerrar con 127
+  habría dejado el doc falso a sabiendas. Se escribió 129 **y se le agregó que la cifra es una foto
+  que envejece sola**: manda el archivo, no el número — es la tercera vez que ese número se corrige.
+- **`corpus/CLAUDE.md` y `CORPUS_Architecture.md` §3 siguen diciendo SEIS primitivas.** Los dos
+  quedaron fuera del alcance de la tanda y **no se tocaron**; el mapa archivo → rol del `CLAUDE.md`
+  no tiene la fila de `corpus_interact.lua`. `check-ids` sigue limpio (es coherencia mecánica y esto
+  no lo ve), pero el **gate LLM** de §7.8 lo levantaría como contradicción contra el árbol.
+- **Los tres harnesses viejos no cargan la séptima primitiva.** Arman el frame con una lista
+  explícita de cinco archivos, así que su andamio quedó desactualizado respecto de lo que el juego
+  monta. No se tocaron (fuera de alcance) y `harness_corpus.py` sí la carga en las tres pasadas.
+
+**Verificación:** `python dev/harness_corpus.py` → exit 0, **378 checks**, 0 fallos.
+`python dev/sabotaje_corpus_interact.py` → **49/49 en rojo**, cada uno sólo en las familias que
+declaró, y los 3 no-detectables verdes. Los tres harnesses hermanos siguen en exit 0 y el árbol
+quedó restaurado byte a byte (`git status` limpio salvo el archivo nuevo). `check-ids` limpio.
+**Sin pasada en juego**: esta tanda **no tiene superficie de runtime** —no dibuja, no manda net y
+no ejecuta nada—, así que **no nace ningún check de planilla** (FLU-37). La planilla nace con la
+tanda 3, con letra `AP`, y esa letra se da de alta en `ids.yaml` **antes** de usarse (FLU-30). No
+commiteado ni pusheado (GIT-7).
+
+⚠ **Los dos parches pasan a `[APLICADO]` con un criterio que NO es el de siempre, y por eso va
+escrito:** la disciplina de este CHANGELOG dice que para código de addon GMod «verificado» es
+**confirmado en juego**, y esta tanda **no tiene superficie en juego que confirmar**. El criterio
+que las aplica es el que la tanda fijó de antemano y son **las dos cosas**: el harness en VERDE y su
+sabotaje en ROJO. Si alguna de las dos no se cumpliera, vuelven a `[PENDIENTE]`.
+
+---
+
+## PARCHES DE sesión Menú interactivo: los tres votos que destrabó escribir el código — 2026-08-25
+
+La tanda 1 dejó **tres huecos de diseño** y el autor los votó los tres el 2026-08-25, en los
+tres casos por la recomendación. Esta entrada baja los votos a código, a doc y a instrumento.
+
+**Lo que los tres tienen en común, y por eso van juntos:** *el diseño había resuelto el caso y
+no la clase.* §7 fijaba dos nombres de convar y no los cruzaba; §6.bis mandaba repartir «en
+tandas» sin decir de cuántas; §3.a definía al huérfano por su causa más obvia y dejaba afuera
+la que nadie dibuja. **Ninguno de los tres se ve leyendo el documento**: el primero apareció al
+escribir el `..` que concatena el prefijo, el segundo al imprimir los tamaños que salían, y el
+tercero al preguntarle al árbol qué nodos alcanzaba de verdad.
+
+- PARCHE 1 — feat(interact): **dos espacios de nombres separados para las perillas.**
+  `corpus_interact_*` queda para la **config del subsistema** (la maestra hoy; el cvar de filas
+  de §6.bis y el `corpus_interact_dump` de la tanda 2 mañana) y la perilla por acción pasa a
+  **`corpus_interact_action_<id>`**, donde el `id` lo elige un módulo y el conjunto es abierto y
+  ajeno. **No era un caso, era una clase con tres integrantes ya nombrables.**
+
+  **Y el guard de colisión SE BORRÓ, que es la mitad que importa.** Con los dos espacios
+  separados no puede dispararse nunca, y *un guard que no puede dispararse no es una red: es
+  código muerto que además vuelve inejercitable al check que lo cubre* — el hallazgo nº 128 del
+  catálogo, cometido y corregido en el mismo parche. Lo reemplaza un check sobre la **propiedad
+  estructural** (que el prefijo de acción cuelgue del de config y sea estrictamente más largo, y
+  que los tres nombres de config sean inalcanzables desde cualquier `id`), que **sí** puede
+  fallar: acortar el prefijo lo pone rojo. **[APLICADO 2026-08-25]**
+
+- PARCHE 2 — feat(interact): **el reparto alfabético es PAREJO con techo 12**, no un corte fijo.
+  El 12 sigue siendo derivado (cada subcategoría del régimen 13+ «es una columna», y una columna
+  aguanta 12). Lo que cambió es **cómo** se reparte, y la medición es la que decidió:
+
+  | hijos | corte fijo | reparto parejo |
+  |---|---|---|
+  | 13 | `[12, 1]` | `[7, 6]` |
+  | 25 | `[12, 12, 1]` | `[9, 8, 8]` |
+  | 34 | `[12, 12, 10]` | `[12, 11, 11]` |
+  | 37 | `[12, 12, 12, 1]` | `[10, 9, 9, 9]` |
+
+  **La cantidad de tandas es idéntica en los dos** (`ceil(n/12)` siempre), así que el parejo **no
+  cuesta un nivel más de navegación: cuesta cero**. Lo que compra es no fabricar una subcategoría
+  de **un solo ítem** justo al cruzar el umbral — la ilegibilidad que el régimen 13+ existe para
+  evitar. Se descartó atar la tanda al cvar de filas con motivo: §6.bis dice que *el 10 no es un
+  umbral*, y así **mover una preferencia de visualización reorganizaría el árbol**.
+  **[APLICADO 2026-08-25]**
+
+- PARCHE 3 — feat(interact): **huérfano = todo lo que no se alcanza desde una raíz.** Una regla
+  donde había dos y media, y cubre los cuatro casos: `parent` ausente, `parent` de otra rama,
+  **ciclo**, y el auto-`parent` que `Register` ya rechazaba.
+
+  ⚠ **Medido, el ciclo era peor de lo que la tanda 1 reportó.** Con A colgando de B, B de A y un
+  nodo sano `colgado` debajo: los tres **existían** en la tabla de hijos, **ninguno** estaba entre
+  las raíces, **ninguna raíz los alcanzaba**, y `orphans` decía **0**. Los tres desaparecían del
+  menú **sin un solo aviso** — y uno de ellos era de un módulo que no tuvo nada que ver. Es
+  literalmente el defecto que §3.a existe para impedir, entrando por la puerta de al lado.
+
+  **La línea de log nombra su CAUSA**, porque son dos y piden arreglos distintos: «tu `parent` no
+  existe» es un error del módulo que registró ese nodo; «tu `parent` tampoco se alcanza»
+  normalmente **no** lo es. Un log que las junte manda a auditar el módulo sano.
+
+  **Efecto de borde:** el árbol resuelto queda **acíclico por construcción**, así que el corte de
+  ciclos de `ContarHojas` dejó de ser el mecanismo y quedó como red — y eso está escrito ahí,
+  porque si fuera lo único, un ciclo no colgaría el juego pero seguiría borrando nodos en
+  silencio. **[APLICADO 2026-08-25]**
+
+- PARCHE 4 — docs(interact): las tres enmiendas bajan a
+  [`Corpus_Interaccion_Arquitectura.md`](Corpus_Interaccion_Arquitectura.md) — §7 (los dos
+  espacios), §6.bis (el techo 12 y el reparto parejo, con la tabla de medición), §3.a (la
+  alcanzabilidad y las dos causas), más las tres filas nuevas en la tabla de votos de §11.
+  **[APLICADO 2026-08-25]**
+
+- PARCHE 5 — test(harness): `dev/harness_corpus.py` pasa de **378 a 440 checks**, y
+  `dev/sabotaje_corpus_interact.py` de **49 a 50 sabotajes**, los 50 en rojo. **[APLICADO
+  2026-08-25]**
+
+### Lo que la actualización del instrumento destapó, y es el hallazgo de la tanda
+
+**Dos de los tres votos no se podían distinguir con los checks que ya existían**, y eso salió
+mirando qué sabotajes NO se ponían rojos:
+
+1. **El reparto parejo y el corte fijo eran INDISTINGUIBLES.** Los checks de `G-fb` miraban el
+   número de grupos, el total de ítems y que ninguna tanda pasara de 12 — y con 34 hijos las dos
+   formas dan **3 grupos, 34 ítems y máximo 12**. Lo único que las separa son los **tamaños
+   exactos**, y sobre todo el **mínimo**: el corte fijo fabrica una subcategoría de un ítem en 13,
+   25 y 37. Se agregó `G-fb2`, que barre los cinco casos y exige el reparto completo.
+2. **El check del ciclo no medía nada.** Era `pcall ok` + `count == 2`, y salía verde **con la
+   conducta vieja y con la nueva** — un ciclo que no cuelga el juego pero borra nodos sin avisar
+   pasaba igual. Reescrito con el escenario completo (raíz sana + ciclo + nodo inocente), mide los
+   tres huérfanos, sus ids, que el log salga **una vez por cada uno** y que nombre **su** causa y
+   no la otra.
+
+**Y dos sabotajes viejos dejaron de poder fallar, lo cual es un resultado y no un problema.** El
+del `parent` de otra rama y el del corte de ciclos de `ContarHojas` ahora salen verdes porque **la
+alcanzabilidad los absorbió**: la línea que saboteaban dejó de ser la que decide. Es el nº 61 del
+catálogo con el signo bueno —un arreglo del mismo bloque deja sin filo a una fila vieja— y se
+**declara** en vez de taparse: pasaron a `NO_DETECTABLES` con la etiqueta `[movido]`, separada de
+`[ciego]` (los que el stub no puede ver). Se conservan porque **el día que alguien saque la
+alcanzabilidad, esas dos vuelven a ser lo único que queda**, se pondrán rojas, y habrá que leer la
+nota.
+
+**Un tercer defecto, y es del check.** El sabotaje de la perilla-desde-lista-fija **mataba la
+pasada** porque `K5` indexaba `cvEnabled` sin protegerlo: un defecto que deja la acción sin perilla
+tumbaba el realm y el rojo dejaba de poder repartirse por familia. *Un check tiene que sobrevivir
+al defecto que mide para poder decir cuál es.*
+
+**Verificación:** `python dev/harness_corpus.py` → exit 0, **440 checks**, 0 fallos, en las tres
+pasadas. `python dev/sabotaje_corpus_interact.py` → **50/50 en rojo**, cada uno sólo en las
+familias que declaró, y **5/5 no-detectables** verdes. Los tres harnesses hermanos siguen en exit
+0 y el árbol quedó restaurado byte a byte. `check-ids` limpio. Sigue **sin superficie en juego**,
+así que sigue sin nacer ningún check de planilla (FLU-37). No commiteado ni pusheado (GIT-7).

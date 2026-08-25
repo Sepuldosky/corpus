@@ -110,6 +110,15 @@ Para corpus/ (el framework), los alcances definidos son:
   log:
     Logging: Corpus.Log y su formato de prefijo.
 
+  interact:
+    Registro de acciones contextuales del menú interactivo (la SÉPTIMA primitiva,
+    desde 2026-08-24): Corpus.Interact.Register / Resolve / Enabled, la resolución
+    del árbol por parent, los regímenes de rama y las perillas de admin del
+    subsistema. Diseño: docs/Corpus_Interaccion_Arquitectura.md.
+    No confundir con "ui": aquélla es el shell del menú Q compartido y ésta es el
+    árbol contextual que se abre sobre lo que estás apuntando — no comparten ni
+    superficie ni archivo.
+
   workspace:
     Estructura del workspace multi-root (.code-workspace, carpetas raíz, dev/) —
     alcance propio de este repo, sin equivalente en ADS.

@@ -155,6 +155,35 @@ soft-dep. El árbol **se resuelve al abrirlo**, no al registrar. Un `parent` que
 nodo **huérfano y sin dibujar**, y eso **se dice por `Corpus.Log`**: un nodo que no aparece y no avisa
 es indistinguible de un nodo cuya `condition` dio `false`.
 
+> ✅ **VOTADO 2026-08-25 — la definición de huérfano es LA ALCANZABILIDAD, y es una
+> sola regla donde había dos y media.** Huérfano es *todo nodo al que no se llega desde
+> ninguna raíz de su rama*. Con eso, los cuatro casos caen solos:
+>
+> | Caso | Antes | Ahora |
+> |---|---|---|
+> | `parent` que no existe | huérfano ✓ | no se llega ⇒ huérfano |
+> | `parent` de **otra rama** | huérfano ✓ | no se llega ⇒ huérfano |
+> | **CICLO** (A cuelga de B, B de A) | ⚠ **desaparecía en silencio** | no se llega ⇒ huérfano |
+> | `parent` = el propio id | — | lo rechaza `Register` |
+>
+> ⚠ **El ciclo era el que se escapaba, y medido era peor de lo que parecía.** Los nodos
+> del ciclo **existían** en la tabla de hijos, **no estaban** entre las raíces, **ninguna
+> raíz los alcanzaba**, y el contador de huérfanos decía **0**. O sea que desaparecían
+> del menú **sin un solo aviso** — y con ellos **todo nodo sano que colgara debajo**, de
+> un módulo que no tuvo nada que ver. Es literalmente el defecto que el párrafo de
+> arriba existe para impedir. Y no se puede prevenir al registrar: `parent` es un `id`,
+> así que A y B se registran los dos legalmente y quién queda rechazado dependería del
+> orden de mount, que **COR-5** dice que no está garantizado.
+>
+> **La línea de log nombra su CAUSA**, porque son dos y piden arreglos distintos:
+> *«tu `parent` no existe»* es un error del módulo que registró ese nodo, mientras que
+> *«tu `parent` tampoco se alcanza»* normalmente **no** lo es — es la víctima de un ciclo
+> que armaron más arriba. Un log que las junte manda a auditar el módulo sano.
+>
+> **Efecto de borde que vale la pena saber:** el árbol resuelto queda **acíclico por
+> construcción**, así que contar hojas ya no *necesita* defenderse de la recursión
+> infinita. La defensa que ahí quedó es una red, no el mecanismo.
+
 **(b) `condition` y `range` son parte de la firma mínima, no un extra.** En ACE3 *«la misma camioneta
 te muestra opciones distintas si el motor está encendido, si el estanque está vacío o si la rueda está
 pinchada»*. Sin los dos campos el árbol no se puede armar en tiempo real, y el registro se degrada a
@@ -532,6 +561,28 @@ igual.
 > fallback: **si el módulo no lo declara, el árbol reparte alfabéticamente en tandas.** *Lo que el árbol
 > nunca hace es dibujar 34 en arco.*
 
+> ✅ **VOTADO 2026-08-25 — de cuántos es una tanda: el techo es 12 y el reparto es
+> PAREJO, no un corte fijo.** El **12** es derivado y no elegido: cada subcategoría del
+> régimen 13+ *«es una columna»*, y una columna aguanta 12 — cualquier otro número
+> fabricaría un tercer umbral que este diseño no tiene. Lo que se votó además es
+> **cómo** se reparte, porque el doc no lo decía y las dos formas se ven distinto:
+>
+> | hijos | corte fijo | **reparto parejo** |
+> |---|---|---|
+> | 13 | `[12, 1]` | **`[7, 6]`** |
+> | 25 | `[12, 12, 1]` | **`[9, 8, 8]`** |
+> | 34 | `[12, 12, 10]` | **`[12, 11, 11]`** |
+> | 37 | `[12, 12, 12, 1]` | **`[10, 9, 9, 9]`** |
+>
+> **La cantidad de tandas es idéntica en los dos** (`ceil(n/12)` siempre), así que el
+> reparto parejo **no cuesta un nivel más de navegación: cuesta cero**. Lo que compra
+> es no fabricar **una subcategoría con un solo ítem justo al cruzar el umbral**, que
+> es exactamente la ilegibilidad que el régimen de 13+ existe para evitar.
+>
+> ⚠ **Se descartó atar la tanda al cvar de filas** (el 10) con motivo: este mismo
+> párrafo dice que *el 10 no es un umbral*, y con esa forma **mover una preferencia de
+> visualización reorganizaría el árbol**.
+
 **(c) SIN PAGINADO.** El scroll es **discreto, una fila por tick**, así que **el blanco no se mueve
 mientras apuntas** y no hay una mecánica de páginas que aprender. **Cuántas filas se ven es
 CONFIGURACIÓN y no HUD**: sale de un **cvar, default 10**, y **no se toca desde el menú**.
@@ -548,10 +599,33 @@ las categorías de ítem y transfiere casi línea por línea.
 
 ```lua
 corpus_interact_enabled          -- maestra. 0 apaga el menú entero.
-corpus_interact_<id>             -- una por acción, creada POR EL REGISTRO.
+corpus_interact_action_<id>      -- una por acción, creada POR EL REGISTRO.
 ```
 
 Las dos `FCVAR_ARCHIVE + FCVAR_REPLICATED`, default `1`.
+
+> ⚠ **ENMENDADO 2026-08-25 por el autor: `corpus_interact_<id>` pasó a
+> `corpus_interact_action_<id>`, y son DOS ESPACIOS DE NOMBRES SEPARADOS.**
+> `corpus_interact_*` es **config del subsistema** —la escribe el framework— y
+> `corpus_interact_action_*` es **una por acción**, donde el `id` lo elige un módulo
+> y por lo tanto el conjunto es abierto y ajeno.
+>
+> **El motivo lo destapó escribir el código, y no era un caso sino una CLASE.** Con
+> un solo espacio, el prefijo por acción **contiene** al nombre de la maestra: la
+> acción de id `enabled` se llevaba el objeto de la maestra, así que apagarla
+> apagaba el menú entero — sin error, sin romper el registro y visible sólo el día
+> que un admin gira lo que cree que es una perilla de acción. Y ya había **tres
+> integrantes nombrables**: `enabled`, el **cvar de filas de §6.bis** (que todavía
+> no tiene nombre) y el **`corpus_interact_dump`** que la tanda 2 tiene
+> presupuestado.
+>
+> **Cargo no tiene el problema por ACCIDENTE** (`cargo_value_mult` contra
+> `cargo_value_mult_<cat>`: el guión bajo del prefijo lo salva), y ése es justo el
+> motivo por el que la #61 no lo enseñó al transferirse. Acá queda por
+> **construcción**, así que **no hace falta ningún guard** que alguien tenga que
+> acordarse de agregar cuando nazca la próxima convar de config. El guard que se
+> había escrito **se borró**: un guard que no puede dispararse no es una red, es
+> código muerto que además vuelve inejercitable al check que lo cubre.
 
 **Las seis reglas que se heredan de la #61:**
 
@@ -952,7 +1026,9 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 2. **Un check que no puede fallar no mide nada.** Toda tanda va con su **suite de sabotaje** en `dev/`,
    que tiene que dar el total **en rojo**.
 3. **Antes de escribir cualquier check**, leer `memory/controles-que-premian-su-modo-de-falla.md`
-   (numerado hasta el **122**; las últimas viven arriba de todo, una línea cada una).
+   (al 2026-08-25 va hasta el **130**; las últimas viven arriba de todo, una línea cada una).
+   ⚠ **La cifra es una foto y envejece sola** —cada tanda que verifica en negativo le suma
+   entradas, y esta misma le sumó dos—: **manda el archivo, no este número.**
 4. **El árbol vacío tiene que ser una medición.** Si el menú abre y no muestra nada, un check que sólo
    pregunta «¿abrió?» sale verde. La forma correcta es contar nodos contra un número esperado — y que
    el caso de **cero nodos** sea un resultado distinguible de **no se evaluó**.
@@ -980,6 +1056,17 @@ Lo que sí se puede dejar escrito, porque son las trampas ya conocidas:
 | El bullet 9 (puertas de Glide) | **Reescrito como el LOCK de Glide** — las puertas no existen (§8) | 2026-08-24 |
 | Instrumento de verificación | **Los dos**: `dev/harness_corpus.py` nuevo para la lógica + el selftest para el motor, **sin factorizar los stubs** (§10) | 2026-08-24 |
 | La masa como peso de inventario | **`GetMass()` crudo con piso propio** para los clavados en el piso de Source (§9.2) | 2026-08-24 |
+| Espacio de nombres de las perillas | **DOS espacios separados**: `corpus_interact_*` es config del subsistema y `corpus_interact_action_*` la perilla por acción (§7) | 2026-08-25 |
+| Tamaño de la tanda alfabética | **Techo 12, reparto PAREJO** — no corte fijo; el 12 sale del régimen de columna (§6.bis) | 2026-08-25 |
+| Qué es un huérfano | **Todo lo que no se alcanza desde una raíz** — una regla que cubre parent ausente, rama cruzada y **ciclo** (§3.a) | 2026-08-25 |
+
+> **Los tres votos del 2026-08-25 salieron de ESCRIBIR EL CÓDIGO, no de discutirlo**, y los
+> tres son la misma clase de hallazgo: *el diseño había resuelto el caso y no la clase.*
+> §7 fijaba dos nombres de convar y no los cruzaba; §6.bis mandaba repartir «en tandas» sin
+> decir de cuántas; y §3.a definía al huérfano por su causa más obvia y dejaba afuera la que
+> nadie dibuja. **Ninguno se ve leyendo el documento** — el primero apareció al escribir el
+> `..` que concatena el prefijo, el segundo al imprimir los tamaños que salían, y el tercero
+> al preguntarle al árbol qué nodos alcanzaba de verdad.
 
 ### ✅ EL MOCK v2, PLEGADO — 2026-08-24
 
