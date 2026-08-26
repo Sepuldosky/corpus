@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center"><sub><b>M Ó D U L O S</b></sub></p>
+<p align="center"><sub><b>M O D U L E S</b></sub></p>
 
 <p align="center">
   <a href="https://github.com/Sepuldosky/corpus-caliber"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/caliber_logo_dark.svg"><img src="assets/caliber_logo_light.svg" width="60" alt="Caliber"></picture></a>
@@ -31,67 +31,68 @@
 
 # Corpus
 
-Framework **delgado** para **Garry's Mod** que aloja un ecosistema de módulos de gameplay
-realista para el Sandbox. Cada módulo es un addon independiente que declara a Corpus como su
-única dependencia dura; el usuario instala solo los módulos que quiere, o todos, y cada
-combinación produce un sistema honesto — no una mitad rota. Analogía en el mismo stack:
+**Thin** framework for **Garry's Mod** that hosts an ecosystem of realistic gameplay modules
+for Sandbox. Each module is an independent addon that declares Corpus as its only hard
+dependency; the user installs only the modules they want, or all of them, and every
+combination produces an honest system — never a broken half. Analogy in the same stack:
 **VJ Base + SNPCs**, **ARC9 + weapon packs**.
 
-## El ecosistema
+## The ecosystem
 
-| Módulo | Dominio | Estado |
+| Module | Domain | Status |
 |---|---|---|
-| [**Caliber**](https://github.com/Sepuldosky/corpus-caliber) | Combate: armadura zonal estilo EFT, escudos de energía, HP por extremidad, penetración balística | En código, verificado |
-| [**Cargo**](https://github.com/Sepuldosky/corpus-cargo) | Inventario estilo STALKER/GAMMA: grid, framework de ítems, equipamiento, contenedores, comercio | En código, verificado |
-| [**Coagulant**](https://github.com/Sepuldosky/corpus-coagulant) | Médico de jugador estilo ACE3: heridas por zona, sangrado, vitales, tratamiento, debuffs zonales | En código, verificado |
-| [**Craving**](https://github.com/Sepuldosky/corpus-craving) | Supervivencia de jugador: hambre e hidratación | En código, verificado |
-| [**Cortex**](https://github.com/Sepuldosky/corpus-cortex) | IA de NPC: táctica de combate + afecto (dolor, miedo) | Sin empezar |
+| [**Caliber**](https://github.com/Sepuldosky/corpus-caliber) | Combat: EFT-style zonal armor, energy shields, per-limb HP, ballistic penetration | In code, verified |
+| [**Cargo**](https://github.com/Sepuldosky/corpus-cargo) | STALKER/GAMMA-style inventory: grid, item framework, equipment, containers, trade | In code, verified |
+| [**Coagulant**](https://github.com/Sepuldosky/corpus-coagulant) | ACE3-style player medic: zonal wounds, bleeding, vitals, treatment, zonal debuffs | In code, verified |
+| [**Craving**](https://github.com/Sepuldosky/corpus-craving) | Player survival: hunger and hydration | In code, verified |
+| [**Cortex**](https://github.com/Sepuldosky/corpus-cortex) | NPC AI: combat tactics + affect (pain, fear) | In code, unverified |
 
-Aparte de los cinco módulos, [**Corpus S.T.A.L.K.E.R.**](https://github.com/Sepuldosky/corpus-stalker)
-es el addon de **contenido** de la Zona (anomalías, artefactos, PDA, detectores, defs de NPC e
-ítem). No es un módulo: el framework y los módulos son **genéricos** — no saben nada de la Zona —
-y el addon de contenido es el que los convierte en un juego concreto, consumiéndolos sin subirles
-nada.
+Besides the five modules, [**Corpus S.T.A.L.K.E.R.**](https://github.com/Sepuldosky/corpus-stalker)
+is the Zone's **content** addon (anomalies, artifacts, PDA, detectors, NPC and item defs). It's
+not a module: the framework and the modules are **generic** — they know nothing about the Zone —
+and the content addon is what turns them into a concrete game, consuming them without pushing
+anything back up.
 
-Dos reglas cardinales sostienen el diseño:
+Two cardinal rules hold the design together:
 
-- **Corpus es delgado.** Solo aloja infraestructura demostrablemente compartida; ninguna
-  lógica de dominio (armor math, curvas de sangrado, grid de inventario) sube al framework —
-  vive en su módulo dueño y el resto la consume vía el registro.
-- **La única dependencia dura es Corpus.** Todo cruce entre módulos es soft-dependency:
-  se detecta en runtime (`Corpus.GetModule`/`Corpus.HasModule`), nunca se asume, y degrada
-  con gracia si el partner no está.
+- **Corpus stays thin.** It only hosts demonstrably shared infrastructure; no domain logic
+  (armor math, bleed curves, inventory grid) goes up into the framework — it lives in its
+  owning module, and everything else consumes it through the registry.
+- **The only hard dependency is Corpus.** Every cross-module link is a soft dependency:
+  detected at runtime (`Corpus.GetModule`/`Corpus.HasModule`), never assumed, and it degrades
+  gracefully if the partner isn't present.
 
-## La API — 6 primitivas
+## The API — 7 primitives
 
-| Primitiva | Contrato |
+| Primitive | Contract |
 |---|---|
-| **Registro** | `Corpus.RegisterModule(name, iface)` · `Corpus.HasModule(name)` · `Corpus.GetModule(name)` |
-| **Persistencia** | `Corpus.Data.Save/Load(module, key, tbl)` → `data/corpus/<module>/<key>.json` |
+| **Registry** | `Corpus.RegisterModule(name, iface)` · `Corpus.HasModule(name)` · `Corpus.GetModule(name)` |
+| **Persistence** | `Corpus.Data.Save/Load(module, key, tbl)` → `data/corpus/<module>/<key>.json` |
 | **Net** | `Corpus.Net.Register(module, msgName)` → `"corpus_<module>_<msgName>"` |
-| **UI shell** | `Corpus.UI.RegisterTab(module, label, buildFn)` — categoría única "Corpus" en el menú Q (Utilities) |
-| **Ready barrier** | `Corpus.OnReady(fn)` — corre una vez tras `InitPostEntity`, con todos los módulos registrados |
-| **Log** | `Corpus.Log(module, ...)` — prefijo `[Corpus:<module>]` |
+| **UI shell** | `Corpus.UI.RegisterTab(module, label, buildFn)` — single "Corpus" category in the Q menu (Utilities) |
+| **Ready barrier** | `Corpus.OnReady(fn)` — runs once after `InitPostEntity`, with every module registered |
+| **Log** | `Corpus.Log(module, ...)` — prefix `[Corpus:<module>]` |
+| **Interact** | `Corpus.Interact.Register(module, ...)` / `Resolve` / `Enabled` — the protocol a module uses to hang a contextual action; today it's data only, no rendering or execution yet |
 
-Detalle completo (firmas, invariante by-ref del registro, fronteras de módulo) →
+Full detail (signatures, the registry's by-ref invariant, module boundaries) →
 [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md) §3.
 
-## Instalación
+## Installation
 
-Clonar en `garrysmod/addons/` (aún sin release en Workshop):
+Clone into `garrysmod/addons/` (no Workshop release yet):
 
 ```
-garrysmod/addons/corpus/            ← este repo (requerido por todos los módulos)
-garrysmod/addons/corpus-<modulo>/   ← los módulos que quieras
+garrysmod/addons/corpus/            ← this repo (required by every module)
+garrysmod/addons/corpus-<module>/   ← whichever modules you want
 ```
 
-Verificación rápida: el comando de consola `corpus_selftest` auto-testea las primitivas en
-el realm donde corre (en listen server, realm server: `lua_run Corpus._SelfTest()`).
+Quick check: the console command `corpus_selftest` self-tests the primitives on
+whichever realm it runs on (on a listen server, server realm: `lua_run Corpus._SelfTest()`).
 
-## Documentación
+## Documentation
 
-- [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md) — diseño del framework, grafo de dependencias, workspace.
-- [`docs/corpus_estado.md`](docs/corpus_estado.md) · [`docs/corpus_roadmap.txt`](docs/corpus_roadmap.txt) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md) — docs vivos.
-- [`docs/corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) — metodología de trabajo, canónica para los siete repos del ecosistema.
-- [`docs/Corpus_Identidad.md`](docs/Corpus_Identidad.md) — identidad visual: marca madre, familia de glifos, paleta de acento, uso de los assets.
-- [`CLAUDE.md`](CLAUDE.md) — guía para asistencia con Claude Code.
+- [`docs/CORPUS_Architecture.md`](docs/CORPUS_Architecture.md) — framework design, dependency graph, workspace.
+- [`docs/corpus_estado.md`](docs/corpus_estado.md) · [`docs/corpus_roadmap.txt`](docs/corpus_roadmap.txt) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md) — living docs.
+- [`docs/corpus_flujo_trabajo.txt`](docs/corpus_flujo_trabajo.txt) — work methodology, canonical for the ecosystem's seven repos.
+- [`docs/Corpus_Identidad.md`](docs/Corpus_Identidad.md) — visual identity: parent brand, glyph family, accent palette, asset usage.
+- [`CLAUDE.md`](CLAUDE.md) — guide for assistance with Claude Code.
